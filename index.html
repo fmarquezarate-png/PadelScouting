@@ -3,27 +3,41 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101312">
+<meta name="theme-color" content="#0E1109">
+<meta name="description" content="Sistema personal de scouting y coaching de pádel: registrar, acumular, analizar y preparar el siguiente partido.">
 <title>Padel Scouting · Fran</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<div id="app">
+
 <header class="topbar">
-  <div><div class="eyebrow">PADEL · SCOUTING</div><h1 id="page-title">Registro rápido</h1></div>
-  <div class="brand-mark">PS</div>
+  <div>
+    <div class="eyebrow">PADEL · SCOUTING</div>
+    <h1 id="page-title">Registro rápido</h1>
+  </div>
+  <div class="brand-mark" aria-hidden="true">PS</div>
 </header>
+
 <main id="view" class="view"></main>
+
+<noscript>
+  <div class="view">
+    <div class="notice bad">Esta aplicación necesita JavaScript activado para funcionar.</div>
+  </div>
+</noscript>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <nav class="bottom-nav" aria-label="Navegación principal">
-  <button data-nav="registro" class="nav-item is-active"><span>＋</span><small>Registrar</small></button>
-  <button data-nav="historial" class="nav-item"><span>▤</span><small>Historial</small></button>
-  <button data-nav="analisis" class="nav-item"><span>⌁</span><small>Análisis</small></button>
-  <button data-nav="briefing" class="nav-item"><span>◈</span><small>Briefing</small></button>
+  <button type="button" data-nav="registro" class="nav-item is-active"><span aria-hidden="true">＋</span><small>Registrar</small></button>
+  <button type="button" data-nav="historial" class="nav-item"><span aria-hidden="true">▤</span><small>Historial</small></button>
+  <button type="button" data-nav="analisis" class="nav-item"><span aria-hidden="true">⌁</span><small>Análisis</small></button>
+  <button type="button" data-nav="briefing" class="nav-item"><span aria-hidden="true">◈</span><small>Briefing</small></button>
 </nav>
-</div>
+
 <script src="js/data.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/analysis.js"></script>

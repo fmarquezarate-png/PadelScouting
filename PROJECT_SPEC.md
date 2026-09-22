@@ -86,7 +86,7 @@ Campos:
 | Arquetipo rival 1 / rival 2 | A · B · Otro · Por definir | Independientes entre sí |
 | Estado del partido | Normal · WO · Abandono · Otro | "Otro" permite aclaración breve |
 | Resultado | sets (propios vs rivales) | Sets ganados, resultado y juegos totales se **calculan** |
-| Juego de lectura | "No lo leí" o nº de juego | Opcional |
+| Juego de lectura | "No lo leí" o set + juego dentro del set | Opcional; el sistema deriva el juego acumulado |
 | Patrones observados | lista cerrada + "Otro" | **Máximo 3** |
 | Qué funcionó | selección múltiple | Lista cerrada |
 | Qué no funcionó | selección múltiple | Lista cerrada |
@@ -95,6 +95,13 @@ Campos:
 | Notas de la pareja | texto libre corto | Opcional |
 
 Tras guardar: confirmación + resumen inmediato + acciones "Editar" y "Registrar otro".
+
+#### Formato de partido (liga de Fran)
+
+Al mejor de 3: **dos sets normales y un super tie-break a 10** como tercero, sin exigir
+diferencia de dos puntos. El super tie-break aparece en el formulario solo cuando los dos primeros
+sets van repartidos, y **no suma a los juegos totales**: son puntos, no juegos, y contarlos
+inflaría la cuenta y distorsionaría cualquier media.
 
 ### 5.2. Historial
 
@@ -105,11 +112,13 @@ arquetipos e información relevante. Filtros por resultado, arquetipo, rival y f
 
 - **Win rate por arquetipo** (A · B · Otro · Por definir).
   Un partido cuenta **una sola vez** por arquetipo aunque los dos rivales compartan arquetipo.
+  Los **WO y abandonos quedan fuera** del win rate y se informan aparte: no dicen nada del rival.
 - **Juego medio de lectura**, excluyendo los partidos marcados "No lo leí", mostrando siempre el
   número de observaciones usadas.
 - **Evolución temporal** de resultados, rendimiento por arquetipo y juego de lectura.
-- **Protección ante muestra insuficiente:** si hay pocos datos se muestra "Datos insuficientes",
-  nunca un porcentaje engañosamente preciso ni un 0 % vacío.
+- **Protección ante muestra insuficiente:** por debajo de **5 partidos** no se muestra porcentaje,
+  sino "Datos insuficientes"; entre 5 y 9 se muestra advirtiendo de que la muestra es corta; a partir
+  de 10 se muestra limpio. Nunca un porcentaje engañosamente preciso ni un 0 % vacío.
 
 ### 5.4. Briefing pre-partido
 
@@ -141,7 +150,8 @@ Con datos suficientes el briefing podrá incorporar información real: **datos �
   sets: [ { own: 6, opponent: 4 }, { own: 3, opponent: 6 } ],
   result: "win",                // win | loss | special (derivado de sets)
   totalGames: 27,               // derivado
-  readGame: 3,                  // null = "no lo leí"
+  readSet: 2,                   // 3 = super tie-break
+  readGame: 3,                  // juego dentro del set; null si readSet es 3                  // null = "no lo leí"
   patterns: ["..."],            // máx. 3
   worked: ["..."],
   notWorked: ["..."],
@@ -166,7 +176,8 @@ derivados (pueden almacenarse por comodidad, pero se recalculan desde los sets).
 ### Persistencia y backup
 
 - V1 usa `localStorage`, clave **`padel-scouting.v1`**. Sin backend, sin login, sin multiusuario.
-- Export/import en JSON:
+- Export/import en JSON, desde la tarjeta **Datos** al final de Historial (pendiente de revisar
+  si en el futuro se sustituye por una automatización):
 
 ```json
 { "version": 1, "exportedAt": "2026-09-22T...", "matches": [] }

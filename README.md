@@ -61,13 +61,13 @@ Por eso el backup no es opcional.
 
 **Exportar (guardar copia):**
 
-1. Entra en Análisis (o el menú de datos).
-2. Pulsa *Exportar datos*.
+1. Entra en **Historial** y baja hasta la tarjeta *Datos*.
+2. Pulsa *Exportar JSON*.
 3. Se descarga un archivo `.json`. Guárdalo en Drive, en el correo, donde quieras.
 
 **Importar (restaurar o mover a otro dispositivo):**
 
-1. Pulsa *Importar datos*.
+1. En esa misma tarjeta, pulsa *Importar JSON*.
 2. Elige el archivo `.json`.
 3. La app valida el archivo y **pide confirmación** antes de reemplazar lo que tengas.
 
@@ -104,6 +104,9 @@ Sin frameworks, sin build, sin dependencias: HTML + CSS + JavaScript plano. Es s
 el proyecto se vuelva difícil de mantener.
 
 ## Alcance de V1
+
+**Formato de partido:** al mejor de 3, con dos sets normales y super tie-break a 10 como tercero.
+El super tie-break no cuenta como juegos.
 
 **Incluye:** registro rápido, persistencia local, edición, historial con filtros, análisis por arquetipo
 con protección ante muestras pequeñas, briefing de 3 bullets, export/import JSON.
