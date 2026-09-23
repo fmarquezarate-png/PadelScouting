@@ -13,15 +13,18 @@
   var R = D.RULES;
 
   var VIEWS = {
-    liga:      { title: 'La liga' },
+    inicio:    { title: 'La pista' },
+    temporada: { title: 'Nuestra temporada' },
     rival:     { title: 'El rival' },
+    liga:      { title: 'La liga' },
     registro:  { title: 'Registro rápido' },
     historial: { title: 'Historial' },
-    analisis:  { title: 'Análisis' }
+    analisis:  { title: 'Análisis' },
+    cronica:   { title: 'Crónica' }
   };
 
   var state = {
-    view: 'liga',
+    view: 'inicio',
     form: null,
     errors: [],
     savedId: null,
@@ -1033,6 +1036,8 @@
      ============================================================ */
   function bindCommon() {
     $view.querySelectorAll('[data-goto]').forEach(function (b) {
+      if (b._bound) return;
+      b._bound = true;
       b.addEventListener('click', function () { go(b.getAttribute('data-goto')); });
     });
   }
@@ -1045,7 +1050,15 @@
       b.classList.toggle('is-active', b.getAttribute('data-nav') === view);
     });
     global.scrollTo({ top: 0 });
-    if (view === 'liga') global.PadelLiga.renderLiga($view, bindLiga);
+    var back = document.getElementById('back');
+    if (back) back.hidden = view === 'inicio';
+    document.body.setAttribute('data-view', view);
+    if (global.PadelTemporada) global.PadelTemporada.stopTimer();
+
+    if (view === 'inicio') global.PadelGeneral.renderInicio($view, bindLiga, go);
+    else if (view === 'temporada') global.PadelTemporada.renderTemporada($view, bindLiga);
+    else if (view === 'liga') global.PadelGeneral.renderGeneral($view, bindLiga);
+    else if (view === 'cronica') global.PadelGeneral.renderCronica($view, bindLiga);
     else if (view === 'rival') global.PadelLiga.renderRival($view, bindLiga);
     else if (view === 'registro') renderRegistro();
     else if (view === 'historial') renderHistorial();
@@ -1057,7 +1070,10 @@
     var ls = global.PadelLiga.state;
 
     $view.querySelectorAll('[data-rival]').forEach(function (b) {
-      b.addEventListener('click', function () {
+      if (b._bound) return;
+      b._bound = true;
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation();
         ls.rivalId = Number(b.getAttribute('data-rival'));
         go('rival');
       });
@@ -1099,7 +1115,9 @@
       var b = ev.target.closest('[data-nav]');
       if (b) go(b.getAttribute('data-nav'));
     });
-    go('liga');
+    var back = document.getElementById('back');
+    if (back) back.addEventListener('click', function () { go('inicio'); });
+    go('inicio');
   }
 
   if (document.readyState === 'loading') {

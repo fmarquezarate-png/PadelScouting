@@ -16,7 +16,10 @@ móvil, sentado en el banquillo, y que con el tiempo esos registros se convierta
 
 | Pantalla | Para qué |
 |---|---|
-| **Liga** | Cómo va la temporada sobre los datos consolidados: balance, escalera, partidos. Es la pantalla de inicio. |
+| **La pista** | Inicio. Una pista de pádel que es el menú: tocas una zona y la bola vuela hasta ella. Puesto animado, forma y accesos. |
+| **Nuestra temporada** | Números, escalera animada (5 métricas), mes a mes, acantilado, todos los partidos, rivales y techo. |
+| **La liga** | Clasificación general ordenable, explorador de cualquier pareja y carga de datos. |
+| **Crónica** | Tres actos, Ernesto & Jordi, izquierda y derecha, los dos niveles del club. |
 | **Rival** | Eliges la pareja que te toca y salen proyección, historial directo, comparativa y lectura. |
 | **Registrar** | Formulario rápido post-partido. |
 | **Historial** | Tarjeta por partido, con filtros por rival, arquetipo, resultado y fecha. |
@@ -94,7 +97,9 @@ PadelScouting/
 │   ├── liga-parser.js  lee la clasificación de la liga (navegador y Node)
 │   ├── liga.js         motor: rating, simulación y calibración
 │   ├── db.js           lectura desde Supabase con caché local
-│   ├── views-liga.js   pantallas Liga y Rival
+│   ├── views-liga.js   pantalla Rival y carga de datos
+│   ├── views-temporada.js  Nuestra temporada (secciones 01–06)
+│   ├── views-general.js    La pista (inicio), La liga y Crónica
 │   ├── data.js         catálogos (arquetipos, patrones, funcionó, no funcionó, estados)
 │   ├── storage.js      leer/guardar/editar/borrar · export · import · validación
 │   ├── analysis.js     win rate, medias, evolución, muestra insuficiente

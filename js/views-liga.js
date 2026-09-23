@@ -74,73 +74,6 @@
   }
 
   /* ============================================================
-     LIGA
-     ============================================================ */
-  function renderLiga(view, bind) {
-    ensureLoaded(function () { paintLiga(view, bind); });
-    if (!state.model) view.innerHTML = loadingHtml('Cargando la liga…');
-  }
-
-  function paintLiga(view, bind) {
-    if (!state.model) {
-      view.innerHTML = '<div class="notice bad"><b>No he podido cargar la liga.</b> ' +
-        'Comprueba la conexión y vuelve a entrar.</div>';
-      return;
-    }
-    var m = state.model;
-    if (!m.myTeamId) {
-      view.innerHTML = '<div class="notice bad">No encuentro tu pareja en los datos.</div>';
-      return;
-    }
-    var me = L.teamStats(m, m.myTeamId);
-    var h = [];
-
-    h.push(sourceNote());
-    h.push('<div class="stat-grid">' +
-      stat(me.won + '–' + me.lost, 'Victorias / derrotas', me.played + ' partidos') +
-      stat('#' + (me.last ? me.last.place : '—'), 'Puesto en la liga',
-        me.last ? 'de ' + me.last.total : '') +
-      stat('G' + (me.last ? me.last.group : '—'), 'Grupo',
-        me.climb > 0 ? 'ha subido ' + me.climb : (me.climb < 0 ? 'ha bajado ' + (-me.climb) : 'sin cambios')) +
-      stat(Math.round(me.gamePct) + '<small>%</small>', 'Juegos ganados',
-        me.gamesFor + '–' + me.gamesAgainst) +
-      '</div>');
-
-    /* Escalera mes a mes */
-    h.push('<div class="section" style="margin-top:26px"><div class="section-head">' +
-      '<h2>Nuestra escalera</h2><span class="hint">puesto al cierre de cada mes</span></div>');
-    h.push('<div class="card">' + ladderChart(me) + '</div></div>');
-
-    /* Forma reciente */
-    h.push('<div class="section"><div class="section-head"><h2>Mes a mes</h2></div><div class="card">' +
-      me.byMonth.map(function (x) {
-        return '<div class="freq"><span>' + esc(x.label) + '</span><span class="c">' +
-          (x.played ? x.won + '–' + x.lost : '—') +
-          (x.group ? ' · G' + x.group + ' · #' + x.place : '') + '</span></div>';
-      }).join('') + '</div></div>');
-
-    /* Nuestros partidos */
-    h.push('<div class="section"><div class="section-head"><h2>Nuestros partidos</h2>' +
-      '<span class="hint">toca para abrir el rival</span></div>');
-    h.push(myMatches(m, me).map(function (x) {
-      return '<button class="match-line' + (x.win ? '' : ' is-loss') + '" data-rival="' + x.rivalId + '">' +
-        '<span class="ml-when">' + esc(x.monthLabel) + '</span>' +
-        '<span class="ml-who">' + esc(x.rival) + '</span>' +
-        '<span class="ml-score">' + esc(x.score) + '</span></button>';
-    }).join('') + '</div>');
-
-    /* Fiabilidad del motor */
-    h.push(calibrationCard());
-
-    /* Cargar datos */
-    h.push(loaderCard());
-
-    view.innerHTML = h.join('');
-    bindLoader(view, bind);
-    bind();
-  }
-
-  /* ============================================================
      Cargar un mes de liga
      ============================================================ */
   function loaderCard() {
@@ -289,9 +222,8 @@
       (up ? 'Ya tengo cuenta' : 'Crear cuenta') + '</button></div>';
   }
 
-  function bindLoader(view, repaint) {
+  function bindLoader(view, redraw) {
     var l = state.loader, a = state.auth;
-    var redraw = function () { paintLiga(view, repaint); };
 
     var open = view.querySelector('[data-action="open-loader"]');
     if (open) open.addEventListener('click', function () { l.open = true; redraw(); });
@@ -386,7 +318,7 @@
       global.PadelDB.callAuthed('ingest_league', { payload: payload }).then(function (res) {
         l.busy = false; l.result = res; l.parsed = null; l.text = '';
         global.PadelDB.clearCache();
-        module_reload(function () { paintLiga(view, repaint); });
+        module_reload(redraw);
       }).catch(function (err) {
         l.busy = false; l.error = err.message; redraw();
       });
@@ -403,52 +335,6 @@
       }
       done();
     });
-  }
-
-  function myMatches(m, me) {
-    var monthLabel = {};
-    m.months.forEach(function (x) { monthLabel[x.n] = x.label; });
-    return m.matches.filter(function (x) {
-      return x.home === m.myTeamId || x.away === m.myTeamId;
-    }).map(function (x) {
-      var mine = x.home === m.myTeamId;
-      var rivalId = mine ? x.away : x.home;
-      var win = mine === x.homeWon;
-      var score;
-      if (x.walkover) score = 'WO';
-      else score = x.sets.map(function (s) {
-        return mine ? s[0] + '-' + s[1] : s[1] + '-' + s[0];
-      }).join('  ');
-      return {
-        monthLabel: monthLabel[x.month] || ('Mes ' + x.month),
-        rival: m.teams[rivalId] ? m.teams[rivalId].label : '?',
-        rivalId: rivalId, win: win, score: score
-      };
-    }).reverse();
-  }
-
-  function ladderChart(me) {
-    var pts = me.byMonth.filter(function (x) { return x.place != null; });
-    if (pts.length < 2) return '<p class="field-note">Hace falta más de un mes para ver la escalera.</p>';
-    var places = pts.map(function (p) { return p.place; });
-    var min = Math.min.apply(null, places), max = Math.max.apply(null, places);
-    var span = Math.max(1, max - min);
-    var W = 300, H = 90, pad = 10;
-    var x = function (i) { return pad + i * (W - 2 * pad) / (pts.length - 1); };
-    /* Menos puesto es mejor: el eje va invertido a propósito. */
-    var y = function (v) { return pad + (v - min) / span * (H - 2 * pad); };
-    var d = pts.map(function (p, i) { return (i ? 'L ' : 'M ') + x(i) + ' ' + y(p.place); }).join(' ');
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" class="ladder" role="img" ' +
-      'aria-label="Evolución del puesto en la liga">' +
-      '<path d="' + d + '" fill="none" stroke="#8FA678" stroke-width="2.4" ' +
-      'stroke-linejoin="round" stroke-linecap="round"/>' +
-      pts.map(function (p, i) {
-        return '<circle cx="' + x(i) + '" cy="' + y(p.place) + '" r="4" fill="#ED6C05"/>' +
-          '<text x="' + x(i) + '" y="' + (y(p.place) - 9) + '" fill="#EDEBE3" font-size="9" ' +
-          'font-family="IBM Plex Mono" text-anchor="middle">' + p.place + '</text>' +
-          '<text x="' + x(i) + '" y="' + (H - 1) + '" fill="#9AA48C" font-size="8" ' +
-          'font-family="IBM Plex Mono" text-anchor="middle">' + esc(p.label.slice(0, 3)) + '</text>';
-      }).join('') + '</svg>';
   }
 
   function calibrationCard() {
@@ -737,7 +623,10 @@
 
   global.PadelLiga = {
     state: state,
-    renderLiga: renderLiga,
+    esc: esc, pct: pct, stat: stat,
+    loaderCard: loaderCard, bindLoader: bindLoader,
+    calibrationCard: calibrationCard, sourceNote: sourceNote,
+    loadingHtml: loadingHtml, shortDate: shortDate,
     renderRival: renderRival,
     ensureLoaded: ensureLoaded,
     reload: function (onDone) {

@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **La pista**, nueva portada: una pista de pádel dibujada que hace de menú. Cada zona es una
+  pantalla; al tocarla la bola vuela hasta allí. Puesto animado (#67 → #50), forma reciente y
+  tarjetas de acceso. Se maneja también con teclado.
+- **Nuestra temporada**, **La liga** y **Crónica**: vuelven las 12 secciones del dashboard
+  original (números, escalera animada con 5 métricas, mes a mes, acantilado, partidos con
+  filtros, rivales, techo, clasificación ordenable, explorador, tres actos, Ernesto & Jordi,
+  izquierda y derecha, niveles del club).
+- Botón «volver» en la barra superior y navegación inferior de 5 botones.
+
+### Fixed
+- La forma reciente se lee siempre igual en toda la app: el más reciente primero.
+
 ### Fixed
 - La liga mixta escribe los meses con su nombre (`Enero`) en lugar de `MES 1`. El lector no los
   reconocía y metía los siete meses en uno solo, con los grupos de meses distintos pisándose.

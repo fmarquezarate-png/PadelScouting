@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
-const BASE = 'http://127.0.0.1:8111';
+const BASE = process.env.BASE || 'http://127.0.0.1:8111';
 const SNAP = fs.readFileSync(__dirname + '/fixtures/league-snapshot.json', 'utf8');
 const RAW = fs.readFileSync(__dirname + '/../legacy/liga-2026-s1.txt', 'utf8');
 const MIXTO = fs.readFileSync(__dirname + '/fixtures/mixto-muestra.txt', 'utf8');
@@ -38,6 +38,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   });
 
   await page.goto(BASE); await page.waitForTimeout(700);
+  await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(700);
 
   // --- la carga está escondida hasta que la pides ---
   check('El cargador no estorba de entrada', await page.locator('#ld-text').count() === 0);
@@ -155,9 +156,11 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
 
   // --- la sesión sobrevive a recargar ---
   await page.reload(); await page.waitForTimeout(800);
+  await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(700);
   await page.click('[data-action="open-loader"]'); await page.waitForTimeout(300);
   check('La sesión sigue tras recargar', await page.locator('#ld-text').count() === 1);
-  await page.click('[data-action="sign-out"]'); await page.waitForTimeout(400);
+  await page.click('[data-action="sign-out"]');
+  await page.waitForSelector('#au-email', { timeout: 5000 }).catch(() => {});
   check('Cerrar sesión vuelve a pedir entrar', await page.locator('#au-email').count() === 1);
 
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));

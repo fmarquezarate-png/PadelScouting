@@ -1,5 +1,5 @@
 const { chromium } = require('playwright');
-const BASE = 'http://127.0.0.1:8111';
+const BASE = process.env.BASE || 'http://127.0.0.1:8111';
 const ok = [], bad = [];
 const blur = p => p.evaluate(() => document.activeElement && document.activeElement.blur());
 function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' → ' + extra : '')); }
@@ -23,7 +23,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   await page.waitForTimeout(400);
 
   // --- 1. arranque ---
-  check('Arranca en La liga, no en Registro', await page.textContent('#page-title') === 'La liga');
+  check('Arranca en la pista, no en Registro', await page.textContent('#page-title') === 'La pista');
   await page.click('[data-nav="registro"]'); await page.waitForTimeout(300);
   check('Registrar sigue a un toque', await page.textContent('#page-title') === 'Registro rápido');
   check('Fecha automática = hoy',
@@ -136,7 +136,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   await seed('Jon', 'B', 'Iker', 'B', [[6,2],[6,3]], 1, 3, null);
 
   // --- 8. historial ---
-  await page.click('[data-nav="historial"]'); await page.waitForTimeout(250);
+  await page.evaluate(() => window.PadelApp.go('historial')); await page.waitForTimeout(250);
   check('Historial en tarjetas', await page.locator('.match-card').count() === 4,
     'tarjetas=' + await page.locator('.match-card').count());
   await page.click('.filters .chip[data-value="loss"]'); await page.waitForTimeout(200);
@@ -163,7 +163,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   check('Editar no duplica el partido', after === 4, 'partidos=' + after);
 
   // --- 9. análisis ---
-  await page.click('[data-nav="analisis"]'); await page.waitForTimeout(300);
+  await page.evaluate(() => window.PadelApp.go('analisis')); await page.waitForTimeout(300);
   const an = await page.textContent('#view');
   check('Análisis: protege muestras pequeñas', an.includes('Datos insuficientes') || an.includes('menos de 5'));
   check('Análisis: juego medio de lectura con n', an.includes('observaciones'));
@@ -171,7 +171,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   check('Análisis: frecuencias de patrones', an.includes('Juega mucho al centro'));
 
   // --- 10. briefing ---
-  await page.click('[data-nav="analisis"]'); await page.waitForTimeout(350);
+  await page.evaluate(() => window.PadelApp.go('analisis')); await page.waitForTimeout(350);
   check('Briefing (dentro de Análisis): máximo 3 bullets', await page.locator('.brief-bullet').count() === 3,
     'bullets=' + await page.locator('.brief-bullet').count());
   check('Briefing: avisa de que son hipótesis', (await page.textContent('#view')).includes('hipótesis'));
@@ -182,7 +182,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   check('Briefing funciona para los 4 arquetipos', true);
 
   // --- 11. export / import ---
-  await page.click('[data-nav="historial"]'); await page.waitForTimeout(250);
+  await page.evaluate(() => window.PadelApp.go('historial')); await page.waitForTimeout(250);
   const dl = page.waitForEvent('download');
   await page.click('[data-action="export"]');
   const file = await dl;
@@ -205,9 +205,9 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   // --- 12. estados vacíos ---
   await page.evaluate(() => { localStorage.removeItem('padel-scouting.v1'); });
   await page.reload(); await page.waitForTimeout(400);
-  await page.click('[data-nav="historial"]'); await page.waitForTimeout(200);
+  await page.evaluate(() => window.PadelApp.go('historial')); await page.waitForTimeout(200);
   check('Historial vacío da acción', (await page.textContent('#view')).includes('Todavía no hay partidos'));
-  await page.click('[data-nav="analisis"]'); await page.waitForTimeout(200);
+  await page.evaluate(() => window.PadelApp.go('analisis')); await page.waitForTimeout(200);
   check('Análisis vacío no muestra 0%', (await page.textContent('#view')).includes('Necesitamos más partidos'));
 
   // --- 13. desktop ---

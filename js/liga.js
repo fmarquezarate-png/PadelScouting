@@ -115,7 +115,8 @@
 
     return {
       cfg: CFG, teams: teams, order: order, months: months, matches: matches,
-      ladder: ladder, lastMonth: lastMonth, myTeamId: mine
+      ladder: ladder, lastMonth: lastMonth, myTeamId: mine,
+      season: snapshot.season || null
     };
   }
 
