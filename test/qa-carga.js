@@ -3,6 +3,7 @@ const fs = require('fs');
 const BASE = 'http://127.0.0.1:8111';
 const SNAP = fs.readFileSync(__dirname + '/fixtures/league-snapshot.json', 'utf8');
 const RAW = fs.readFileSync(__dirname + '/../legacy/liga-2026-s1.txt', 'utf8');
+const MIXTO = fs.readFileSync(__dirname + '/fixtures/mixto-muestra.txt', 'utf8');
 const ok = [], bad = [];
 const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
 
@@ -114,6 +115,43 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   const after = await page.textContent('#view');
   check('Informa de lo guardado', after.includes('96 partidos nuevos'));
   check('Limpia el texto tras guardar', (await page.inputValue('#ld-text')) === '');
+
+  // --- formato del mixto: meses con nombre y nombres recortados ---
+  ingest = null;
+  await page.fill('#ld-text', MIXTO);
+  await page.click('[data-action="parse"]'); await page.waitForTimeout(700);
+  const mx = await page.textContent('#view');
+  check('Mixto: detecta los meses por su nombre', mx.includes('3 meses'),
+    (mx.match(/\d+ meses/) || [])[0]);
+  check('Mixto: nombra los meses leídos', mx.includes('Enero') && mx.includes('Febrero') && mx.includes('Julio'));
+  check('Mixto: no mete todo en un mes', !mx.includes('1 meses'));
+  check('Mixto: ignora los partidos aún no jugados', mx.includes('17 partidos'),
+    (mx.match(/\d+ partidos/) || [])[0]);
+  check('Mixto: avisa de los nombres que va a unir',
+    mx.includes('Carla Caye') && mx.includes('Carla Cayero'));
+  check('Mixto: avisa del enlace con gente ya cargada', mx.includes('ya en la base'));
+  check('Mixto: explica la regla de las 10 letras', mx.includes('10 letras'));
+
+  await page.fill('#ld-slug', 'mixto-qa');
+  await page.fill('#ld-name', 'Mixto QA');
+  await page.click('[data-chips="kind"] .chip[data-value="mixta"]'); await page.waitForTimeout(300);
+  await page.fill('#ld-text', MIXTO);
+  await page.click('[data-action="parse"]'); await page.waitForTimeout(700);
+  await page.fill('#ld-slug', 'mixto-qa');
+  await page.click('[data-action="save-league"]'); await page.waitForTimeout(1000);
+  if (ingest) {
+    check('Mixto: manda 3 meses con su nombre',
+      ingest.months.length === 3 && ingest.months[0][1] === 'Enero' && ingest.months[2][1] === 'Julio',
+      JSON.stringify(ingest.months));
+    const g = ingest.groups.map(x => x.join('-')).join(',');
+    check('Mixto: los grupos van separados por mes',
+      g === '1-1,1-2,1-8,2-1,2-9,3-1,3-4,3-7', g);
+    check('Mixto: unifica a Carla en una sola persona',
+      ingest.teams.filter(t => /^Carla/.test(t[1])).every(t => t[1] === 'Carla Cayero'),
+      ingest.teams.filter(t => /Carla/.test(t[0])).map(t => t[1]).join('|'));
+  } else {
+    check('Mixto: envía el paquete', false);
+  }
 
   // --- la sesión sobrevive a recargar ---
   await page.reload(); await page.waitForTimeout(800);

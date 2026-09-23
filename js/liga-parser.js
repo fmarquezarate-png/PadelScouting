@@ -12,6 +12,32 @@
 
   var NORMAL_SETS = 2;
 
+  /* Las dos ligas escriben el mes distinto: la masculina pone "MES 3" y
+     la mixta el nombre del mes. Se aceptan las dos, en castellano y en
+     catalán, con o sin acento. */
+  var MONTH_NAMES = [
+    ['enero', 'gener'], ['febrero', 'febrer'], ['marzo', 'marc', 'març'],
+    ['abril'], ['mayo', 'maig'], ['junio', 'juny'], ['julio', 'juliol'],
+    ['agosto', 'agost'], ['septiembre', 'setembre', 'setiembre'],
+    ['octubre'], ['noviembre', 'novembre'], ['diciembre', 'desembre']
+  ];
+
+  function normalize(text) {
+    return String(text).trim().toLowerCase()
+      .normalize ? String(text).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                 : String(text).trim().toLowerCase();
+  }
+
+  /* Devuelve 1..12 si la línea es el nombre de un mes, o null. */
+  function monthFromName(line) {
+    var n = normalize(line);
+    if (!n || n.indexOf('\t') >= 0) return null;
+    for (var i = 0; i < MONTH_NAMES.length; i++) {
+      if (MONTH_NAMES[i].indexOf(n) >= 0) return i + 1;
+    }
+    return null;
+  }
+
   /* Una celda de resultado: "6-3 / 6-4", "7-6 / 4-6 / 10-8" o un WO. */
   function parseScore(text) {
     if (!text) return null;
@@ -55,6 +81,84 @@
     };
   }
 
+  /* La liga corta los nombres a 10 caracteres. Cuando el mismo jugador
+     aparece completo en unas jornadas y recortado en otras, hay que
+     reconocerlo o acabaría duplicado.
+
+     Regla deliberadamente estricta: solo se unifican si el nombre corto
+     mide EXACTAMENTE el ancho de corte y es el principio del largo.
+     Así "Carla Caye" se une a "Carla Cayero", pero "Jaume Bal" (9, o sea
+     un nombre completo) NO se une a "Jaume Bale": serían dos personas
+     distintas y no se adivina. Lo que no se une, se informa. */
+  var TRUNCATED_AT = 10;
+
+  function buildAliases(names) {
+    var canonical = {}, aliases = [];
+    var sorted = names.slice().sort(function (a, b) { return b.length - a.length; });
+    sorted.forEach(function (long) {
+      var nLong = normalize(long);
+      sorted.forEach(function (short) {
+        if (short === long) return;
+        if (short.length !== TRUNCATED_AT) return;
+        if (canonical[short]) return;
+        var nShort = normalize(short);
+        if (nShort.length >= nLong.length) return;
+        if (nLong.indexOf(nShort) !== 0) return;
+        canonical[short] = long;
+        aliases.push({ from: short, to: long });
+      });
+    });
+    return { canonical: canonical, aliases: aliases };
+  }
+
+  /* Jugadores que se parecen pero NO se unifican: se avisa para que lo
+     mire una persona, en vez de decidirlo el programa. */
+  function suspiciousPairs(names) {
+    var out = [];
+    names.forEach(function (a) {
+      names.forEach(function (b) {
+        if (a === b || a.length === TRUNCATED_AT) return;
+        var na = normalize(a), nb = normalize(b);
+        if (na.length >= nb.length) return;
+        if (na.length < 6) return;
+        if (nb.indexOf(na) === 0) out.push({ shorter: a, longer: b });
+      });
+    });
+    return out;
+  }
+
+  /* Nombres del texto que se van a enlazar con gente que YA está en la
+     base (el mismo jugador recortado en una liga y completo en otra).
+     Se calcula antes de guardar para poder enseñarlo y que lo revise
+     una persona: unir dos nombres es una decisión, no un detalle. */
+  function mergesAgainstKnown(names, knownNames) {
+    var out = [];
+    (names || []).forEach(function (incoming) {
+      var nIn = normalize(incoming);
+      (knownNames || []).forEach(function (known) {
+        if (known === incoming) return;
+        var nKn = normalize(known);
+        if (nIn === nKn) return;
+        if (known.length === TRUNCATED_AT && nIn.indexOf(nKn) === 0 && nIn.length > nKn.length) {
+          out.push({ incoming: incoming, existing: known, keeps: incoming });
+        } else if (incoming.length === TRUNCATED_AT && nKn.indexOf(nIn) === 0 && nKn.length > nIn.length) {
+          out.push({ incoming: incoming, existing: known, keeps: known });
+        }
+      });
+    });
+    return out;
+  }
+
+  function playerNames(parsed) {
+    var names = {};
+    (parsed.teams || []).forEach(function (label) {
+      var p = splitTeam(label);
+      if (p.a) names[p.a] = true;
+      if (p.b) names[p.b] = true;
+    });
+    return Object.keys(names);
+  }
+
   function parse(text) {
     var months = [], warnings = [];
     var month = null, group = null;
@@ -62,11 +166,22 @@
     String(text).split(/\r?\n/).forEach(function (raw) {
       var line = raw.replace(/\s+$/, '');
       var mm = line.trim().match(/^MES\s+(\d+)$/i);
-      if (mm) { month = { n: Number(mm[1]), groups: [] }; months.push(month); group = null; return; }
+      if (mm) {
+        month = { n: Number(mm[1]), label: null, groups: [] };
+        months.push(month); group = null; return;
+      }
+
+      /* Mes escrito con su nombre: se numera por orden de aparición, que
+         es el orden real de la temporada, y se guarda el nombre tal cual. */
+      var calendar = monthFromName(line);
+      if (calendar) {
+        month = { n: months.length + 1, label: line.trim(), calendar: calendar, groups: [] };
+        months.push(month); group = null; return;
+      }
 
       var gm = line.trim().match(/^Grupo\s+(\d+)$/i);
       if (gm) {
-        if (!month) { month = { n: months.length + 1, groups: [] }; months.push(month); }
+        if (!month) { month = { n: months.length + 1, label: null, groups: [] }; months.push(month); }
         group = { n: Number(gm[1]), teams: [], order: [], grid: {} };
         month.groups.push(group);
         return;
@@ -139,8 +254,46 @@
     months.forEach(function (M) {
       M.groups.forEach(function (G) { G.teams.forEach(function (t) { teams[t] = true; }); });
     });
+    var teamLabels = Object.keys(teams);
 
-    return { months: months, matches: matches, teams: Object.keys(teams), warnings: warnings };
+    /* Unificación de nombres recortados. */
+    var names = {};
+    teamLabels.forEach(function (label) {
+      var p = splitTeam(label);
+      if (p.a) names[p.a] = true;
+      if (p.b) names[p.b] = true;
+    });
+    var nameList = Object.keys(names);
+    var al = buildAliases(nameList);
+
+    function canonTeam(label) {
+      var p = splitTeam(label);
+      var a = al.canonical[p.a] || p.a;
+      var b = al.canonical[p.b] || p.b;
+      /* Si nada cambió se respeta la etiqueta original tal cual venía:
+         reescribirla crearía parejas nuevas al recargar lo ya guardado. */
+      if (a === p.a && b === p.b) return label;
+      return a + '/' + b;
+    }
+
+    if (al.aliases.length) {
+      teamLabels = teamLabels.map(canonTeam).filter(function (v, i, arr) {
+        return arr.indexOf(v) === i;
+      });
+      matches.forEach(function (m) { m.home = canonTeam(m.home); m.away = canonTeam(m.away); });
+      months.forEach(function (M) {
+        M.groups.forEach(function (G) {
+          G.teams = G.teams.map(canonTeam);
+          G.order = G.order.map(canonTeam);
+        });
+      });
+    }
+
+    return {
+      months: months, matches: matches, teams: teamLabels, warnings: warnings,
+      aliases: al.aliases,
+      suspicious: suspiciousPairs(nameList)
+    };
   }
 
   /* Convierte lo leído en el paquete que espera ingest_league().
@@ -171,7 +324,10 @@
     });
 
     var months = parsed.months.map(function (M) {
-      return [M.n, (season && season.monthLabels && season.monthLabels[M.n]) || ('Mes ' + M.n)];
+      var label = M.label ||
+        (season && season.monthLabels && season.monthLabels[M.n]) ||
+        ('Mes ' + M.n);
+      return [M.n, label];
     }).sort(function (a, b) { return a[0] - b[0]; });
 
     return {
@@ -189,5 +345,7 @@
   }
 
   return { parse: parse, parseScore: parseScore, splitTeam: splitTeam, tally: tally,
-           isSuperTieBreak: isSuperTieBreak, toPayload: toPayload };
+           isSuperTieBreak: isSuperTieBreak, toPayload: toPayload,
+           monthFromName: monthFromName, normalize: normalize,
+           mergesAgainstKnown: mergesAgainstKnown, playerNames: playerNames };
 });

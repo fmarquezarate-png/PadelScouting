@@ -40,6 +40,18 @@ hacer scouting retroactivo de una temporada entera en minutos en lugar de partid
 No se guarda el puesto: se calcula. `puesto = equipos en los grupos por encima + posición en el grupo`,
 igual que en el dashboard del primer semestre.
 
+## Nombres e identidad
+
+La liga corta los nombres a 10 caracteres, y no siempre: el mismo jugador aparece como
+`Carla Caye` en enero y `Carla Cayero` en julio. Por eso:
+
+- Una **pareja** se identifica por sus dos jugadores (`teams_players_unique` sobre el par
+  ordenado), nunca por su etiqueta de texto.
+- `resolve_player()` une un nombre recortado con su versión larga **solo** cuando el corto mide
+  exactamente 10 caracteres y es el principio del largo. `Jaume Bal` (9 letras, nombre completo)
+  no se une con `Jaume Bale`: serían dos personas y eso no se adivina.
+- La app enseña cada unión en la vista previa, antes de guardar.
+
 ## Seguridad
 
 RLS activo en todas las tablas: **lectura pública**, escritura solo con sesión autenticada.

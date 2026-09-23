@@ -1,0 +1,81 @@
+Enero
+Grupo 1
+G	P	E	N	PT	Equipo	Daniela Mu/Marc Coll	Ana Perez /Gerard Sel	Renata Sua/Jordi Brun
+1	1	1	0	0	5	Daniela Mu/Marc Coll		7-6 / 6-4	4-6 / 1-6
+2	1	1	0	0	5	Ana Perez /Gerard Sel	6-7 / 4-6		0--1
+3	1	0	0	1	4	Renata Sua/Jordi Brun	6-4 / 6-1	-1-0	
+Grupo 2
+G	P	E	N	PT	Equipo	Maria Jose/Agustin Ca	Elena More/Claudio Fe	Mireia Sal/Antonio Hi
+1	2	0	0	0	8	Maria Jose/Agustin Ca		7-5 / 7-5	2-6 / 6-3 / 7-6
+2	1	1	0	0	5	Elena More/Claudio Fe	5-7 / 5-7		6-3 / 6-2
+3	0	2	0	0	3	Mireia Sal/Antonio Hi	6-2 / 3-6 / 6-7	3-6 / 2-6	
+Grupo 8
+G	P	E	N	PT	Equipo	Carla Caye/Oriol Apar	Annabelle /Alfred Sim	Francisco /Ana Clerch
+1	2	0	0	0	8	Carla Caye/Oriol Apar		6-2 / 6-2	6-0 / 6-0
+2	1	1	0	0	5	Annabelle /Alfred Sim	2-6 / 2-6		7-5 / 6-3
+3	0	2	0	0	2	Francisco /Ana Clerch	0-6 / 0-6	5-7 / 3-6	
+
+Febrero
+
+Grupo 1
+G	P	E	N	PT	Equipo	Ana Perez /Gerard Sel	Daniela Mu/Marc Coll	Maria Jose/Agustin Ca
+1	2	0	0	0	8	Ana Perez /Gerard Sel		6-4 / 6-4	4-6 / 6-3 / 6-4
+2	1	1	0	0	5	Daniela Mu/Marc Coll	4-6 / 4-6		6-3 / 6-0
+3	0	2	0	0	3	Maria Jose/Agustin Ca	6-4 / 3-6 / 4-6	3-6 / 0-6	
+Grupo 9
+G	P	E	N	PT	Equipo	Sonia Dalm/Jordi Junc	Francisco /Ana Clerch	Ares Codin/Max Belsa
+1	2	0	0	0	8	Sonia Dalm/Jordi Junc		6-1 / 5-7 / 10-8	6-1 / 6-4
+2	1	1	0	0	6	Francisco /Ana Clerch	1-6 / 7-5 / 8-10		6-4 / 0-6 / 10-9
+3	0	2	0	0	3	Ares Codin/Max Belsa	1-6 / 4-6	4-6 / 6-0 / 9-10	
+Julio
+Grupo 1
+G	P	E	N	PT	Equipo	Aleix Samp/Naia Sampe	Ana Perez /Gerard Sel	Maria Jose/Agustin Ca
+1	0	0	0	0	0	Aleix Samp/Naia Sampe		25
+viernes
+sept2026
+20:00h	
+2	0	0	0	0	0	Ana Perez /Gerard Sel	25
+viernes
+sept2026
+20:00h		29
+martes
+sept2026
+20:30h
+3	0	0	0	0	0	Maria Jose/Agustin Ca		29
+martes
+sept2026
+20:30h	
+Grupo 4
+G	P	E	N	PT	Equipo	Carla Cayero / Marc Bolivar	Jose Miguel / Elena Moreno	Albert Puig / Marta Puertas
+1	1	0	0	0	4	Carla Cayero / Marc Bolivar		6-3 / 6-2	07
+lunes
+sept2026
+20:30h
+2	0	1	0	0	1	Jose Miguel / Elena Moreno	3-6 / 2-6		28
+lunes
+sept2026
+20:30h
+3	0	0	0	0	0	Albert Puig / Marta Puertas	07
+lunes
+sept2026
+20:30h	28
+lunes
+sept2026
+20:30h	
+Grupo 7
+G	P	E	N	PT	Equipo	Francisco /Ana Clerch	Sonia Dalm/Jordi Junc	Annabelle /Alfred Sim
+1	1	0	0	0	4	Francisco /Ana Clerch		1-6 / 6-2 / 10-7	27
+domingo
+sept2026
+19:00h
+2	0	1	0	0	2	Sonia Dalm/Jordi Junc	6-1 / 2-6 / 7-10		24
+jueves
+sept2026
+19:15h
+3	0	0	0	0	0	Annabelle /Alfred Sim	27
+domingo
+sept2026
+19:00h	24
+jueves
+sept2026
+19:15h	

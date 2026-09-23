@@ -197,15 +197,44 @@
     if (l.parsed) {
       var p = l.parsed;
       h.push('<div class="notice good"><b>He leído esto:</b>' +
-        '<ul><li>' + p.months.length + ' meses · ' +
-        p.months.reduce(function (n, M) { return n + M.groups.length; }, 0) + ' grupos</li>' +
+        '<ul><li><b>' + p.months.length + ' meses</b>: ' +
+        p.months.map(function (M) {
+          return esc(M.label || ('Mes ' + M.n)) + ' (' + M.groups.length + ')';
+        }).join(' · ') + '</li>' +
         '<li>' + p.teams.length + ' parejas</li>' +
         '<li>' + p.matches.length + ' partidos, ' +
         p.matches.filter(function (m) { return m.walkover; }).length + ' de ellos WO</li>' +
         '<li>' + (p.warnings.length ? p.warnings.length + ' descuadres' : 'sin descuadres') + '</li>' +
-        '</ul></div>');
+        '</ul><p class="field-note">Los partidos con fecha pero sin resultado no se cargan: ' +
+        'entrarán cuando se jueguen.</p></div>');
+
       if (p.warnings.length) {
         h.push('<div class="notice warn">' + p.warnings.slice(0, 4).map(esc).join('<br>') + '</div>');
+      }
+
+      /* Nombres que se van a unir, dentro del texto y contra la base. */
+      var merges = (p.aliases || []).map(function (a) {
+        return esc(a.from) + ' → ' + esc(a.to);
+      });
+      var known = knownPlayerNames();
+      (global.LigaParser.mergesAgainstKnown(global.LigaParser.playerNames(p), known) || [])
+        .forEach(function (m) {
+          merges.push(esc(m.existing) + ' → ' + esc(m.keeps) + ' <span class="tag">ya en la base</span>');
+        });
+      if (merges.length) {
+        h.push('<div class="notice warn"><b>Voy a tratar estos nombres como la misma persona</b>' +
+          '<p class="field-note" style="margin:7px 0">La liga corta los nombres a 10 letras. ' +
+          'Solo uno cuando el corto mide justo 10 y es el principio del largo. ' +
+          'Si alguno no te cuadra, dímelo antes de guardar.</p>' +
+          '<ul><li>' + merges.join('</li><li>') + '</li></ul></div>');
+      }
+      if ((p.suspicious || []).length) {
+        h.push('<div class="notice"><b>Estos se parecen pero NO los uno</b>' +
+          '<p class="field-note" style="margin:7px 0">El corto no mide 10 letras, así que puede ser ' +
+          'un nombre completo de otra persona. Lo dejo como está.</p><ul><li>' +
+          p.suspicious.slice(0, 6).map(function (x) {
+            return esc(x.shorter) + ' ~ ' + esc(x.longer);
+          }).join('</li><li>') + '</li></ul></div>');
       }
     }
 
@@ -227,6 +256,18 @@
 
     h.push('</div></div>');
     return h.join('');
+  }
+
+  /* Nombres de jugador que ya están cargados, para avisar de enlaces. */
+  function knownPlayerNames() {
+    if (!state.model) return [];
+    var names = {};
+    state.model.order.forEach(function (id) {
+      var t = state.model.teams[id];
+      if (t.playerA) names[t.playerA] = true;
+      if (t.playerB) names[t.playerB] = true;
+    });
+    return Object.keys(names);
   }
 
   function authForm() {

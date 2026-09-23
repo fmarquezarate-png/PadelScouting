@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- La liga mixta escribe los meses con su nombre (`Enero`) en lugar de `MES 1`. El lector no los
+  reconocía y metía los siete meses en uno solo, con los grupos de meses distintos pisándose.
+  Ahora entiende las dos formas, en castellano y en catalán.
+- Los nombres llegan recortados a 10 letras en unas jornadas y completos en otras
+  (`Carla Caye` / `Carla Cayero`), lo que duplicaba a la misma persona. Se unifican solo cuando el
+  corto mide exactamente el ancho de corte, y **la vista previa enseña cada unión antes de guardar**.
+  Lo que no cumple la regla se informa como «a revisar» en vez de decidirlo el programa.
+
+### Changed
+- Una pareja se identifica por **sus dos jugadores**, no por su etiqueta de texto: la misma pareja
+  escrita de dos formas ya no crea dos registros.
+- Unido en los datos existentes `Enric Cast` con `Enric Castillo`, que era la misma persona
+  recortada.
+
 ### Added
 - **La liga**, nueva pantalla de inicio: balance, puesto y grupo sobre los datos consolidados,
   escalera mes a mes, todos nuestros partidos y la fiabilidad medida del motor.
