@@ -16,7 +16,9 @@ móvil, sentado en el banquillo, y que con el tiempo esos registros se convierta
 
 | Pantalla | Para qué |
 |---|---|
-| **Registrar** | Formulario rápido post-partido. Es la pantalla de inicio. |
+| **Liga** | Cómo va la temporada sobre los datos consolidados: balance, escalera, partidos. Es la pantalla de inicio. |
+| **Rival** | Eliges la pareja que te toca y salen proyección, historial directo, comparativa y lectura. |
+| **Registrar** | Formulario rápido post-partido. |
 | **Historial** | Tarjeta por partido, con filtros por rival, arquetipo, resultado y fecha. |
 | **Análisis** | Win rate por arquetipo, juego medio de lectura, evolución temporal. |
 | **Briefing** | Eliges el arquetipo esperado → máximo 3 bullets accionables antes de jugar. |
@@ -89,6 +91,10 @@ PadelScouting/
 ├── css/
 │   └── styles.css      variables, componentes, responsive
 ├── js/
+│   ├── liga-parser.js  lee la clasificación de la liga (navegador y Node)
+│   ├── liga.js         motor: rating, simulación y calibración
+│   ├── db.js           lectura desde Supabase con caché local
+│   ├── views-liga.js   pantallas Liga y Rival
 │   ├── data.js         catálogos (arquetipos, patrones, funcionó, no funcionó, estados)
 │   ├── storage.js      leer/guardar/editar/borrar · export · import · validación
 │   ├── analysis.js     win rate, medias, evolución, muestra insuficiente
@@ -104,6 +110,26 @@ catálogos en un solo sitio (`data.js`) para que no haya dos listas de patrones 
 
 Sin frameworks, sin build, sin dependencias: HTML + CSS + JavaScript plano. Es suficiente y evita que
 el proyecto se vuelva difícil de mantener.
+
+## El motor de proyección
+
+Hereda la estructura del motor predictivo ya validado: fuerzas → distribución → simulación →
+derivados → **calibración**.
+
+1. Cada pareja tiene un rating que parte de su grupo de entrada y se mueve partido a partido.
+2. La diferencia de rating se convierte en probabilidad de ganar **un juego**, con una escala
+   ajustada contra los partidos reales de la liga.
+3. Se simulan 4.000 partidos (sets a 6 con tie-break, super tie-break a 10).
+4. Todo lo que ves —probabilidad de ganar, reparto 2-0/2-1/1-2/0-2, juegos esperados— sale de
+   esa misma simulación. Nunca hay dos cálculos en paralelo.
+5. El acierto se mide contra los partidos ya jugados y **se publica en la propia app**.
+
+Con los datos del primer semestre el motor acierta quién gana el **61,3%** de las veces (moneda
+al aire: 50%). Es una ayuda para preparar el partido, no un pronóstico fiable, y la app lo dice.
+
+> Un detalle que costó encontrar: en la tabla de la liga, el equipo listado primero gana el 89,4%
+> de los partidos. Ese orden depende del propio resultado, así que no mide nada. La calibración se
+> hace en orientación neutra para no engañarse con ese 89%.
 
 ## Alcance de V1
 

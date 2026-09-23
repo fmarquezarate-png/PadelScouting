@@ -13,14 +13,15 @@
   var R = D.RULES;
 
   var VIEWS = {
+    liga:      { title: 'La liga' },
+    rival:     { title: 'El rival' },
     registro:  { title: 'Registro rápido' },
     historial: { title: 'Historial' },
-    analisis:  { title: 'Análisis' },
-    briefing:  { title: 'Briefing' }
+    analisis:  { title: 'Análisis' }
   };
 
   var state = {
-    view: 'registro',
+    view: 'liga',
     form: null,
     errors: [],
     savedId: null,
@@ -849,7 +850,8 @@
     if (!sum.total) {
       $view.innerHTML = emptyState('—',
         'Necesitamos más partidos para empezar a detectar patrones.',
-        'Registrar partido', 'registro');
+        'Registrar partido', 'registro') + briefingHtml();
+      bindBriefing();
       bindCommon();
       return;
     }
@@ -935,8 +937,10 @@
       'Todavía no has marcado nada en «qué funcionó».'));
     h.push(freqSection('Qué no funciona', sum.notWorked,
       'Todavía no has marcado nada en «qué no funcionó».'));
+    h.push(briefingHtml());
 
     $view.innerHTML = h.join('');
+    bindBriefing();
     bindCommon();
   }
 
@@ -972,13 +976,15 @@
   /* ============================================================
      VISTA · BRIEFING
      ============================================================ */
-  function renderBriefing() {
+  function briefingHtml() {
     var matches = S.all();
     var brief = B.build(state.briefArchetype, matches);
     var h = [];
 
-    h.push('<p class="lede">Elige el perfil que esperas enfrentar. <b>Máximo 3 cosas</b>, ' +
-      'para leerlas en el coche antes de jugar.</p>');
+    h.push('<div class="section"><div class="section-head"><h2>Briefing por arquetipo</h2>' +
+      '<span class="hint">cuando no sabes quién te toca</span></div>');
+    h.push('<p class="lede">Máximo 3 cosas, para leerlas en el coche antes de jugar. ' +
+      'Si ya sabes la pareja, usa <b>El rival</b>: ahí el plan sale de sus datos reales.</p>');
     h.push(chipsHtml(D.ARCHETYPES, 'brief', state.briefArchetype, false, 'grid2 accent'));
 
     h.push('<div class="section" style="margin-top:22px">');
@@ -1008,15 +1014,18 @@
         ' de tus propios partidos, no de la hipótesis inicial.</div>');
     }
 
-    $view.innerHTML = h.join('');
+    h.push('</div>');
+    return h.join('');
+  }
+
+  function bindBriefing() {
     var group = $view.querySelector('[data-chips="brief"]');
     if (group) group.addEventListener('click', function (ev) {
       var chip = ev.target.closest('.chip');
       if (!chip) return;
       state.briefArchetype = chip.getAttribute('data-value');
-      renderBriefing();
+      renderAnalisis();
     });
-    bindCommon();
   }
 
   /* ============================================================
@@ -1036,10 +1045,50 @@
       b.classList.toggle('is-active', b.getAttribute('data-nav') === view);
     });
     global.scrollTo({ top: 0 });
-    if (view === 'registro') renderRegistro();
+    if (view === 'liga') global.PadelLiga.renderLiga($view, bindLiga);
+    else if (view === 'rival') global.PadelLiga.renderRival($view, bindLiga);
+    else if (view === 'registro') renderRegistro();
     else if (view === 'historial') renderHistorial();
-    else if (view === 'analisis') renderAnalisis();
-    else renderBriefing();
+    else renderAnalisis();
+  }
+
+  /* Eventos de las pantallas de liga: abrir un rival, buscar y refrescar. */
+  function bindLiga() {
+    var ls = global.PadelLiga.state;
+
+    $view.querySelectorAll('[data-rival]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        ls.rivalId = Number(b.getAttribute('data-rival'));
+        go('rival');
+      });
+    });
+
+    var search = document.getElementById('rival-search');
+    if (search) search.addEventListener('input', function () {
+      ls.rivalQuery = search.value;
+      ls.rivalId = null;
+      var pos = search.selectionStart;
+      global.PadelLiga.renderRival($view, bindLiga);
+      var again = document.getElementById('rival-search');
+      if (again) { again.focus(); again.setSelectionRange(pos, pos); }
+    });
+
+    var clear = $view.querySelector('[data-action="clear-rival"]');
+    if (clear) clear.addEventListener('click', function () {
+      ls.rivalId = null;
+      global.PadelLiga.renderRival($view, bindLiga);
+    });
+
+    var refresh = $view.querySelector('[data-action="refresh"]');
+    if (refresh) refresh.addEventListener('click', function () {
+      refresh.textContent = 'actualizando…';
+      global.PadelLiga.reload(function () {
+        toast('Liga actualizada');
+        go(state.view);
+      });
+    });
+
+    bindCommon();
   }
 
   function init() {
@@ -1050,7 +1099,7 @@
       var b = ev.target.closest('[data-nav]');
       if (b) go(b.getAttribute('data-nav'));
     });
-    go('registro');
+    go('liga');
   }
 
   if (document.readyState === 'loading') {

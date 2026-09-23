@@ -6,6 +6,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **La liga**, nueva pantalla de inicio: balance, puesto y grupo sobre los datos consolidados,
+  escalera mes a mes, todos nuestros partidos y la fiabilidad medida del motor.
+- **El rival**, nueva pantalla: eliges la pareja que te toca y devuelve proyección del partido,
+  historial directo contra nosotros, comparativa lado a lado, su trayectoria y una lectura
+  accionable. Incluye las otras parejas de esos mismos jugadores.
+- Motor de liga (`js/liga.js`): rating por pareja anclado al grupo de entrada, probabilidad de
+  ganar un juego calibrada contra los 480 partidos con señal, simulación de 4.000 partidos y
+  matriz de marcadores de la que salen todos los números mostrados.
+- Capa de datos (`js/db.js`): una llamada trae la temporada entera y se guarda en el móvil;
+  si no hay cobertura, la app sigue con la última descarga.
+- Suites de prueba en `test/`, con un fixture idéntico byte a byte a la base de datos.
+
+### Changed
+- Navegación: Liga · Rival · Registrar · Historial · Análisis. El registro deja de ser la
+  pantalla inicial.
+- El briefing por arquetipo pasa a ser una sección dentro de Análisis; el plan por rival concreto
+  vive ahora en El rival, donde sale de datos reales.
 - Escudo del Club Tennis El Molí como identidad de la aplicación: icono de pestaña (favicon),
   icono de pantalla de inicio en iOS y Android, imagen al compartir el enlace, marca en la barra
   superior y en los estados vacíos.
