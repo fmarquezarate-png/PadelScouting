@@ -64,6 +64,13 @@
   }
 
   function P(cam, X, Y, Z) {
+    if (cam.photo) {
+      var g = cam.hp(X, Z);
+      if (!Y) return [g[0], g[1], 1];
+      /* La foto no tiene cámara conocida: la altura se aproxima con la escala local del suelo. */
+      var a = cam.hp(X - 0.5, Z), b = cam.hp(X + 0.5, Z);
+      return [g[0], g[1] - Y * Math.abs(b[0] - a[0]) * 0.9, 1];
+    }
     var r = rawProj(cam, X, Y, Z);
     return [r[0] * cam.s + cam.ox, r[1] * cam.s + cam.oy, r[2]];
   }
@@ -108,9 +115,10 @@
     return [[c[0] + 0.12, 0, z0], [c[1] - 0.12, 0, z0], [c[1] - 0.12, 0, z1], [c[0] + 0.12, 0, z1]];
   }
 
-  function zoneCenter(z) {
+  function zoneCenter(z, cam) {
     var c = COLS[z.col];
-    return [(c[0] + c[1]) / 2, 0, z.far ? 15.6 : 5.6];
+    var fz = (cam && cam.farZ) || 15.6, nz = (cam && cam.nearZ) || 5.6;
+    return [(c[0] + c[1]) / 2, 0, z.far ? fz : nz];
   }
 
   function esc(s) {
@@ -129,10 +137,131 @@
     return '<text class="' + cls + '" x="' + f(x) + '" y="' + f(y) + '" font-size="' + size + '">' + esc(title.toUpperCase()) + '</text>';
   }
 
-  function badge(cam, name, x, y, r) {
+  function badge(cam, name, x, y, r) {  /* cam no se usa: el círculo ya viene en píxeles */
     return '<circle class="zb" cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(r) + '"/>' +
       '<g class="zi" transform="translate(' + f(x - r * 0.55) + ' ' + f(y - r * 0.55) + ') scale(' + (r * 1.1 / 24).toFixed(3) + ')">' +
       ICONS[name] + '</g>';
+  }
+
+
+  /* Un botón de zona: círculo con icono, título, dato vivo y punto de luz.
+     k escala todo (1 en la pista dibujada; más en la foto, que tiene más píxeles). */
+  function zoneMarkup(cam, zn, live, tall, k) {
+    if (zn.far && cam.farK) k *= cam.farK;
+    var q = zoneQuad(zn), c = zoneCenter(zn, cam), p = P(cam, c[0], c[1], c[2]);
+    /* Todo se dimensiona con el ancho real de la zona en pantalla. */
+    var col = COLS[zn.col];
+    var zw = P(cam, col[1], 0, c[2])[0] - P(cam, col[0], 0, c[2])[0];
+    var two = zn.title.length > 11;
+    var longest = two ? Math.max.apply(null, zn.title.split(' ').map(function (w) { return w.length; })) : zn.title.length;
+    var sub = String(live[zn.id] || '');
+    /* Botones grandes: el círculo ocupa casi un tercio del ancho de la zona. */
+    var r = Math.min((tall ? 25 : 36) * k, zw * 0.28);
+    var ts = Math.min((tall ? 14 : 21) * k, zw * 0.8 / (longest * 0.72));
+    var ss = Math.min(ts * 0.66, zw * 0.88 / (Math.max(sub.length, 1) * 0.66));
+    var off = (tall ? 6 : 10) * k;
+    /* Si la foto se recorta por los lados, el botón y su rótulo no se acercan al borde. */
+    var px = p[0];
+    if (cam.safeX) {
+      var hw = Math.max(longest * 0.72 * ts, sub.length * 0.66 * ss) / 2 + 6 * k;
+      px = Math.max(cam.safeX[0] + hw, Math.min(cam.safeX[1] - hw, px));
+    }
+    p = [px, p[1] - r * 0.55, p[2]];
+    var ty = p[1] + r + ts * (two ? 1.35 : 1.05);
+    var sy = ty + ts * (two ? 1.55 : 1.15);
+    return '<g class="zone" data-zone="' + zn.id + '" data-view="' + zn.view + '" tabindex="0" role="button" ' +
+      'aria-label="' + esc(zn.title) + (live[zn.id] ? ' · ' + esc(live[zn.id]) : '') + '" ' +
+      'data-cx="' + c[0] + '" data-cz="' + c[2] + '">' +
+      poly(cam, q, 'class="zone-hit"') +
+      badge(cam, zn.id, p[0], p[1] - off, r) +
+      titleText(p[0], ty - off, zn.title, ts, 'zt') +
+      '<text class="zs" x="' + f(p[0]) + '" y="' + f(sy - off) + '" font-size="' + f(ss) + '">' +
+      esc((live[zn.id] || '').toUpperCase()) + '</text>' +
+      '<circle class="zdot" cx="' + f(p[0]) + '" cy="' + f(sy - off + ts * 0.9) + '" r="' + f((tall ? 2 : 2.6) * k) + '"/>' +
+      '</g>';
+  }
+
+  /* «El rival» en la puerta: (x, y) es el centro del botón; ly, dónde empieza el rótulo. */
+  function doorMarkup(x, y, dr, dts, ly) {
+    var top = Math.max(y + dr, ly);
+    return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(dr * 2.4) + '" fill="url(#cGlow)" class="c-doorglow"/>' +
+      '<g class="zone door" data-zone="rival" data-view="rival" tabindex="0" role="button" ' +
+      'aria-label="El rival · busca y compara" data-cx="0" data-cz="-1.5">' +
+      '<rect class="zone-hit" x="' + f(x - dr * 3.2) + '" y="' + f(y - dr * 1.4) + '" width="' + f(dr * 6.4) + '" height="' +
+      f(top - y + dr * 1.4 + dts * 2.6) + '" rx="10"/>' +
+      badge(null, 'rival', x, y - dr * 0.1, dr) +
+      '<text class="zt" x="' + f(x) + '" y="' + f(top + dts * 1.1) + '" font-size="' + f(dts) + '">EL RIVAL</text>' +
+      '<text class="zs" x="' + f(x) + '" y="' + f(top + dts * 2.2) + '" font-size="' + f(dts * 0.66) + '">BUSCA Y COMPARA</text>' +
+      '</g>';
+  }
+
+  /* ---------- la pista en foto ----------
+     Cuatro puntos de la foto con posición conocida en la pista real (las
+     esquinas del fondo y los extremos de la línea de saque cercana) bastan
+     para saber dónde cae cualquier punto del suelo (una homografía). */
+  var PHOTOS = {
+    wide: { src: 'assets/pista-web.webp', W: 1672, H: 941, k: 1.6,
+      pts: [[[-5, 20], [568, 247]], [[5, 20], [1102, 247]], [[-5, 3.05], [230, 585]], [[5, 3.05], [1441, 585]]],
+      door: [835, 728], label: 824,
+      /* La mitad del fondo es muy estrecha en esta foto: botones algo menores y
+         más cerca de la red, para no tapar el escudo del club. */
+      farZ: 14, farK: 0.75 },
+    tall: { src: 'assets/pista-movil.webp', W: 941, H: 1672, k: 2.35,
+      pts: [[[-5, 20], [227, 447]], [[5, 20], [714, 447]], [[-5, 3.05], [-68, 1144]], [[5, 3.05], [1013, 1144]]],
+      door: [477, 1362], label: 1462,
+      /* En el móvil la foto se recorta un poco por los lados para llenar la pantalla. */
+      safeX: [85, 856] }
+  };
+
+  function solve(A, b) {
+    var n = b.length, M = A.map(function (row, i) { return row.concat([b[i]]); });
+    for (var c = 0; c < n; c++) {
+      var p = c;
+      for (var r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      var t = M[c]; M[c] = M[p]; M[p] = t;
+      for (r = 0; r < n; r++) {
+        if (r === c) continue;
+        var fct = M[r][c] / M[c][c];
+        for (var j = c; j <= n; j++) M[r][j] -= fct * M[c][j];
+      }
+    }
+    return M.map(function (row, i) { return row[n] / row[i]; });
+  }
+
+  function homography(pts) {
+    var A = [], b = [];
+    pts.forEach(function (q) {
+      var X = q[0][0], Z = q[0][1], u = q[1][0], v = q[1][1];
+      A.push([X, Z, 1, 0, 0, 0, -u * X, -u * Z]); b.push(u);
+      A.push([0, 0, 0, X, Z, 1, -v * X, -v * Z]); b.push(v);
+    });
+    var h = solve(A, b);
+    return function (X, Z) {
+      var w = h[6] * X + h[7] * Z + 1;
+      return [(h[0] * X + h[1] * Z + h[2]) / w, (h[3] * X + h[4] * Z + h[5]) / w];
+    };
+  }
+
+  function photoSvg(mode, live) {
+    var ph = PHOTOS[mode], tall = mode === 'tall', k = ph.k;
+    var cam = { photo: true, mode: mode, W: ph.W, H: ph.H, hp: homography(ph.pts),
+      farZ: ph.farZ, farK: ph.farK, safeX: ph.safeX };
+    var h = ['<div class="court-photo ' + mode + '" style="aspect-ratio:' + ph.W + ' / ' + ph.H + '">' +
+      '<img src="' + ph.src + '" alt="" decoding="async">' +
+      '<svg class="court court-3d court-over ' + mode + '" viewBox="0 0 ' + ph.W + ' ' + ph.H + '"' +
+      (tall ? ' preserveAspectRatio="xMidYMax slice"' : '') + ' role="group" ' +
+      'aria-label="La pista: cada zona abre una parte de la app">' +
+      '<defs><radialGradient id="cBall" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#FFE2B8"/>' +
+      '<stop offset="1" stop-color="#ED6C05"/></radialGradient>' +
+      '<radialGradient id="cGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ED6C05" stop-opacity=".35"/>' +
+      '<stop offset="1" stop-color="#ED6C05" stop-opacity="0"/></radialGradient></defs>'];
+    ZONES.forEach(function (zn) { h.push(zoneMarkup(cam, zn, live, tall, k)); });
+    var b = P(cam, 0, 0, 1.5);
+    h.push('<ellipse id="ballShadow" class="c-shadow" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" rx="' + f(6 * k) + '" ry="' + f(2.4 * k) + '"/>');
+    h.push('<circle id="ball" class="ball" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" r="' + f((tall ? 5 : 6.5) * k) + '" fill="url(#cBall)"/>');
+    h.push(doorMarkup(ph.door[0], ph.door[1], (tall ? 26 : 36) * k, (tall ? 14.5 : 20) * k, ph.label));
+    h.push('</svg></div>');
+    return { html: h.join(''), cam: cam };
   }
 
   /* ---------- la escena ---------- */
@@ -212,33 +341,7 @@
     h.push(banner);
 
     /* zonas: la mitad lejana primero, la red en medio, la cercana después */
-    function zoneSvg(zn) {
-      var q = zoneQuad(zn), c = zoneCenter(zn), p = P(cam, c[0], c[1], c[2]);
-      /* Todo se dimensiona con el ancho real de la zona en pantalla. */
-      var col = COLS[zn.col];
-      var zw = P(cam, col[1], 0, c[2])[0] - P(cam, col[0], 0, c[2])[0];
-      var two = zn.title.length > 11;
-      var longest = two ? Math.max.apply(null, zn.title.split(' ').map(function (w) { return w.length; })) : zn.title.length;
-      var sub = String(live[zn.id] || '');
-      /* Botones grandes: el círculo ocupa casi un tercio del ancho de la zona. */
-      var r = Math.min(tall ? 25 : 36, zw * 0.28);
-      var ts = Math.min(tall ? 14 : 21, zw * 0.8 / (longest * 0.72));
-      var ss = Math.min(ts * 0.66, zw * 0.88 / (Math.max(sub.length, 1) * 0.66));
-      var lift = r * 0.55;
-      p = [p[0], p[1] - lift, p[2]];
-      var ty = p[1] + r + ts * (two ? 1.35 : 1.05);
-      var sy = ty + ts * (two ? 1.55 : 1.15);
-      return '<g class="zone" data-zone="' + zn.id + '" data-view="' + zn.view + '" tabindex="0" role="button" ' +
-        'aria-label="' + esc(zn.title) + (live[zn.id] ? ' · ' + esc(live[zn.id]) : '') + '" ' +
-        'data-cx="' + c[0] + '" data-cz="' + c[2] + '">' +
-        poly(cam, q, 'class="zone-hit"') +
-        badge(cam, zn.id, p[0], p[1] - (tall ? 6 : 10), r) +
-        titleText(p[0], ty - (tall ? 6 : 10), zn.title, ts, 'zt') +
-        '<text class="zs" x="' + f(p[0]) + '" y="' + f(sy - (tall ? 6 : 10)) + '" font-size="' + f(ss) + '">' +
-        esc((live[zn.id] || '').toUpperCase()) + '</text>' +
-        '<circle class="zdot" cx="' + f(p[0]) + '" cy="' + f(sy - (tall ? 6 : 10) + ts * 0.9) + '" r="' + (tall ? 2 : 2.6) + '"/>' +
-        '</g>';
-    }
+    function zoneSvg(zn) { return zoneMarkup(cam, zn, live, tall, 1); }
     ZONES.filter(function (zn) { return zn.far; }).forEach(function (zn) { h.push(zoneSvg(zn)); });
 
     /* la red */
@@ -271,15 +374,7 @@
 
     /* la puerta: el rival te espera fuera de la pista */
     var d = P(cam, 0, 0, -1.5);
-    var dr = tall ? 26 : 36, dts = tall ? 14.5 : 20;
-    h.push('<circle cx="' + f(d[0]) + '" cy="' + f(d[1]) + '" r="' + (dr * 2.4) + '" fill="url(#cGlow)" class="c-doorglow"/>');
-    h.push('<g class="zone door" data-zone="rival" data-view="rival" tabindex="0" role="button" ' +
-      'aria-label="El rival · busca y compara" data-cx="0" data-cz="-1.5">' +
-      '<rect class="zone-hit" x="' + f(d[0] - dr * 3.2) + '" y="' + f(d[1] - dr * 1.4) + '" width="' + f(dr * 6.4) + '" height="' + f(dr * 3.9) + '" rx="10"/>' +
-      badge(cam, 'rival', d[0], d[1] - dr * 0.1, dr) +
-      '<text class="zt" x="' + f(d[0]) + '" y="' + f(d[1] + dr + dts * 1.1) + '" font-size="' + dts + '">EL RIVAL</text>' +
-      '<text class="zs" x="' + f(d[0]) + '" y="' + f(d[1] + dr + dts * 2.2) + '" font-size="' + f(dts * 0.66) + '">BUSCA Y COMPARA</text>' +
-      '</g>');
+    h.push(doorMarkup(d[0], d[1], tall ? 26 : 36, tall ? 14.5 : 20, d[1]));
 
     h.push('</svg>');
     return { html: h.join(''), cam: cam };
@@ -347,13 +442,23 @@
 
   /* Pinta la pista en `host` y la redibuja si cambia la orientación. */
   function mount(host, live, go) {
-    var mode = null;
+    var mode = null, photoOk = true;
     function draw() {
       var next = host.clientWidth >= 700 && global.innerWidth > global.innerHeight * 0.9 ? 'wide' : 'tall';
       if (next === mode && host.firstChild) return;
       mode = next;
-      var out = svg(mode, live);
+      paint(photoOk ? photoSvg(mode, live) : svg(mode, live));
+      var img = host.querySelector('.court-photo img');
+      if (img) img.addEventListener('error', function () {
+        /* Sin la foto (sin red, archivo perdido) queda la pista dibujada. */
+        photoOk = false; paint(svg(mode, live));
+      });
+    }
+    function paint(out) {
       host.innerHTML = out.html;
+      host.classList.toggle('is-photo', !!out.cam.photo);
+      var home = host.closest('.home');
+      if (home) home.classList.toggle('has-photo', !!out.cam.photo);
       current = { cam: out.cam, pos: [0, 1.5] };
       placeBall(0, 0.25, 1.5);
       bind(host, go);

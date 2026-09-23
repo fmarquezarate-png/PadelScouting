@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — la pista realista
+- La portada usa las fotos del diseñador (`assets/pista-web.webp` y `assets/pista-movil.webp`,
+  convertidas a WebP: 2,5 MB → 250 KB cada una). Los botones de la app van encima, colocados con
+  la perspectiva calculada desde las líneas de la foto (esquinas del fondo y línea de saque
+  cercana). En el móvil la foto llena la pantalla y el marcador flota sobre los árboles.
+- Si la foto no carga, se ve la pista dibujada: la portada nunca queda vacía.
+- Fotos provisionales a 1672 × 941: se sustituyen por los originales a tamaño completo cuando
+  lleguen (mismos nombres de archivo; si cambia el encuadre hay que recalcular los 4 puntos en
+  `js/court.js` → `PHOTOS`).
+
 ### Fixed
 - **iPhone (app instalada)**: la barra de arriba quedaba debajo de la hora y la batería. Ahora cada
   borde reserva la zona segura que informa el móvil (muesca, isla dinámica, recortes de Android);

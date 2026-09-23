@@ -751,3 +751,38 @@ body[data-view="inicio"] .view{max-width:none;padding:0}
 body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 .home{min-height:calc(100vh - 66px - env(safe-area-inset-top));min-height:calc(100dvh - 66px - env(safe-area-inset-top))}
 .comp-menu{max-width:calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))}
+
+/* ============================================================
+   LA PISTA EN FOTO · la imagen y los botones comparten medidas
+   ============================================================ */
+.home.has-photo{background:#05070a}
+.home.has-photo::after{display:none}
+.court-host.is-photo{padding:0;display:block}
+.court-photo{position:relative;width:100%;margin:0 auto;background:#0a0f18;overflow:hidden}
+.court-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;
+  animation:photoIn .6s ease-out both}
+.court-photo .court-over{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none}
+.court-photo.wide{width:min(100%, calc((100vh - 66px - env(safe-area-inset-top)) * 1.7768));
+  width:min(100%, calc((100dvh - 66px - env(safe-area-inset-top)) * 1.7768))}
+.court-over .zb{fill:rgba(8,11,16,.78);stroke-width:2.5}
+.court-over .zt{stroke:rgba(3,6,14,.7);stroke-width:5px}
+.court-over .zs{stroke:rgba(3,6,14,.65);stroke-width:4px}
+.court-over .zone:hover .zone-hit,.court-over .zone:focus-visible .zone-hit{fill:rgba(237,108,5,.16);stroke:rgba(237,108,5,.7)}
+@keyframes photoIn{from{opacity:0}to{opacity:1}}
+
+/* móvil: el marcador flota sobre los árboles de arriba de la foto */
+@media(max-width:899px){
+  .home.has-photo .home-side{position:absolute;top:8px;left:10px;right:10px;padding:0;z-index:3}
+  .home.has-photo .scoreboard{background:rgba(6,9,8,.62);padding:9px 12px;border-color:rgba(237,235,227,.1)}
+  .home.has-photo .scoreboard .home-line{display:none}
+  .home.has-photo .scoreboard .home-names{font-size:1.05rem}
+  .home.has-photo .scoreboard .hr-n{font-size:1.9rem}
+  .home.has-photo .scoreboard .home-chips{margin-top:6px}
+  .home.has-photo .scoreboard .hc{padding:5px 8px;font-size:10px}
+}
+/* En vertical la foto llena la pantalla bajo la barra: recorta un poco los lados
+   (la pista ya se sale del encuadre) y se ancla abajo para no perder la puerta. */
+.court-photo.tall{aspect-ratio:auto!important;height:calc(100vh - 66px - env(safe-area-inset-top));
+  height:calc(100dvh - 66px - env(safe-area-inset-top));min-height:520px}
+.court-photo.tall img{object-position:center bottom}
+@media(prefers-reduced-motion:reduce){ .court-photo img{animation:none} }

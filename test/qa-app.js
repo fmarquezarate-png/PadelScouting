@@ -44,7 +44,9 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Portada: solo la pista, sin tarjetas repetidas', await page.locator('.home-card').count() === 0);
   check('La pista tiene 7 zonas', await page.locator('.court .zone').count() === 7,
     await page.locator('.court .zone').count());
-  check('La pista es azul y en perspectiva', await page.locator('.court-3d .c-surf').count() === 1);
+  check('La pista es la foto realista', await page.evaluate(() => {
+    const img = document.querySelector('.court-photo img'); return !!(img && img.complete && img.naturalWidth > 0);
+  }));
   check('El rival espera en la puerta', await page.locator('.court .zone.door[data-view="rival"]').count() === 1);
   check('Las zonas son accesibles con teclado',
     await page.locator('.court .zone[tabindex="0"][role="button"]').count() === 7);
@@ -231,6 +233,27 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
       check('Sin scroll horizontal · ' + v + ' a ' + w + 'px', over <= 1, over > 1 ? 'sobra ' + over + 'px' : null);
     }
   }
+  /* ---------------- la foto: móvil estrecho y reserva sin foto ---------------- */
+  {
+    const sm = await browser.newPage({ viewport: { width: 360, height: 640 } });
+    await sm.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
+    await sm.goto(BASE); await sm.waitForTimeout(1200);
+    const outside = await sm.$$eval('.court .zt, .court .zs', els => els.filter(e => {
+      const b = e.getBoundingClientRect(); return b.width && (b.left < 0 || b.right > window.innerWidth);
+    }).length);
+    check('Móvil estrecho: ningún rótulo de la pista se sale de la pantalla', outside === 0, outside + ' fuera');
+    const door = await sm.evaluate(() => document.querySelector('.zone.door').getBoundingClientRect().bottom);
+    check('Móvil estrecho: «El rival» cabe en la pantalla', door <= 640 + 1, 'bottom=' + door);
+    await sm.close();
+    const nf = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await nf.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
+    await nf.route('**/assets/pista-*.webp', r => r.abort());
+    await nf.goto(BASE); await nf.waitForTimeout(1200);
+    check('Sin la foto queda la pista dibujada', await nf.locator('.court-3d .c-surf').count() === 1 &&
+      await nf.locator('.court .zone').count() === 7);
+    await nf.close();
+  }
+
   /* ---------------- iPhone con isla: la barra no se mete bajo la hora ---------------- */
   {
     const ip = await browser.newPage({ viewport: { width: 390, height: 844 } });
