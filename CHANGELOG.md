@@ -10,8 +10,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   recortada de la foto que pasó Fran). Tamaño proporcional a la profundidad (se mide con los
   botones: más grande delante, más pequeña al fondo), avance a velocidad constante con altura en
   parábola, sombra que se achica al subir, giro en el aire y aplastamiento al botar.
-- El peloteo bota por los botones del menú cruzando la red, descansa en la puerta y vuelve a
-  empezar; se para si la pestaña no se ve. Al tocar una zona, la pelota va hasta ese botón.
+- El peloteo: la pelota cae desde arriba, bota una vez en cada botón cruzando la red, termina
+  fuera de la pista en «El rival» y sale con un bote muy alto por arriba de la pantalla; a los
+  pocos segundos vuelve a caer. Bote instantáneo, sin aplastarse ni pararse. Se detiene si la
+  pestaña no se ve. Al tocar una zona, la pelota va hasta ese botón.
 
 ### Changed — la pista realista
 - La portada usa las fotos del diseñador (`assets/pista-web.webp` y `assets/pista-movil.webp`,

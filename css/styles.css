@@ -786,3 +786,6 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
   height:calc(100dvh - 66px - env(safe-area-inset-top));min-height:520px}
 .court-photo.tall img{object-position:center bottom}
 @media(prefers-reduced-motion:reduce){ .court-photo img{animation:none} }
+
+/* La pelota sale por arriba de la pista y no debe pintarse sobre el marcador. */
+.court-host{overflow:hidden}

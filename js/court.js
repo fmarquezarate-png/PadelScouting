@@ -427,65 +427,78 @@
     var start = anchors.rival || anchors.historial;
     ball = { anchors: anchors, token: (ball ? ball.token + 1 : 0), rot: 0,
       x: start.x, y: start.y, r: start.r * BALL_OF_BADGE };
-    drawBall(ball.x, ball.y, ball.r, 0);
+    hideBall();   /* entra cayendo desde arriba cuando empieza el peloteo */
   }
 
   /* Un golpe: avance a velocidad constante y altura en parábola, como una
-     pelota de verdad. Distancia larga = golpe más alto y más largo. */
+     pelota de verdad. Distancia larga = golpe más alto y más largo.
+     El bote es instantáneo: al tocar el botón sale ya hacia el siguiente. */
   function hop(target, opts, done) {
     if (!ball) { done && done(); return; }
     var token = ball.token;
-    var a = ball.anchors[target];
+    var a = opts.to || ball.anchors[target];
     if (!a) { done && done(); return; }
-    var x0 = ball.x, y0 = ball.y, r0 = ball.r, r1 = a.r * BALL_OF_BADGE;
+    var x0 = ball.x, y0 = ball.y, r0 = ball.r, r1 = (a.r || ball.r / BALL_OF_BADGE) * BALL_OF_BADGE;
     var dist = Math.hypot(a.x - x0, a.y - y0);
     var unit = (r0 + r1) / 2 / BALL_OF_BADGE;            /* radio medio de botón */
-    var peak = Math.max(unit * 1.6, Math.min(dist * 0.42, unit * 5.5)) * (opts.peak || 1);
-    var dur = Math.max(380, Math.min(900, 300 + dist / unit * 55)) * (opts.speed || 1);
+    var peak = opts.fall ? 0 : Math.max(unit * 1.6, Math.min(dist * 0.42, unit * 5.5)) * (opts.peak || 1);
+    var dur = (opts.dur || Math.max(380, Math.min(900, 300 + dist / unit * 55))) * (opts.speed || 1);
     var spin = (a.x >= x0 ? 1 : -1) * (360 + dist / unit * 40);
     var rot0 = ball.rot, t0 = null;
     function step(ts) {
       if (!ball || ball.token !== token || !document.getElementById('ball')) return;
       if (!t0) t0 = ts;
       var k = Math.min(1, (ts - t0) / dur);
+      /* Al caer desde fuera, la gravedad acelera: la bajada va en k². */
+      var kv = opts.fall ? k * k : k;
       ball.x = x0 + (a.x - x0) * k;
-      ball.y = y0 + (a.y - y0) * k;
+      ball.y = y0 + (a.y - y0) * kv;
       ball.r = r0 + (r1 - r0) * k;
       ball.rot = rot0 + spin * k;
       drawBall(ball.x, ball.y, ball.r, 4 * peak * k * (1 - k));
-      if (k < 1) { global.requestAnimationFrame(step); return; }
-      squash(token, done);
-    }
-    global.requestAnimationFrame(step);
-  }
-
-  /* El bote: un instante aplastada contra el botón y vuelta a su forma. */
-  function squash(token, done) {
-    var t0 = null, dur = 150;
-    function step(ts) {
-      if (!ball || ball.token !== token || !document.getElementById('ball')) return;
-      if (!t0) t0 = ts;
-      var k = Math.min(1, (ts - t0) / dur);
-      var q = Math.sin(Math.PI * k);
-      drawBall(ball.x, ball.y + ball.r * 0.12 * q, ball.r, 0, 1 + 0.2 * q, 1 - 0.24 * q);
       if (k < 1) global.requestAnimationFrame(step); else if (done) done();
     }
     global.requestAnimationFrame(step);
   }
 
-  /* El peloteo: cruza la red de un lado a otro botando en cada botón,
-     descansa en la puerta y vuelve a empezar. Se para si la pestaña no se ve. */
-  var RALLY = ['historial', 'analisis', 'liga', 'cronica', 'temporada', 'registro', 'historial', 'rival'];
+  function hideBall() {
+    var g = document.getElementById('ball'), sh = document.getElementById('ballShadow');
+    if (g) g.setAttribute('opacity', '0');
+    if (sh) sh.setAttribute('opacity', '0');
+  }
+
+  /* El peloteo: la pelota cae desde arriba, bota una vez en cada botón
+     cruzando la red, termina fuera de la pista en «El rival» y de ahí sale
+     con un bote muy alto por arriba de la pantalla. Unos segundos después
+     vuelve a caer. Se para si la pestaña no se ve. */
+  var RALLY = ['historial', 'analisis', 'liga', 'cronica', 'temporada', 'registro', 'rival'];
+
+  function svgHeight() {
+    var svg = document.querySelector('.court-host svg.court');
+    var vb = svg && svg.viewBox && svg.viewBox.baseVal;
+    return vb ? vb.height : 1000;
+  }
 
   function rally() {
     if (reduceMotion() || !ball) return;
-    var token = ball.token, i = 0;
-    (function next() {
-      if (!ball || ball.token !== token || !document.getElementById('ball')) return;
-      if (document.hidden) { setTimeout(next, 1000); return; }
-      if (i >= RALLY.length) { i = 0; setTimeout(next, 2600); return; }
-      hop(RALLY[i++], {}, function () { setTimeout(next, 70); });
-    })();
+    var token = ball.token, H = svgHeight();
+    function alive() { return ball && ball.token === token && document.getElementById('ball'); }
+    function later(fn, ms) { setTimeout(function () { if (alive()) fn(); }, ms); }
+    function round() {
+      if (document.hidden) { later(round, 1000); return; }
+      /* entra cayendo desde fuera, encima del primer botón */
+      var first = ball.anchors[RALLY[0]];
+      ball.x = first.x - first.r * 0.6; ball.y = -H * 0.25; ball.r = first.r * BALL_OF_BADGE;
+      hop(RALLY[0], { fall: true, dur: 700 }, function () { play(1); });
+    }
+    function play(i) {
+      if (!alive()) return;
+      if (i < RALLY.length) { hop(RALLY[i], {}, function () { play(i + 1); }); return; }
+      /* desde la puerta: bote altísimo y fuera de la pantalla por arriba */
+      hop(null, { to: { x: ball.x + ball.r * 6, y: -H * 0.45, r: ball.r / BALL_OF_BADGE * 0.8 },
+        peak: 1.4, dur: 1100 }, function () { hideBall(); later(round, 3200); });
+    }
+    round();
   }
 
   function bind(root, go) {
