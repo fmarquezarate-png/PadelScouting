@@ -17,6 +17,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Capa de datos (`js/db.js`): una llamada trae la temporada entera y se guarda en el móvil;
   si no hay cobertura, la app sigue con la última descarga.
 - Suites de prueba en `test/`, con un fixture idéntico byte a byte a la base de datos.
+- **Sesión** (`js/auth.js`): entrar, crear cuenta y salir contra Supabase, con los mensajes de error
+  traducidos. Leer la liga no pide nada; escribir sí.
+- **Carga de clasificaciones desde la app**: pegas la tabla, te dice qué ha leído (meses, grupos,
+  parejas, partidos, WO y descuadres) y solo entonces ofrece guardar. Idempotente: cargar el mismo
+  mes dos veces no duplica nada.
+- Separación de competiciones: masculina y mixta viven como temporadas distintas, así los ratings
+  de una no contaminan las proyecciones de la otra.
 
 ### Changed
 - Navegación: Liga · Rival · Registrar · Historial · Análisis. El registro deja de ser la

@@ -10,8 +10,14 @@
 
   var state = {
     model: null, calibration: null, source: null, savedAt: null, error: null,
-    rivalId: null, rivalQuery: '', loading: false
+    rivalId: null, rivalQuery: '', loading: false,
+    auth: { email: '', password: '', mode: 'in', busy: false, error: null, message: null },
+    loader: { open: false, text: '', kind: 'masculina', slug: '', name: '', firstMonth: null,
+              parsed: null, result: null, error: null, busy: false }
   };
+
+  var MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -126,8 +132,236 @@
     /* Fiabilidad del motor */
     h.push(calibrationCard());
 
+    /* Cargar datos */
+    h.push(loaderCard());
+
     view.innerHTML = h.join('');
+    bindLoader(view, bind);
     bind();
+  }
+
+  /* ============================================================
+     Cargar un mes de liga
+     ============================================================ */
+  function loaderCard() {
+    var l = state.loader;
+    var u = global.PadelAuth.user();
+
+    var h = ['<div class="section" style="margin-top:26px"><div class="section-head">' +
+      '<h2>Cargar datos</h2><span class="hint">' +
+      (u ? esc(u.email || 'sesión iniciada') : 'hace falta sesión') + '</span></div>'];
+
+    if (!l.open) {
+      h.push('<button class="btn block" data-action="open-loader">Cargar una clasificación</button></div>');
+      return h.join('');
+    }
+
+    h.push('<div class="card">');
+
+    if (!u) {
+      h.push(authForm());
+      h.push('</div></div>');
+      return h.join('');
+    }
+
+    h.push('<div class="btn-row" style="margin-bottom:16px">' +
+      '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div>');
+
+    h.push('<div class="field"><span class="field-label">Competición</span>' +
+      '<div class="chips tight" data-chips="kind">' +
+      [['masculina', 'Masculina'], ['mixta', 'Mixta']].map(function (k) {
+        return '<button type="button" class="chip" data-value="' + k[0] + '" aria-pressed="' +
+          (l.kind === k[0] ? 'true' : 'false') + '">' + k[1] + '</button>';
+      }).join('') + '</div></div>');
+
+    h.push('<div class="row two">' +
+      '<div class="field"><label for="ld-slug">Identificador</label>' +
+      '<input type="text" id="ld-slug" placeholder="2026-s2" value="' + esc(l.slug) + '">' +
+      '<p class="field-note">Corto y único. Cargar dos veces el mismo no duplica nada.</p></div>' +
+      '<div class="field"><label for="ld-first">Primer mes</label>' +
+      '<select id="ld-first"><option value="">—</option>' +
+      MESES.map(function (m, i) {
+        return '<option value="' + i + '"' + (l.firstMonth === i ? ' selected' : '') + '>' + m + '</option>';
+      }).join('') + '</select></div></div>');
+
+    h.push('<div class="field"><label for="ld-name">Nombre</label>' +
+      '<input type="text" id="ld-name" placeholder="Temporada 2026 · segundo semestre" value="' +
+      esc(l.name) + '"></div>');
+
+    h.push('<div class="field"><label for="ld-text">Clasificación</label>' +
+      '<textarea id="ld-text" rows="6" placeholder="Pega aquí la clasificación completa, con los MES y los Grupo">' +
+      esc(l.text) + '</textarea></div>');
+
+    if (l.error) h.push('<div class="notice bad">' + esc(l.error) + '</div>');
+
+    if (l.parsed) {
+      var p = l.parsed;
+      h.push('<div class="notice good"><b>He leído esto:</b>' +
+        '<ul><li>' + p.months.length + ' meses · ' +
+        p.months.reduce(function (n, M) { return n + M.groups.length; }, 0) + ' grupos</li>' +
+        '<li>' + p.teams.length + ' parejas</li>' +
+        '<li>' + p.matches.length + ' partidos, ' +
+        p.matches.filter(function (m) { return m.walkover; }).length + ' de ellos WO</li>' +
+        '<li>' + (p.warnings.length ? p.warnings.length + ' descuadres' : 'sin descuadres') + '</li>' +
+        '</ul></div>');
+      if (p.warnings.length) {
+        h.push('<div class="notice warn">' + p.warnings.slice(0, 4).map(esc).join('<br>') + '</div>');
+      }
+    }
+
+    if (l.result) {
+      var r = l.result;
+      h.push('<div class="notice good"><b>Guardado.</b><ul>' +
+        '<li>' + r.matchesAdded + ' partidos nuevos</li>' +
+        '<li>' + r.teamsAdded + ' parejas nuevas · ' + r.playersAdded + ' jugadores nuevos</li>' +
+        '<li>' + r.standingsUpserted + ' posiciones de clasificación</li>' +
+        '</ul></div>');
+    }
+
+    h.push('<div class="btn-row">' +
+      '<button class="btn" data-action="parse"' + (l.busy ? ' disabled' : '') + '>' +
+      (l.busy ? 'Leyendo…' : 'Analizar') + '</button>' +
+      (l.parsed ? '<button class="btn primary" data-action="save-league"' +
+        (l.busy ? ' disabled' : '') + '>Guardar en la base</button>' : '') +
+      '</div>');
+
+    h.push('</div></div>');
+    return h.join('');
+  }
+
+  function authForm() {
+    var a = state.auth;
+    var up = a.mode === 'up';
+    return '<p class="field-note" style="margin-bottom:14px">Leer la liga no pide nada. ' +
+      'Para <b>escribir</b> sí hace falta tu cuenta: así puedes enseñar el enlace a quien quieras ' +
+      'sin que nadie pueda tocar los datos.</p>' +
+      (a.error ? '<div class="notice bad">' + esc(a.error) + '</div>' : '') +
+      (a.message ? '<div class="notice good">' + esc(a.message) + '</div>' : '') +
+      '<div class="field"><label for="au-email">Email</label>' +
+      '<input type="email" id="au-email" autocomplete="username" value="' + esc(a.email) + '"></div>' +
+      '<div class="field"><label for="au-pass">Contraseña</label>' +
+      '<input type="password" id="au-pass" autocomplete="current-password" value="' + esc(a.password) + '"></div>' +
+      '<div class="btn-row"><button class="btn primary" data-action="auth-go"' +
+      (a.busy ? ' disabled' : '') + '>' +
+      (a.busy ? 'Un momento…' : (up ? 'Crear cuenta' : 'Entrar')) + '</button>' +
+      '<button class="btn ghost" data-action="auth-mode">' +
+      (up ? 'Ya tengo cuenta' : 'Crear cuenta') + '</button></div>';
+  }
+
+  function bindLoader(view, repaint) {
+    var l = state.loader, a = state.auth;
+    var redraw = function () { paintLiga(view, repaint); };
+
+    var open = view.querySelector('[data-action="open-loader"]');
+    if (open) open.addEventListener('click', function () { l.open = true; redraw(); });
+
+    /* --- sesión --- */
+    var email = document.getElementById('au-email');
+    if (email) email.addEventListener('input', function () { a.email = email.value; });
+    var pass = document.getElementById('au-pass');
+    if (pass) pass.addEventListener('input', function () { a.password = pass.value; });
+
+    var mode = view.querySelector('[data-action="auth-mode"]');
+    if (mode) mode.addEventListener('click', function () {
+      a.mode = a.mode === 'in' ? 'up' : 'in';
+      a.error = null; a.message = null;
+      redraw();
+    });
+
+    var go = view.querySelector('[data-action="auth-go"]');
+    if (go) go.addEventListener('click', function () {
+      a.busy = true; a.error = null; a.message = null;
+      redraw();
+      var op = a.mode === 'up'
+        ? global.PadelAuth.signUp(a.email, a.password)
+        : global.PadelAuth.signIn(a.email, a.password);
+      op.then(function (data) {
+        a.busy = false;
+        a.password = '';
+        if (a.mode === 'up' && !(data && data.access_token)) {
+          a.message = 'Cuenta creada. Confirma el email y vuelve a entrar.';
+          a.mode = 'in';
+        }
+        redraw();
+      }).catch(function (err) {
+        a.busy = false; a.error = err.message; redraw();
+      });
+    });
+
+    var out = view.querySelector('[data-action="sign-out"]');
+    if (out) out.addEventListener('click', function () {
+      global.PadelAuth.signOut().then(redraw);
+    });
+
+    /* --- carga --- */
+    ['slug', 'name', 'text'].forEach(function (f) {
+      var el = document.getElementById('ld-' + f);
+      if (el) el.addEventListener('input', function () { l[f] = el.value; });
+    });
+    var first = document.getElementById('ld-first');
+    if (first) first.addEventListener('change', function () {
+      l.firstMonth = first.value === '' ? null : Number(first.value);
+    });
+    var kinds = view.querySelector('[data-chips="kind"]');
+    if (kinds) kinds.addEventListener('click', function (ev) {
+      var chip = ev.target.closest('.chip');
+      if (!chip) return;
+      l.kind = chip.getAttribute('data-value');
+      redraw();
+    });
+
+    var parseBtn = view.querySelector('[data-action="parse"]');
+    if (parseBtn) parseBtn.addEventListener('click', function () {
+      l.error = null; l.result = null; l.parsed = null;
+      if (!l.text.trim()) { l.error = 'Pega primero la clasificación.'; redraw(); return; }
+      try {
+        var parsed = global.LigaParser.parse(l.text);
+        if (!parsed.matches.length) {
+          l.error = 'No he encontrado ningún resultado. ¿Se han copiado las tabulaciones de la tabla?';
+        } else {
+          l.parsed = parsed;
+        }
+      } catch (e) {
+        l.error = 'No he podido leerlo: ' + e.message;
+      }
+      redraw();
+    });
+
+    var saveBtn = view.querySelector('[data-action="save-league"]');
+    if (saveBtn) saveBtn.addEventListener('click', function () {
+      if (!l.parsed) return;
+      if (!l.slug.trim()) { l.error = 'Ponle un identificador a la temporada.'; redraw(); return; }
+      l.busy = true; l.error = null; redraw();
+
+      var labels = {};
+      l.parsed.months.forEach(function (M, i) {
+        labels[M.n] = l.firstMonth == null ? ('Mes ' + M.n) : MESES[(l.firstMonth + i) % 12];
+      });
+      var payload = global.LigaParser.toPayload(l.parsed, {
+        slug: l.slug.trim(), name: l.name.trim() || l.slug.trim(),
+        kind: l.kind, monthLabels: labels, source: 'paste'
+      }, l.text);
+
+      global.PadelDB.callAuthed('ingest_league', { payload: payload }).then(function (res) {
+        l.busy = false; l.result = res; l.parsed = null; l.text = '';
+        global.PadelDB.clearCache();
+        module_reload(function () { paintLiga(view, repaint); });
+      }).catch(function (err) {
+        l.busy = false; l.error = err.message; redraw();
+      });
+    });
+  }
+
+  function module_reload(done) {
+    global.PadelDB.load({ force: true }).then(function (res) {
+      state.source = res.from; state.savedAt = res.savedAt; state.error = res.error || null;
+      if (res.snapshot) {
+        state.model = L.build(res.snapshot);
+        state.calibration = L.calibrate(state.model);
+        state.model.scale = state.calibration.scale;
+      }
+      done();
+    });
   }
 
   function myMatches(m, me) {

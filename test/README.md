@@ -10,6 +10,7 @@ python3 -m http.server 8111
 
 # 2. en otra terminal
 node test/qa-liga.js       # Liga, Rival, motor y caché
+node test/qa-carga.js      # Sesión y carga de una clasificación
 node test/qa-scouting.js   # Registro, historial, análisis, backup
 ```
 

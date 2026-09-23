@@ -45,9 +45,22 @@ igual que en el dashboard del primer semestre.
 RLS activo en todas las tablas: **lectura pública**, escritura solo con sesión autenticada.
 El texto crudo de `league_imports` solo lo ve quien puede escribir.
 
+## Competiciones
+
+`seasons.kind` distingue `masculina` de `mixta`. Los ratings se calculan **por separado** en cada
+una: mezclar formatos distintos ensuciaría las proyecciones. La capa de scouting, en cambio, es del
+jugador y vale para las dos.
+
 ## Carga de datos
 
 `ingest_league_matches(jsonb)` inserta partidos derivando siempre sets ganados, juegos y super
 tie-break desde el marcador, para que no haya dos sitios donde se calcule distinto.
+
+`ingest_league(jsonb)` carga una clasificación entera en una transacción: jugadores, parejas, meses,
+grupos, posiciones y partidos, resolviendo todo por nombre. Es **idempotente** —cargar el mismo mes
+dos veces no duplica nada— y guarda el texto crudo en `league_imports` para poder reprocesar sin
+volver a la web. Solo la puede ejecutar una sesión autenticada.
+
+`list_seasons()` y `get_league_snapshot(slug)` son de lectura pública.
 
 El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/liga-parser.js`.

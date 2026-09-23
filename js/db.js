@@ -76,5 +76,35 @@
     });
   }
 
-  global.PadelDB = { load: load, CFG: CFG, readCache: readCache };
+  /* Llamada a una función de la base que requiere sesión. */
+  function callAuthed(fn, args) {
+    return global.PadelAuth.token().then(function (tok) {
+      if (!tok) throw new Error('Necesitas iniciar sesión para esto.');
+      return global.fetch(CFG.url + '/rest/v1/rpc/' + fn, {
+        method: 'POST',
+        headers: {
+          'apikey': CFG.key,
+          'Authorization': 'Bearer ' + tok,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(args || {})
+      });
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) {
+          throw new Error((data && (data.message || data.hint)) || ('Error ' + res.status));
+        }
+        return data;
+      });
+    });
+  }
+
+  function clearCache() {
+    try { global.localStorage.removeItem(CFG.cacheKey); } catch (e) {}
+  }
+
+  global.PadelDB = {
+    load: load, CFG: CFG, readCache: readCache,
+    callAuthed: callAuthed, clearCache: clearCache
+  };
 })(window);

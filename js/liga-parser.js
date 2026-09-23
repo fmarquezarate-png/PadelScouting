@@ -143,5 +143,51 @@
     return { months: months, matches: matches, teams: Object.keys(teams), warnings: warnings };
   }
 
-  return { parse: parse, parseScore: parseScore, splitTeam: splitTeam, tally: tally, isSuperTieBreak: isSuperTieBreak };
+  /* Convierte lo leído en el paquete que espera ingest_league().
+     Vive aquí porque es la forma de la liga, no de la pantalla: el
+     bookmarklet que cargue el mes desde la web usará esto mismo. */
+  function toPayload(parsed, season, rawText) {
+    var groups = [];
+    var seen = {};
+    parsed.months.forEach(function (M) {
+      M.groups.forEach(function (G) {
+        var key = M.n + ':' + G.n;
+        if (!seen[key]) { seen[key] = true; groups.push([M.n, G.n]); }
+      });
+    });
+
+    var standings = [];
+    parsed.months.forEach(function (M) {
+      M.groups.forEach(function (G) {
+        (G.order.length ? G.order : G.teams).forEach(function (t, i) {
+          standings.push([M.n, G.n, t, i + 1]);
+        });
+      });
+    });
+
+    var teams = parsed.teams.map(function (label) {
+      var p = splitTeam(label);
+      return [label, p.a, p.b];
+    });
+
+    var months = parsed.months.map(function (M) {
+      return [M.n, (season && season.monthLabels && season.monthLabels[M.n]) || ('Mes ' + M.n)];
+    }).sort(function (a, b) { return a[0] - b[0]; });
+
+    return {
+      season: {
+        slug: season.slug, name: season.name,
+        kind: season.kind || 'masculina', startsOn: season.startsOn || null
+      },
+      months: months, groups: groups, teams: teams, standings: standings,
+      matches: parsed.matches.map(function (m) {
+        return [m.month, m.group, m.home, m.away, m.sets, m.walkover];
+      }),
+      source: season.source || 'paste',
+      rawText: rawText || ''
+    };
+  }
+
+  return { parse: parse, parseScore: parseScore, splitTeam: splitTeam, tally: tally,
+           isSuperTieBreak: isSuperTieBreak, toPayload: toPayload };
 });
