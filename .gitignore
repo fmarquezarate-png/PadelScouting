@@ -1,0 +1,12 @@
+# SO
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Backups locales de datos (no van al repo)
+backups/
+*.padel-backup.json
