@@ -5,6 +5,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Escudo del Club Tennis El Molí como identidad de la aplicación: icono de pestaña (favicon),
+  icono de pantalla de inicio en iOS y Android, imagen al compartir el enlace, marca en la barra
+  superior y en los estados vacíos.
+- `manifest.webmanifest`: al añadirla a la pantalla de inicio se abre como app, a pantalla
+  completa y con el fondo del sistema visual.
+
 ---
 
 ## [0.1.0] — 2026-09-22

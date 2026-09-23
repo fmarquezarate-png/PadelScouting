@@ -67,7 +67,7 @@
   }
 
   function emptyState(mark, text, actionLabel, actionView) {
-    return '<div class="empty"><div class="mark">' + esc(mark) + '</div><p>' + esc(text) + '</p>' +
+    return '<div class="empty"><img class="mark" src="assets/logo.png" alt=""><p>' + esc(text) + '</p>' +
       (actionLabel ? '<button class="btn primary" data-goto="' + actionView + '">' +
         esc(actionLabel) + '</button>' : '') + '</div>';
   }

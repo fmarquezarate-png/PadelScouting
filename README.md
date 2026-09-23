@@ -84,6 +84,8 @@ Recomendación: exportar una vez al mes o después de cada jornada de liga.
 ```
 PadelScouting/
 ├── index.html          estructura, navegación, carga de recursos
+├── manifest.webmanifest  para instalarla como app en el móvil
+├── assets/             escudo del club: favicon, iconos de app y logo
 ├── css/
 │   └── styles.css      variables, componentes, responsive
 ├── js/
