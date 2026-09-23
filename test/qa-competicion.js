@@ -43,11 +43,18 @@ mx.matches.forEach(m => {
       user: { email: 'fmarquezarate@gmail.com' } }) }));
   await page.route('**/rest/v1/rpc/get_my_profile', r =>
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile) }));
-  await page.route('**/rest/v1/rpc/set_my_profile_label', r => {
-    profileSet = JSON.parse(r.request().postData()).p_label;
-    profile = { playerId: 1, label: profileSet };
+  let patches = [];
+  await page.route('**/rest/v1/rpc/update_my_profile', r => {
+    const patch = JSON.parse(r.request().postData()).patch;
+    patches.push(patch);
+    profile = Object.assign({}, profile || {}, patch);
     r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile) });
   });
+  const kindsOf = {};
+  JSON.parse(MASC).teams.forEach(t => [t[2], t[3]].forEach(n => { (kindsOf[n] = kindsOf[n] || new Set()).add('masculina'); }));
+  JSON.parse(MIX).teams.forEach(t => [t[2], t[3]].forEach(n => { (kindsOf[n] = kindsOf[n] || new Set()).add('mixta'); }));
+  await page.route('**/rest/v1/rpc/list_players', r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify(Object.keys(kindsOf).sort().map(l => ({ label: l, kinds: [...kindsOf[l]] }))) }));
   await page.route('**/rest/v1/rpc/ingest_league', r => {
     ingest = JSON.parse(r.request().postData()).payload;
     seasons.push({ slug: ingest.season.slug, name: ingest.season.name, kind: ingest.season.kind, months: 3, matches: 17 });
@@ -91,7 +98,7 @@ mx.matches.forEach(m => {
   const home = await text();
   check('Portada: tu pareja del mixto', home.includes('Ana Clerch') && !home.includes('Cristian'), (home.match(/FRANCISCO.{0,40}|Francisco.{0,40}/) || [''])[0]);
   check('Portada: el nombre de la temporada mixta', home.includes('Mixto 2026'));
-  check('Portada: la crónica del mixto está por escribir', home.includes('Por escribir'));
+  check('Portada: la crónica del mixto está por escribir', /por escribir/i.test(home));
 
   await go('temporada');
   const tm = await text();
@@ -131,31 +138,54 @@ mx.matches.forEach(m => {
   check('Cada competición con su copia en el móvil',
     keys.includes('padel-scouting.liga.v1') && keys.includes('padel-scouting.liga.v1:2026-s1-mixta'), keys.join(','));
 
-  // --- quién soy ---
-  await go('liga');
-  await openLoader();
+  // --- quién soy: avatar → entrar → bienvenida de 3 datos ---
+  check('Sin sesión el avatar es un interrogante', (await page.textContent('#avatar-btn')).trim() === '?');
+  await page.click('#avatar-btn'); await page.waitForTimeout(500);
+  check('El avatar lleva a entrar', (await page.textContent('#page-title')) === 'Mi perfil' && await page.locator('#au-email').count() === 1);
   await page.fill('#au-email', 'fmarquezarate@gmail.com'); await page.fill('#au-pass', 'x');
-  await page.click('[data-action="auth-go"]'); await page.waitForTimeout(700);
-  check('Sin perfil pregunta quién eres', (await text()).includes('¿Quién eres en la liga?'));
-  await page.fill('#me-q', 'yag'); await page.waitForTimeout(250);
-  check('Busca jugadores de la competición', await page.locator('[data-me="Yago Garcí"]').count() === 1);
-  await page.click('[data-me="Yago Garcí"]'); await page.waitForTimeout(500);
-  check('Guarda el jugador elegido', profileSet === 'Yago Garcí');
-  check('Confirma quién eres', (await text()).includes('En la liga eres Yago Garcí'));
+  await page.click('[data-action="auth-go"]'); await page.waitForTimeout(900);
+  check('Cuenta nueva: sale la bienvenida', await page.locator('.modal #wz-title').count() === 1);
+  check('No deja entrar sin los 3 datos', await page.locator('[data-wz="save"][disabled]').count() === 1);
+  await page.fill('#wz-q', 'yag'); await page.waitForTimeout(250);
+  check('Busca entre todos los jugadores', await page.locator('[data-wz-player="Yago Garcí"]').count() === 1);
+  await page.click('[data-wz-player="Yago Garcí"]');
+  await page.click('[data-wz-cat="masculina"]');
+  await page.click('[data-wz-mix="0"]'); await page.waitForTimeout(150);
+  check('Si no juegas mixto no pregunta qué ver al abrir', await page.locator('[data-wz-def]').count() === 0);
+  await page.click('[data-wz="save"]'); await page.waitForTimeout(1200);
+  const p1 = patches[patches.length - 1] || {};
+  check('Guarda los 3 datos', p1.label === 'Yago Garcí' && p1.category === 'masculina' &&
+    p1.playsMixed === false && p1.defaultKind === 'masculina', JSON.stringify(p1));
+  check('La bienvenida se cierra', await page.locator('.modal').count() === 0);
+  check('El avatar pasa a tu inicial', (await page.textContent('#avatar-btn')).trim() === 'Y');
   await go('inicio');
   check('Portada: ahora es la pareja de Yago', (await text()).includes('Yago') && !(await text()).includes('Cristian'));
   await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1-mixta"]'); await page.waitForTimeout(900);
   check('Si no juegas esa competición, lo dice', (await text()).includes('No apareces'));
   await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
-  await go('liga'); await openLoader();
-  await page.click('[data-action="me-edit"]'); await page.waitForTimeout(200);
-  await page.fill('#me-q', 'francis'); await page.waitForTimeout(250);
-  await page.click('[data-me="Francisco"]'); await page.waitForTimeout(500);
+
+  // --- editar datos: ahora Francisco, que juega mixto y quiere verlo al abrir ---
+  await go('perfil');
+  check('Mi perfil muestra tus datos', (await text()).includes('Yago Garcí') && (await text()).includes('Masculina'));
+  await page.click('[data-pf="edit"]'); await page.waitForTimeout(300);
+  await page.click('[data-wz="relabel"]'); await page.waitForTimeout(200);
+  await page.fill('#wz-q', 'francis'); await page.waitForTimeout(250);
+  await page.click('[data-wz-player="Francisco"]');
+  await page.click('[data-wz-mix="1"]'); await page.waitForTimeout(150);
+  check('Si juegas mixto pregunta qué ver al abrir', await page.locator('[data-wz-def]').count() === 2);
+  await page.click('[data-wz-def="mixta"]');
+  await page.click('[data-wz="save"]');
+  await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Mixta', null, { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(400);
+  check('Te lleva a tu competición por defecto', (await page.textContent('#comp-label')) === 'Mixta');
+  await go('inicio');
+  check('Y reconoce tu pareja del mixto', (await text()).includes('Ana Clerch'));
+  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
   await go('inicio');
   check('Vuelves a ser Francisco', (await text()).includes('Cristian'));
 
   // --- cargar otra competición y verla ---
-  await go('liga'); await openLoader();
+  await go('config'); await openLoader();
   check('Se puede cargar femenina', await page.locator('[data-chips="kind"] .chip[data-value="femenina"]').count() === 1);
   await page.click('[data-chips="kind"] .chip[data-value="femenina"]'); await page.waitForTimeout(250);
   check('Propone identificador para la femenina', (await page.inputValue('#ld-slug')) === '2026-s1-femenina');

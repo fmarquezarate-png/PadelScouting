@@ -20,7 +20,9 @@
     registro:  { title: 'Registro rápido' },
     historial: { title: 'Historial' },
     analisis:  { title: 'Análisis' },
-    cronica:   { title: 'Crónica' }
+    cronica:   { title: 'Crónica' },
+    config:    { title: 'Configuración' },
+    perfil:    { title: 'Mi perfil' }
   };
 
   var state = {
@@ -33,7 +35,7 @@
     openCards: {}
   };
 
-  var $view, $title, $nav;
+  var $view, $title;
 
   /* ============================================================
      utilidades
@@ -1046,13 +1048,10 @@
     if (!VIEWS[view]) view = 'registro';
     state.view = view;
     $title.textContent = VIEWS[view].title;
-    $nav.querySelectorAll('[data-nav]').forEach(function (b) {
-      b.classList.toggle('is-active', b.getAttribute('data-nav') === view);
-    });
+    fitTitle();
     global.scrollTo({ top: 0 });
-    var back = document.getElementById('back');
-    if (back) back.hidden = view === 'inicio';
     document.body.setAttribute('data-view', view);
+    if (global.PadelShell) global.PadelShell.onNavigate(view);
     if (global.PadelTemporada) global.PadelTemporada.stopTimer();
 
     if (view === 'inicio') global.PadelGeneral.renderInicio($view, bindLiga, go);
@@ -1060,6 +1059,8 @@
     else if (view === 'liga') global.PadelGeneral.renderGeneral($view, bindLiga);
     else if (view === 'cronica') global.PadelGeneral.renderCronica($view, bindLiga);
     else if (view === 'rival') global.PadelLiga.renderRival($view, bindLiga);
+    else if (view === 'config') global.PadelShell.renderConfig($view, bindLiga);
+    else if (view === 'perfil') global.PadelShell.renderPerfil($view, bindLiga);
     else if (view === 'registro') renderRegistro();
     else if (view === 'historial') renderHistorial();
     else renderAnalisis();
@@ -1107,22 +1108,30 @@
     bindCommon();
   }
 
+  /* Si el título no cabe en la barra (móvil estrecho), se encoge la letra
+     en vez de cortarlo con puntos suspensivos. */
+  function fitTitle() {
+    $title.style.fontSize = '';
+    var size = parseFloat(global.getComputedStyle($title).fontSize);
+    while ($title.scrollWidth > $title.clientWidth + 1 && size > 11) {
+      size -= 0.5;
+      $title.style.fontSize = size + 'px';
+    }
+  }
+
   function init() {
+    global.addEventListener('resize', function () { if ($title) fitTitle(); });
     $view = document.getElementById('view');
     $title = document.getElementById('page-title');
-    $nav = document.querySelector('.bottom-nav');
-    $nav.addEventListener('click', function (ev) {
-      var b = ev.target.closest('[data-nav]');
-      if (b) go(b.getAttribute('data-nav'));
-    });
-    var back = document.getElementById('back');
-    if (back) back.addEventListener('click', function () { go('inicio'); });
     initCompetition();
+    if (global.PadelShell) global.PadelShell.init(go);
     /* Con sesión abierta, recuerda quién eres (vale para todas las competiciones). */
     if (global.PadelAuth.user && global.PadelAuth.user()) {
-      global.PadelDB.fetchProfile().then(function () {
+      global.PadelDB.fetchProfile().then(function (p) {
         var m = global.PadelLiga.state.model;
         if (m) { global.PadelLiga.applyMe(m); go(state.view); }
+        if (global.PadelShell) global.PadelShell.onProfile(p);
+        applyDefaultKind(p && p.defaultKind);
       }).catch(function () {});
     }
     go('inicio');
@@ -1145,6 +1154,8 @@
       var kind = (cur && cur.kind) || 'masculina';
       btn.setAttribute('data-kind', kind);
       document.getElementById('comp-label').textContent = KIND[kind] || kind;
+      var sub = document.getElementById('comp-season');
+      if (sub) sub.textContent = cur && cur.name ? ' · ' + cur.name : '';
       btn.title = 'Competición: ' + ((cur && cur.name) || slug) + ' · cambiar';
     }
 
@@ -1180,18 +1191,21 @@
     menu.addEventListener('click', function (ev) {
       var item = ev.target.closest('[data-slug]');
       if (!item) return;
-      var slug = item.getAttribute('data-slug');
       close();
+      switchTo(item.getAttribute('data-slug'), true);
+    });
+
+    switchTo = function (slug, announce) {
       if (slug === global.PadelDB.currentSeason()) return;
       document.body.classList.add('switching');
       global.PadelLiga.switchSeason(slug, function () {
         document.body.classList.remove('switching');
         paintButton();
         var s = (global.PadelLiga.state.seasons || []).filter(function (x) { return x.slug === slug; })[0];
-        toast('Ahora ves: ' + (s ? (KIND[s.kind] || s.kind) + ' · ' + s.name : slug));
+        if (announce) toast('Ahora ves: ' + (s ? (KIND[s.kind] || s.kind) + ' · ' + s.name : slug));
         go(state.view);
       });
-    });
+    };
 
     refreshSeasons = function () {
       return global.PadelDB.listSeasons().then(function (list) {
@@ -1211,10 +1225,23 @@
   }
 
   var refreshSeasons = function () { return Promise.resolve(); };
+  var switchTo = function () {};
+
+  /* Competición por defecto de tu perfil: solo si nunca elegiste una a mano. */
+  function applyDefaultKind(kind) {
+    if (!kind || global.PadelDB.hasChosenSeason()) return;
+    refreshSeasons().then(function () {
+      var list = global.PadelLiga.state.seasons || [];
+      var pick = list.filter(function (x) { return x.kind === kind; })[0];
+      if (pick) switchTo(pick.slug, false);
+    });
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state };
+  global.PadelApp = { refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
+                      toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
+                      switchTo: function (slug, announce) { switchTo(slug, announce); } };
 })(window);

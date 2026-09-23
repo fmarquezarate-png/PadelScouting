@@ -80,8 +80,14 @@ otra (`2026-s1` es masculina), la carga se rechaza en vez de mezclar datos. Supa
 `list_seasons()` y `get_league_snapshot(slug)` son de lectura pública. La foto de una temporada
 trae solo las parejas que juegan en ella.
 
-`profiles` guarda qué jugador es cada cuenta (una fila por cuenta, cada una solo ve la suya).
-`get_my_profile()` y `set_my_profile_label(nombre)` requieren sesión. Competiciones admitidas:
+`profiles` guarda los datos de cada cuenta (una fila por cuenta, cada una solo ve la suya): su
+jugador, categoría, si juega mixto, qué competición ver al abrir y su foto (JPEG ya reducido).
+`get_my_profile()` y `update_my_profile(patch)` requieren sesión; `list_players()` es pública y
+dice en qué competiciones aparece cada jugador.
+
+**Meses**: un mes con nombre («Junio») se empareja por nombre con el que ya existe. La carga se
+rechaza si intenta renombrar un mes existente o si pone a una pareja en otro grupo del que ya
+tiene ese mes (migraciones `ingest_league_months_by_name` e `ingest_league_group_consistency_guard`). Competiciones admitidas:
 `masculina`, `mixta`, `femenina`.
 
 El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/liga-parser.js`.

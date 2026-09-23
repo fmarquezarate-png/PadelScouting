@@ -38,7 +38,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   });
 
   await page.goto(BASE); await page.waitForTimeout(700);
-  await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(700);
+  await page.evaluate(() => window.PadelApp.go('config')); await page.waitForTimeout(700);
 
   // --- la carga está escondida hasta que la pides ---
   check('El cargador no estorba de entrada', await page.locator('#ld-text').count() === 0);
@@ -160,7 +160,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
       JSON.stringify(ingest.months));
     const g = ingest.groups.map(x => x.join('-')).join(',');
     check('Mixto: los grupos van separados por mes',
-      g === '1-1,1-2,1-8,2-1,2-9,3-1,3-4,3-7', g);
+      g === '1-1,1-2,1-8,2-1,2-9,7-1,7-4,7-7', g);
     check('Mixto: unifica a Carla en una sola persona',
       ingest.teams.filter(t => /^Carla/.test(t[1])).every(t => t[1] === 'Carla Cayero'),
       ingest.teams.filter(t => /Carla/.test(t[0])).map(t => t[1]).join('|'));
@@ -170,7 +170,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
 
   // --- la sesión sobrevive a recargar ---
   await page.reload(); await page.waitForTimeout(800);
-  await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(700);
+  await page.evaluate(() => window.PadelApp.go('config')); await page.waitForTimeout(700);
   await page.click('[data-action="open-loader"]'); await page.waitForTimeout(300);
   check('La sesión sigue tras recargar', await page.locator('#ld-text').count() === 1);
   await page.click('[data-action="sign-out"]');

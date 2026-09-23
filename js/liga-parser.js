@@ -171,11 +171,16 @@
         months.push(month); group = null; return;
       }
 
-      /* Mes escrito con su nombre: se numera por orden de aparición, que
-         es el orden real de la temporada, y se guarda el nombre tal cual. */
+      /* Mes escrito con su nombre: se numera por su mes de calendario
+         (Enero = 1 … Diciembre = 12), no por orden de aparición. Así, pegar
+         un mes suelto cae en su sitio y no pisa otro. Si la temporada cruza
+         de año (septiembre → enero), los meses siguientes suman 12. */
       var calendar = monthFromName(line);
       if (calendar) {
-        month = { n: months.length + 1, label: line.trim(), calendar: calendar, groups: [] };
+        var prev = months.length ? months[months.length - 1].n : 0;
+        var n = calendar;
+        while (n <= prev) n += 12;
+        month = { n: n, label: line.trim(), calendar: calendar, groups: [] };
         months.push(month); group = null; return;
       }
 

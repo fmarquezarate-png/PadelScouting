@@ -24,7 +24,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
 
   // --- 1. arranque ---
   check('Arranca en la pista, no en Registro', await page.textContent('#page-title') === 'La pista');
-  await page.click('[data-nav="registro"]'); await page.waitForTimeout(300);
+  await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
   check('Registrar sigue a un toque', await page.textContent('#page-title') === 'Registro rápido');
   check('Fecha automática = hoy',
     (await page.inputValue('#f-date')) === new Date().toISOString().slice(0,10),
@@ -80,7 +80,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
 
   // --- 3. persistencia ---
   await page.reload(); await page.waitForTimeout(400);
-  await page.click('[data-nav="registro"]'); await page.waitForTimeout(300);
+  await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('padel-scouting.v1')).matches.length);
   check('Persiste tras recargar', stored === 1, 'partidos=' + stored);
 
@@ -110,7 +110,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
 
   // --- 7. segundo y tercer partido para poblar análisis ---
   const seed = async (r1, a1, r2, a2, s, readSet, readGame, notWorked) => {
-    await page.click('[data-nav="registro"]'); await page.waitForTimeout(150);
+    await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(150);
     if (await page.locator('[data-action="new-match"]').count()) {
       await page.click('[data-action="new-match"]'); await page.waitForTimeout(150);
     }
@@ -212,7 +212,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
 
   // --- 13. desktop ---
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.click('[data-nav="registro"]'); await page.waitForTimeout(300);
+  await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
   check('Sin scroll horizontal en escritorio',
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1));
   await page.setViewportSize({ width: 360, height: 780 });

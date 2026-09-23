@@ -1,6 +1,6 @@
 # Pruebas
 
-Cinco suites contra un navegador real (Chromium vía Playwright). No hay que tocar Supabase:
+Cinco suites (256 comprobaciones) contra un navegador real (Chromium vía Playwright). No hay que tocar Supabase:
 la llamada a la base se intercepta con `fixtures/league-snapshot.json`, que es
 **byte a byte lo que devuelve la base de datos** (comprobado por md5 de cada array).
 

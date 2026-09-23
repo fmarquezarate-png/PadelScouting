@@ -133,7 +133,6 @@
 
     h.push('<div class="btn-row" style="margin-bottom:16px">' +
       '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div>');
-    h.push(meBlock());
 
     h.push('<div class="field"><span class="field-label">Competición</span>' +
       '<div class="chips tight" data-chips="kind">' +
@@ -339,12 +338,18 @@
   }
 
   function bindLoader(view, redraw) {
-    var l = state.loader, a = state.auth;
+    var l = state.loader;
 
     var open = view.querySelector('[data-action="open-loader"]');
     if (open) open.addEventListener('click', function () { l.open = true; redraw(); });
 
-    /* --- sesión --- */
+    bindAuth(view, redraw);
+    bindLoaderBody(view, redraw);
+  }
+
+  /* Entrar / crear cuenta / salir. Lo usan la carga, Mi perfil y la bienvenida. */
+  function bindAuth(view, redraw, onSignedIn) {
+    var a = state.auth;
     var email = document.getElementById('au-email');
     if (email) email.addEventListener('input', function () { a.email = email.value; });
     var pass = document.getElementById('au-pass');
@@ -372,9 +377,15 @@
           a.mode = 'in';
           redraw(); return;
         }
-        global.PadelDB.fetchProfile().catch(function () { return null; }).then(function () {
+        /* Si la base no contesta no se sabe si faltan datos: no se molesta con la bienvenida. */
+        global.PadelDB.fetchProfile().then(function (p) { return { ok: true, p: p }; },
+          function () { return { ok: false, p: null }; }).then(function (r) {
           if (state.model) applyMe(state.model);
           redraw();
+          if (global.PadelShell) {
+            if (r.ok) global.PadelShell.onProfile(r.p); else global.PadelShell.paintAvatar();
+          }
+          if (onSignedIn) onSignedIn(r.p);
         });
       }).catch(function (err) {
         a.busy = false; a.error = err.message; redraw();
@@ -390,9 +401,14 @@
           var snap = null; try { snap = global.PadelDB.readCache().snapshot; } catch (e) {}
           if (snap) setModel(snap);
         }
+        if (global.PadelShell) global.PadelShell.onProfile(null);
         redraw();
       });
     });
+  }
+
+  function bindLoaderBody(view, redraw) {
+    var l = state.loader;
 
     bindMe(view, redraw);
 
@@ -795,7 +811,8 @@
   global.PadelLiga = {
     state: state, switchSeason: switchSeason, applyMe: applyMe,
     esc: esc, pct: pct, stat: stat,
-    loaderCard: loaderCard, bindLoader: bindLoader,
+    loaderCard: loaderCard, bindLoader: bindLoader, authForm: authForm, bindAuth: bindAuth,
+    knownPlayerNames: knownPlayerNames, meBlock: meBlock, bindMe: bindMe,
     calibrationCard: calibrationCard, sourceNote: sourceNote,
     loadingHtml: loadingHtml, shortDate: shortDate,
     renderRival: renderRival,

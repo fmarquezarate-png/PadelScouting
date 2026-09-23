@@ -5,6 +5,32 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Fase 1: marco nuevo
+- **Pista azul en perspectiva** como portada y menú: pista real de 10 × 20 m con cristales, malla,
+  red, focos y la lona del club, dibujada con una cámara 3D. En pantalla ancha se ve desde detrás
+  del fondo; en el móvil la cámara sube y la pista queda en vertical. Seis zonas en la pista y
+  «El rival» esperando en la puerta. Los rótulos se dimensionan con el ancho real de cada zona.
+- **Barra fija arriba**: escudo y club, título con la competición debajo (es el selector), y
+  ⚙ Configuración · 🏠 Inicio · ☰ Menú · tu inicial o tu foto.
+- **Panel ☰** con todas las secciones, agrupadas (La liga · Tu scouting · Tu cuenta).
+- **Bienvenida de 3 datos** al estrenar cuenta: quién eres en la liga, tu categoría y si juegas
+  mixto (y qué ver al abrir). La app te lleva a tu competición por defecto.
+- **Mi perfil** (foto reducida a 256 px en el móvil antes de subirla) y **Configuración**
+  (competición al abrir, carga de datos de la liga, copia de seguridad).
+
+### Changed
+- Fuera la barra de abajo, el botón «volver» y las tarjetas repetidas de la portada.
+- La carga de datos pasa de «La liga» a Configuración.
+
+### Fixed
+- **Meses con nombre**: el lector los numeraba por orden de aparición, así que pegar un mes suelto
+  lo metía en el mes 1. Ahora cada mes lleva su número de calendario y la base empareja por nombre.
+- **Dos protecciones nuevas en la carga**: no deja renombrar un mes que ya existe, y no deja meter
+  a una pareja en otro grupo del que ya tiene ese mes (señal de que el texto es de otro mes).
+- **Mixto reparado**: una segunda carga (Junio con el título «Julio») había duplicado 25 partidos de
+  Junio dentro de Enero y renombrado Enero. Se quitaron los duplicados y se restauraron 7 posiciones
+  de Enero desde el texto original: el mixto vuelve a 7 meses y 231 partidos.
+
 ### Added
 - **Competición arriba, para toda la app**: un botón en la barra superior cambia entre masculina,
   mixta (y femenina cuando exista). La pista, Temporada, Rival y Liga pasan a esa competición; la

@@ -30,30 +30,59 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
 
   /* ---------------- INICIO ---------------- */
   check('Arranca en la pista', await page.textContent('#page-title') === 'La pista');
-  check('Sin botón de volver en la pista', await page.locator('#back').isHidden());
+  check('Sin barra de abajo', await page.locator('.bottom-nav').count() === 0);
+  check('Barra de arriba: engranaje, casa, menú y perfil',
+    await page.locator('.topbar [data-shell="config"]').count() === 1 &&
+    await page.locator('.topbar [data-shell="home"].tb-icon').count() === 1 &&
+    await page.locator('#menu-btn').count() === 1 && await page.locator('#avatar-btn').count() === 1);
+  check('Sin sesión el avatar invita a entrar', (await page.getAttribute('#avatar-btn', 'aria-label')) === 'Entrar');
   let t = await text();
   check('Portada: puesto actual #50', t.includes('#50'));
   check('Portada: nombres sin la inicial recortada', t.includes('Cristian') && !/Cristian C\b/.test(t));
   check('Portada: grupo y balance', t.includes('G13') && t.includes('12–5'));
   check('Portada: cuenta cuánto habéis subido', t.includes('17 puestos'));
+  check('Portada: solo la pista, sin tarjetas repetidas', await page.locator('.home-card').count() === 0);
   check('La pista tiene 7 zonas', await page.locator('.court .zone').count() === 7,
     await page.locator('.court .zone').count());
-  check('La red es el rival', await page.locator('.court .zone[data-view="rival"]').count() === 1);
+  check('La pista es azul y en perspectiva', await page.locator('.court-3d .c-surf').count() === 1);
+  check('El rival espera en la puerta', await page.locator('.court .zone.door[data-view="rival"]').count() === 1);
   check('Las zonas son accesibles con teclado',
     await page.locator('.court .zone[tabindex="0"][role="button"]').count() === 7);
-  check('Hay tarjetas para cada sección', await page.locator('.home-card').count() === 7);
+  const labels = await page.$$eval('.court .zt', els => els.map(e => e.getBoundingClientRect()));
+  let overlap = 0;
+  for (let i = 0; i < labels.length; i++) for (let j = i + 1; j < labels.length; j++) {
+    const a = labels[i], b = labels[j];
+    if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) overlap++;
+  }
+  check('Los rótulos de la pista no se pisan', overlap === 0, overlap + ' solapes');
 
   await page.click('.court .zone[data-view="temporada"]'); await page.waitForTimeout(1300);
   check('Tocar el fondo propio abre la temporada', await page.textContent('#page-title') === 'Nuestra temporada');
-  check('Aparece el botón de volver', await page.locator('#back').isVisible());
-  await page.click('#back'); await page.waitForTimeout(900);
-  check('Volver regresa a la pista', await page.textContent('#page-title') === 'La pista');
+  await page.click('.topbar .tb-icon[data-shell="home"]'); await page.waitForTimeout(900);
+  check('La casa vuelve a la pista', await page.textContent('#page-title') === 'La pista');
   await page.focus('.court .zone[data-view="liga"]');
   await page.keyboard.press('Enter'); await page.waitForTimeout(1300);
   check('Enter en una zona también navega', await page.textContent('#page-title') === 'La liga');
-  await go('inicio');
-  await page.click('.home-card[data-goto="cronica"]'); await page.waitForTimeout(900);
-  check('Las tarjetas navegan', await page.textContent('#page-title') === 'Crónica');
+
+  /* el menú ☰ */
+  await page.click('#menu-btn'); await page.waitForTimeout(350);
+  check('☰ abre el panel', await page.locator('#drawer').isVisible() &&
+    (await page.getAttribute('#menu-btn', 'aria-expanded')) === 'true');
+  check('El panel tiene todas las secciones', await page.locator('[data-drawer-go]').count() === 10);
+  check('Marca dónde estás', (await page.getAttribute('[data-drawer-go="liga"]', 'aria-current')) === 'page');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(350);
+  check('Escape cierra el panel', await page.locator('#drawer').isHidden());
+  await page.click('#menu-btn'); await page.waitForTimeout(350);
+  await page.click('#scrim', { position: { x: 10, y: 400 } }); await page.waitForTimeout(350);
+  check('Tocar fuera cierra el panel', await page.locator('#drawer').isHidden());
+  await page.click('#menu-btn'); await page.waitForTimeout(350);
+  await page.click('[data-drawer-go="cronica"]'); await page.waitForTimeout(900);
+  check('El panel navega', await page.textContent('#page-title') === 'Crónica' && await page.locator('#drawer').isHidden());
+  await page.click('.topbar [data-shell="config"]'); await page.waitForTimeout(900);
+  check('El engranaje abre Configuración', await page.textContent('#page-title') === 'Configuración');
+  await page.click('#avatar-btn'); await page.waitForTimeout(600);
+  check('El avatar abre Mi perfil (sin sesión, el acceso)',
+    await page.textContent('#page-title') === 'Mi perfil' && await page.locator('#au-email').count() === 1);
   check('Una sola descarga de la liga en toda la sesión', calls === 1, 'llamadas=' + calls);
 
   /* ---------------- 01 NÚMEROS ---------------- */
@@ -182,8 +211,10 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Crónica avisa de que es del primer semestre', t.includes('primer semestre'));
 
   /* ---------------- CARGA ---------------- */
+  await go('config');
+  check('La carga de datos vive en Configuración', await page.locator('[data-action="open-loader"]').count() === 1);
   await go('liga');
-  check('La carga de datos vive en La liga', await page.locator('[data-action="open-loader"]').count() === 1);
+  check('La liga enlaza con la carga', await page.locator('.lg [data-goto="config"]').count() === 1);
 
   /* ---------------- el resto sigue vivo ---------------- */
   for (const [v, title] of [['registro', 'Registro rápido'], ['historial', 'Historial'], ['analisis', 'Análisis']]) {

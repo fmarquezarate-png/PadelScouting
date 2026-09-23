@@ -26,6 +26,7 @@
 
   function currentSeason() { return lsGet(CFG.seasonKey) || CFG.season; }
   function setSeason(slug) { lsSet(CFG.seasonKey, slug); }
+  function hasChosenSeason() { return !!lsGet(CFG.seasonKey); }
 
   /* Cada temporada con su copia en el móvil. La de por defecto conserva
      la clave de siempre para no perder lo ya descargado. */
@@ -62,11 +63,21 @@
     try { return JSON.parse(lsGet(CFG.meKey)); } catch (e) { return null; }
   }
   function rememberMe(p) {
-    if (p && p.label) lsSet(CFG.meKey, JSON.stringify(p)); else lsDel(CFG.meKey);
+    if (p && (p.label || p.category)) lsSet(CFG.meKey, JSON.stringify(p)); else lsDel(CFG.meKey);
   }
   function fetchProfile() {
     return callAuthed('get_my_profile').then(function (p) { rememberMe(p); return p; });
   }
+  /* Guarda solo los campos que se pasan: { label, category, playsMixed, defaultKind, avatar }. */
+  function updateProfile(patch) {
+    return callAuthed('update_my_profile', { patch: patch }).then(function (p) { rememberMe(p); return p; });
+  }
+
+  /* Todos los jugadores de todas las competiciones (para «¿quién eres?»). */
+  function listPlayers() {
+    return rpcPublic('list_players').catch(function () { return []; });
+  }
+
   function saveProfile(label) {
     return callAuthed('set_my_profile_label', { p_label: label })
       .then(function (p) { rememberMe(p); return p; });
@@ -162,7 +173,8 @@
   global.PadelDB = {
     load: load, CFG: CFG, readCache: readCache,
     callAuthed: callAuthed, clearCache: clearCache,
-    currentSeason: currentSeason, setSeason: setSeason, listSeasons: listSeasons,
-    myPlayer: myPlayer, rememberMe: rememberMe, fetchProfile: fetchProfile, saveProfile: saveProfile
+    currentSeason: currentSeason, setSeason: setSeason, hasChosenSeason: hasChosenSeason, listSeasons: listSeasons,
+    myPlayer: myPlayer, rememberMe: rememberMe, fetchProfile: fetchProfile, saveProfile: saveProfile,
+    updateProfile: updateProfile, listPlayers: listPlayers
   };
 })(window);

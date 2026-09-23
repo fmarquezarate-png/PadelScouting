@@ -67,7 +67,8 @@
       'placeholder="Buscar pareja o jugador…" autocomplete="off" value="' + esc(ui.expQuery) + '">' +
       '<div class="exp-items" id="expItems"></div></div><div class="exp-detail" id="expDetail"></div></div></section>');
 
-    h.push('<section class="blk">' + PL.loaderCard() + '</section>');
+    h.push('<section class="blk"><p class="note">¿Hay mes nuevo en la web de la liga? ' +
+      '<button class="linkish" data-goto="config">Cárgalo desde Configuración →</button></p></section>');
     h.push('</div>');
     view.innerHTML = h.join('');
 
@@ -217,7 +218,6 @@
       });
     }
     bindRowLinks();
-    PL.bindLoader(view, function () { paintGeneral(view, bind); });
     bind();
   }
 
@@ -314,17 +314,8 @@
   }
 
   /* ============================================================
-     INICIO · la pista es el menú
+     INICIO · la pista es el menú (js/court.js la dibuja)
      ============================================================ */
-  var ZONES = [
-    { id: 'liga', view: 'liga', x: 10, y: 10, w: 200, h: 130.5, title: 'La liga', hint: 'Clasificación y explorador' },
-    { id: 'cronica', view: 'cronica', x: 10, y: 140.5, w: 100, h: 69.5, title: 'Crónica', hint: '1er semestre' },
-    { id: 'analisis', view: 'analisis', x: 110, y: 140.5, w: 100, h: 69.5, title: 'Análisis', hint: 'Patrones' },
-    { id: 'registro', view: 'registro', x: 10, y: 210, w: 100, h: 69.5, title: 'Registrar', hint: 'Tras jugar' },
-    { id: 'historial', view: 'historial', x: 110, y: 210, w: 100, h: 69.5, title: 'Historial', hint: 'Tus notas' },
-    { id: 'temporada', view: 'temporada', x: 10, y: 279.5, w: 200, h: 130.5, title: 'Nuestra temporada', hint: '' }
-  ];
-
   function renderInicio(view, bind, go) {
     PT.stopTimer();
     PT.withModel(view, function () { paintInicio(view, bind, go); });
@@ -344,20 +335,22 @@
       liga: total + ' parejas',
       temporada: a ? (a.w + '–' + a.l + ' · #' + a.posFin) : '',
       registro: 'En 2 min',
-      historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Vacío',
+      historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Tus partidos',
       analisis: 'Y briefing',
       cronica: PT.isS1() ? '1er semestre' : 'Por escribir'
     };
 
-    var h = [];
-    h.push('<section class="home-hero">' +
-      '<img class="home-crest" src="assets/logo.png" alt="Club Tennis El Molí" width="92" height="92">' +
-      '<div class="eyebrow">Club Tennis El Molí · ' + esc((m.season && m.season.name) || 'Liga') + '</div>' +
-      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : whoAmI()) + '<em>' +
-      esc(me ? heroName(me.playerB) : '') + '</em></h2>');
+    /* Marcador: quiénes sois, dónde estáis y cómo venís. */
+    var h = ['<section class="home">'];
+    h.push('<div class="home-side">' +
+      '<p class="home-quote">«El pádel<br>conecta<br>personas»</p>' +
+      '<div class="scoreboard">' +
+      '<div class="eyebrow">' + esc((m.season && m.season.name) || 'Liga') + '</div>' +
+      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : whoAmI()) +
+      (me ? '<em>' + esc(heroName(me.playerB)) + '</em>' : '') + '</h2>');
     if (!me) {
       h.push('<p class="home-line">No apareces en <b>' + esc((m.season && m.season.name) || 'esta competición') +
-        '</b>. Cambia de competición arriba, o dinos quién eres desde <b>La liga → Cargar</b>.</p>');
+        '</b>. Cambia de competición arriba, o dinos quién eres en <b>Mi perfil</b>.</p>');
     }
     if (a) {
       var climb = a.posIni - a.posFin;
@@ -374,25 +367,13 @@
         ? 'Habéis subido <b>' + climb + ' puestos</b> desde el #' + a.posIni + '. '
         : '') + 'Toca la pista para entrar.</p>');
     }
+    h.push('</div></div>');
+    h.push('<div class="court-host" id="courtHost"></div>');
     h.push('</section>');
-
-    h.push('<section class="court-wrap" aria-label="La pista: cada zona abre una parte de la app">' +
-      courtSvg(live) + '</section>');
-
-    h.push('<section class="home-cards" aria-label="Todas las secciones">' +
-      card('temporada', 'Nuestra temporada', 'Números, escalera animada, mes a mes, acantilado, rivales y techo.', live.temporada) +
-      card('rival', 'El rival', 'Elige la pareja que te toca: proyección, historial directo y plan.', 'La red') +
-      card('liga', 'La liga', 'Clasificación general, explorador de cualquier pareja y carga de datos.', live.liga) +
-      card('registro', 'Registrar', 'La capa de scouting: lo que la liga no sabe de tu partido.', live.registro) +
-      card('historial', 'Historial', 'Tus partidos anotados, con filtros y backup.', live.historial) +
-      card('analisis', 'Análisis', 'Patrones que se repiten, win rate por arquetipo y briefing.', live.analisis) +
-      card('cronica', 'Crónica', PT.isS1() ? 'Los tres actos, el duelo, las firmas y los dos niveles del club.'
-        : 'El relato de esta competición: se escribe con sus partidos reales.', live.cronica) +
-      '</section>');
 
     view.innerHTML = h.join('');
     animateRank();
-    bindCourt(view, go);
+    global.PadelCourt.mount(document.getElementById('courtHost'), live, go);
     bind();
   }
 
@@ -404,47 +385,6 @@
   /* La liga escribe "Cristian C": en portada sobra la inicial suelta. */
   function heroName(label) {
     return String(label || '').replace(/\s+[A-ZÁÉÍÓÚÑ]\.?$/, '').trim();
-  }
-
-  function card(viewId, title, text, stat) {
-    return '<button class="home-card" data-goto="' + viewId + '"><span class="hcard-t">' + esc(title) + '</span>' +
-      '<span class="hcard-d">' + esc(text) + '</span>' +
-      (stat ? '<span class="hcard-s">' + esc(stat) + '</span>' : '') + '<span class="hcard-go" aria-hidden="true">→</span></button>';
-  }
-
-  function courtSvg(live) {
-    var z = ZONES.map(function (zn) {
-      var cx = zn.x + zn.w / 2, cy = zn.y + zn.h / 2;
-      var big = zn.h > 100;
-      return '<g class="zone" data-zone="' + zn.id + '" data-view="' + zn.view + '" tabindex="0" role="button" ' +
-        'aria-label="' + esc(zn.title) + '">' +
-        '<rect class="zone-hit" x="' + zn.x + '" y="' + zn.y + '" width="' + zn.w + '" height="' + zn.h + '"/>' +
-        '<text class="zt' + (big ? ' big' : '') + '" x="' + cx + '" y="' + (cy - (big ? 4 : 2)) + '">' + esc(zn.title) + '</text>' +
-        '<text class="zs" x="' + cx + '" y="' + (cy + (big ? 13 : 11)) + '">' + esc(live[zn.id] || zn.hint) + '</text></g>';
-    }).join('');
-
-    return '<svg class="court" viewBox="0 0 220 420" role="group">' +
-      '<defs><radialGradient id="ballg" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#FFD9A8"/>' +
-      '<stop offset="1" stop-color="#ED6C05"/></radialGradient>' +
-      '<linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2C3A22"/>' +
-      '<stop offset=".5" stop-color="#34452A"/><stop offset="1" stop-color="#2C3A22"/></linearGradient></defs>' +
-      '<rect x="10" y="10" width="200" height="400" rx="3" fill="url(#turf)"/>' +
-      /* cristales de fondo y laterales, malla en el resto */
-      '<path class="glass" d="M10 50 V10 H210 V50 M10 370 V410 H210 V370"/>' +
-      '<path class="mesh" d="M10 50 V370 M210 50 V370"/>' +
-      /* líneas de juego */
-      '<line class="ln" x1="10" y1="140.5" x2="210" y2="140.5"/>' +
-      '<line class="ln" x1="10" y1="279.5" x2="210" y2="279.5"/>' +
-      '<line class="ln" x1="110" y1="140.5" x2="110" y2="279.5"/>' +
-      z +
-      /* la red es el rival: lo que te separa del otro lado */
-      '<g class="zone net" data-zone="rival" data-view="rival" tabindex="0" role="button" aria-label="El rival">' +
-      '<rect class="zone-hit" x="4" y="196" width="212" height="28" rx="6"/>' +
-      '<line class="netline" x1="6" y1="210" x2="214" y2="210"/>' +
-      '<rect class="netpill" x="72" y="200" width="76" height="20" rx="10"/>' +
-      '<text class="zt net-t" x="110" y="214">EL RIVAL</text></g>' +
-      '<circle id="ball" class="ball" cx="110" cy="380" r="5"/>' +
-      '</svg>';
   }
 
   function reduceMotion() {
@@ -467,67 +407,6 @@
     }
     el.textContent = '#' + from;
     global.requestAnimationFrame(step);
-  }
-
-  /* La pelota viaja a la zona que tocas y luego se entra. Sin
-     animaciones si el sistema pide movimiento reducido. */
-  function flyBall(tx, ty, done) {
-    var ball = document.getElementById('ball');
-    if (!ball || reduceMotion()) { done(); return; }
-    var sx = Number(ball.getAttribute('cx')), sy = Number(ball.getAttribute('cy'));
-    var t0 = null, dur = 360;
-    function step(ts) {
-      if (!t0) t0 = ts;
-      var k = Math.min(1, (ts - t0) / dur);
-      var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      var arc = Math.sin(Math.PI * k) * 26;
-      ball.setAttribute('cx', sx + (tx - sx) * e);
-      ball.setAttribute('cy', sy + (ty - sy) * e - arc);
-      ball.setAttribute('r', 5 + Math.sin(Math.PI * k) * 2.2);
-      if (k < 1) global.requestAnimationFrame(step); else done();
-    }
-    global.requestAnimationFrame(step);
-  }
-
-  function rally() {
-    var ball = document.getElementById('ball');
-    if (!ball || reduceMotion()) return;
-    var pts = [[110, 380], [60, 70], [160, 330], [70, 110], [110, 250]];
-    var i = 0;
-    function next() {
-      if (!document.getElementById('ball') || i >= pts.length - 1) return;
-      var a = pts[i], b = pts[i + 1];
-      var t0 = null, dur = 520;
-      function step(ts) {
-        if (!document.getElementById('ball')) return;
-        if (!t0) t0 = ts;
-        var k = Math.min(1, (ts - t0) / dur);
-        var arc = Math.sin(Math.PI * k) * 18;
-        ball.setAttribute('cx', a[0] + (b[0] - a[0]) * k);
-        ball.setAttribute('cy', a[1] + (b[1] - a[1]) * k - arc);
-        if (k < 1) global.requestAnimationFrame(step); else { i++; next(); }
-      }
-      global.requestAnimationFrame(step);
-    }
-    next();
-  }
-
-  function bindCourt(view, go) {
-    Array.prototype.forEach.call(view.querySelectorAll('.zone'), function (g) {
-      function activate() {
-        var target = g.getAttribute('data-view');
-        var rect = g.querySelector('.zone-hit');
-        var cx = Number(rect.getAttribute('x')) + Number(rect.getAttribute('width')) / 2;
-        var cy = Number(rect.getAttribute('y')) + Number(rect.getAttribute('height')) / 2;
-        g.classList.add('hit');
-        flyBall(cx, cy, function () { go(target); });
-      }
-      g.addEventListener('click', activate);
-      g.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activate(); }
-      });
-    });
-    setTimeout(rally, 250);
   }
 
   global.PadelGeneral = {

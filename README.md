@@ -16,11 +16,13 @@ móvil, sentado en el banquillo, y que con el tiempo esos registros se convierta
 
 | Pantalla | Para qué |
 |---|---|
-| **Competición** (arriba) | Cambia toda la app entre masculina, mixta y femenina. |
-| **La pista** | Inicio. Una pista de pádel que es el menú: tocas una zona y la bola vuela hasta ella. Puesto animado, forma y accesos. |
+| **Barra de arriba** | Título con la competición debajo (tócala para cambiar), ⚙ Configuración, 🏠 Inicio, ☰ Menú y tu perfil. |
+| **La pista** | Inicio. Pista azul en perspectiva que es el menú: tocas una zona y la bola vuela hasta ella. Marcador con puesto, forma y balance. |
 | **Nuestra temporada** | Números, escalera animada (5 métricas), mes a mes, acantilado, todos los partidos, rivales y techo. |
 | **La liga** | Clasificación general ordenable, explorador de cualquier pareja y carga de datos. |
 | **Crónica** | Tres actos, Ernesto & Jordi, izquierda y derecha, los dos niveles del club. |
+| **Mi perfil** | Foto, quién eres en la liga, categoría, mixto y qué ver al abrir. |
+| **Configuración** | Competición al abrir, carga de datos de la liga y copia de seguridad. |
 | **Rival** | Eliges la pareja que te toca y salen proyección, historial directo, comparativa y lectura. |
 | **Registrar** | Formulario rápido post-partido. |
 | **Historial** | Tarjeta por partido, con filtros por rival, arquetipo, resultado y fecha. |
@@ -101,6 +103,8 @@ PadelScouting/
 │   ├── views-liga.js   pantalla Rival y carga de datos
 │   ├── views-temporada.js  Nuestra temporada (secciones 01–06)
 │   ├── views-general.js    La pista (inicio), La liga y Crónica
+│   ├── court.js        la pista en perspectiva (cámara 3D) e iconos
+│   ├── shell.js        barra de arriba, panel ☰, Mi perfil, Configuración, bienvenida
 │   ├── data.js         catálogos (arquetipos, patrones, funcionó, no funcionó, estados)
 │   ├── storage.js      leer/guardar/editar/borrar · export · import · validación
 │   ├── analysis.js     win rate, medias, evolución, muestra insuficiente
