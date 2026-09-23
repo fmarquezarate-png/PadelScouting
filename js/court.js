@@ -43,7 +43,7 @@
       [0, 20].forEach(function (z) { pts.push([x, 0, z], [x, 4, z]); });
     });
     /* La puerta y el rótulo de «El rival» también tienen que caber. */
-    pts.push([0, 0, mode === 'tall' ? -4.2 : -3.6]);
+    pts.push([0, 0, -4.6]);
     var raw = pts.map(function (q) { return rawProj(cam, q[0], q[1], q[2]); });
     var minX = Math.min.apply(null, raw.map(function (r) { return r[0]; }));
     var maxX = Math.max.apply(null, raw.map(function (r) { return r[0]; }));
@@ -220,9 +220,12 @@
       var two = zn.title.length > 11;
       var longest = two ? Math.max.apply(null, zn.title.split(' ').map(function (w) { return w.length; })) : zn.title.length;
       var sub = String(live[zn.id] || '');
-      var r = Math.min(tall ? 18 : 26, zw * 0.2);
-      var ts = Math.min(tall ? 12.5 : 18, zw * 0.84 / (longest * 0.72));
+      /* Botones grandes: el círculo ocupa casi un tercio del ancho de la zona. */
+      var r = Math.min(tall ? 25 : 36, zw * 0.28);
+      var ts = Math.min(tall ? 14 : 21, zw * 0.8 / (longest * 0.72));
       var ss = Math.min(ts * 0.66, zw * 0.88 / (Math.max(sub.length, 1) * 0.66));
+      var lift = r * 0.55;
+      p = [p[0], p[1] - lift, p[2]];
       var ty = p[1] + r + ts * (two ? 1.35 : 1.05);
       var sy = ty + ts * (two ? 1.55 : 1.15);
       return '<g class="zone" data-zone="' + zn.id + '" data-view="' + zn.view + '" tabindex="0" role="button" ' +
@@ -268,7 +271,7 @@
 
     /* la puerta: el rival te espera fuera de la pista */
     var d = P(cam, 0, 0, -1.5);
-    var dr = tall ? 19 : 26, dts = tall ? 12.5 : 17;
+    var dr = tall ? 26 : 36, dts = tall ? 14.5 : 20;
     h.push('<circle cx="' + f(d[0]) + '" cy="' + f(d[1]) + '" r="' + (dr * 2.4) + '" fill="url(#cGlow)" class="c-doorglow"/>');
     h.push('<g class="zone door" data-zone="rival" data-view="rival" tabindex="0" role="button" ' +
       'aria-label="El rival · busca y compara" data-cx="0" data-cz="-1.5">' +

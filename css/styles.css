@@ -724,3 +724,30 @@ body[data-view="inicio"] .view{max-width:none;padding:0}
 .note.center{font-size:.78rem;color:var(--mute);font-family:var(--mono);letter-spacing:.08em}
 @media(max-width:759px){ .topbar h1{letter-spacing:.07em;font-size:.95rem} }
 .drawer[hidden],.scrim[hidden],.comp-menu[hidden]{display:none}
+
+/* ============================================================
+   ZONAS SEGURAS · iPhone con muesca/isla, Android con recorte, web
+   La app se dibuja a pantalla completa (viewport-fit=cover): cada
+   borde reserva lo que el móvil diga que está ocupado. En un
+   ordenador env() vale 0 y no cambia nada.
+   ============================================================ */
+.topbar{padding-top:calc(10px + env(safe-area-inset-top));
+  padding-left:calc(18px + env(safe-area-inset-left));padding-right:calc(18px + env(safe-area-inset-right))}
+@media(min-width:760px){
+  .topbar{padding-top:calc(12px + env(safe-area-inset-top));
+    padding-left:calc(28px + env(safe-area-inset-left));padding-right:calc(28px + env(safe-area-inset-right))}
+}
+@media(max-width:380px){
+  .topbar{padding-top:calc(8px + env(safe-area-inset-top));
+    padding-left:calc(12px + env(safe-area-inset-left));padding-right:calc(12px + env(safe-area-inset-right))}
+}
+.drawer{padding-top:calc(14px + env(safe-area-inset-top));padding-right:calc(14px + env(safe-area-inset-right))}
+.modal{padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+  calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+.view{padding-left:calc(18px + env(safe-area-inset-left));padding-right:calc(18px + env(safe-area-inset-right))}
+@media(min-width:720px){
+  .view{padding-left:calc(26px + env(safe-area-inset-left));padding-right:calc(26px + env(safe-area-inset-right))}
+}
+body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.home{min-height:calc(100vh - 66px - env(safe-area-inset-top));min-height:calc(100dvh - 66px - env(safe-area-inset-top))}
+.comp-menu{max-width:calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))}

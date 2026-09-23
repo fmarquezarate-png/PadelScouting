@@ -231,6 +231,18 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
       check('Sin scroll horizontal · ' + v + ' a ' + w + 'px', over <= 1, over > 1 ? 'sobra ' + over + 'px' : null);
     }
   }
+  /* ---------------- iPhone con isla: la barra no se mete bajo la hora ---------------- */
+  {
+    const ip = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await ip.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
+    const cdp = await ip.context().newCDPSession(ip);
+    await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { top: 59, bottom: 34, left: 0, right: 0 } });
+    await ip.goto(BASE); await ip.waitForTimeout(900);
+    const top = await ip.evaluate(() => document.querySelector('.tb-brand').getBoundingClientRect().top);
+    check('Zona segura: la barra de arriba empieza bajo la hora del iPhone', top >= 59, 'top=' + top);
+    await ip.close();
+  }
+
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));
 
   console.log('\n===== VERIFICADO =====');

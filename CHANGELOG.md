@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **iPhone (app instalada)**: la barra de arriba quedaba debajo de la hora y la batería. Ahora cada
+  borde reserva la zona segura que informa el móvil (muesca, isla dinámica, recortes de Android);
+  en un ordenador no cambia nada. Hay una prueba que lo comprueba emulando un iPhone.
+
+### Changed
+- Botones de la pista más grandes (el círculo ocupa casi un tercio de cada zona).
+
+### Added
+- `docs/brief-pista-realista.md`: encargo para el diseñador de la versión realista de la pista
+  (web y móvil), con `docs/referencia-pista-fran.webp` como referencia.
+
 ### Added — Fase 1: marco nuevo
 - **Pista azul en perspectiva** como portada y menú: pista real de 10 × 20 m con cristales, malla,
   red, focos y la lona del club, dibujada con una cámara 3D. En pantalla ancha se ve desde detrás
