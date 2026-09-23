@@ -1,0 +1,657 @@
+MES 1
+Grupo 1
+Equipo	Miquel Mor/Ivan Figue	Nicolas Ur/Javier Zaz	Marc Buitr/Pau Buitra	Alejandro /Arnau Amet
+Miquel Mor/Ivan Figue		6-3 / 6-3	6-0 / 6-2	6-4 / 2-6 / 2-6
+Nicolas Ur/Javier Zaz	3-6 / 3-6		6-3 / 6-1	6-2 / 7-5
+Marc Buitr/Pau Buitra	0-6 / 2-6	3-6 / 1-6		7-5 / 6-1
+Alejandro /Arnau Amet	4-6 / 6-2 / 6-2	2-6 / 5-7	5-7 / 1-6	
+Grupo 2
+Equipo	Gerard Sel/Ruben Rami	Carlos Jim/Alberto Ji	Marc Boliv/Adrian Veg	Aleix Samp/Gerardo Ca
+Gerard Sel/Ruben Rami		6-7 / 6-4 / 10-9	6-2 / 4-6 / 6-10	3-6 / 6-1 / 10-3
+Carlos Jim/Alberto Ji	7-6 / 4-6 / 9-10		WO+	6-2 / 6-4
+Marc Boliv/Adrian Veg	2-6 / 6-4 / 10-6	WO-		1-6 / 6-1 / 10-3
+Aleix Samp/Gerardo Ca	6-3 / 1-6 / 3-10	2-6 / 4-6	6-1 / 1-6 / 3-10	
+Grupo 3
+Equipo	Roger Vilo/Joan Mendo	Xavi Alvar/Edu Javega	Hugo Roca /Xavi Tamam	Ferran Obi/Jaume Bale
+Roger Vilo/Joan Mendo		7-6 / 7-5	3-6 / 7-6 / 5-10	6-4 / 7-6
+Xavi Alvar/Edu Javega	6-7 / 5-7		6-3 / 6-1	6-4 / 4-6 / 10-7
+Hugo Roca /Xavi Tamam	6-3 / 6-7 / 10-5	3-6 / 1-6		6-3 / 5-7 / 10-7
+Ferran Obi/Jaume Bale	4-6 / 6-7	4-6 / 6-4 / 7-10	3-6 / 7-5 / 7-10	
+Grupo 4
+Equipo	Felipe Dia/Marc Coll	Alex Camin/Joan Ramón	Esteve Bra/Sergio de	Paco López/Antonio He
+Felipe Dia/Marc Coll		6-0 / 6-4	6-2 / 6-1	WO+
+Alex Camin/Joan Ramón	0-6 / 4-6		6-7 / 6-1 / 6-4	1-6 / 6-1 / 6-3
+Esteve Bra/Sergio de	2-6 / 1-6	7-6 / 1-6 / 4-6		WO+
+Paco López/Antonio He	WO-	6-1 / 1-6 / 3-6	WO-	
+Grupo 5
+Equipo	David Bale/Xavier Bal	Pau Guille/Marti Mitj	Toni Grael/Francesc V	Javi Leon /David Lope
+David Bale/Xavier Bal		6-7 / 6-3 / 10-3	6-4 / 6-4	6-2 / 6-4
+Pau Guille/Marti Mitj	7-6 / 3-6 / 3-10		6-2 / 7-6	6-4 / 6-4
+Toni Grael/Francesc V	4-6 / 4-6	2-6 / 6-7		6-4 / 6-4
+Javi Leon /David Lope	2-6 / 4-6	4-6 / 4-6	4-6 / 4-6	
+Grupo 6
+Equipo	Jose Manue/Fernando V	Adria Mont/José Migue	Narcis Ber/Carles Vic	Xavi Duart/Sergi Sanc
+Jose Manue/Fernando V		7-6 / 6-2	6-1 / 6-1	6-2 / 6-0
+Adria Mont/José Migue	6-7 / 2-6		5-7 / 6-3 / 6-1	4-6 / 6-0 / 2-10
+Narcis Ber/Carles Vic	1-6 / 1-6	7-5 / 3-6 / 1-6		7-5 / 6-4
+Xavi Duart/Sergi Sanc	2-6 / 0-6	6-4 / 0-6 / 10-2	5-7 / 4-6	
+Grupo 7
+Equipo	Chimo Cala/Marc Raven	Enrique Ja/Enric Jaul	Arnau Casa/Ramon Casa	Tomàs Fern/Xavier Fer
+Chimo Cala/Marc Raven		6-7 / 6-0 / 10-8	6-2 / 1-6 / 9-10	6-2 / 7-6
+Enrique Ja/Enric Jaul	7-6 / 0-6 / 8-10		6-4 / 6-1	6-1 / 3-6 / 10-6
+Arnau Casa/Ramon Casa	2-6 / 6-1 / 10-9	4-6 / 1-6		6-4 / 7-6
+Tomàs Fern/Xavier Fer	2-6 / 6-7	1-6 / 6-3 / 6-10	4-6 / 6-7	
+Grupo 8
+Equipo	Sergio Rod/Eugenio Cu	Rafael Her/Xavi Maten	David Port/Manuel Mar	Albert Art/Anibal Gon
+Sergio Rod/Eugenio Cu		4-6 / 6-3 / 10-5	6-3 / 4-6 / 10-8	6-4 / 7-6
+Rafael Her/Xavi Maten	6-4 / 3-6 / 5-10		2-6 / 6-4 / 10-6	6-3 / 2-6 / 6-10
+David Port/Manuel Mar	3-6 / 6-4 / 8-10	6-2 / 4-6 / 6-10		WO+
+Albert Art/Anibal Gon	4-6 / 6-7	3-6 / 6-2 / 10-6	WO-	
+Grupo 9
+Equipo	Andres Pra/Javier Igl	Alex Sabat/Raul Garci	Albert Sab/Carlos Cal	Enrique Ja/Ignacio Ja
+Andres Pra/Javier Igl		7-6 / 6-2	5-7 / 6-0 / 10-8	
+Alex Sabat/Raul Garci	6-7 / 2-6		6-2 / 1-6 / 6-2	
+Albert Sab/Carlos Cal	7-5 / 0-6 / 8-10	2-6 / 6-1 / 2-6		
+Enrique Ja/Ignacio Ja				
+Grupo 10
+Equipo	Carlos Rod/Andres Rod	Ferran Urg/Marc Lope	Joan Masot/Alex Vicen	Eric Perez/Marc Perez
+Carlos Rod/Andres Rod		6-2 / 6-4	6-0 / 6-2	6-4 / 6-3
+Ferran Urg/Marc Lope	2-6 / 4-6		6-0 / 4-6 / 10-4	6-3 / 5-7 / 10-7
+Joan Masot/Alex Vicen	0-6 / 2-6	0-6 / 6-4 / 4-10		6-1 / 5-7 / 10-9
+Eric Perez/Marc Perez	4-6 / 3-6	3-6 / 7-5 / 7-10	1-6 / 7-5 / 9-10	
+Grupo 11
+Equipo	Juan Galdo/Jose Luis	David Lope/David Lope	Guillem Sa/Ramon Sans	Joan Pujol/Marc Armen
+Juan Galdo/Jose Luis		6-2 / 6-4	6-3 / 6-4	6-4 / 6-2
+David Lope/David Lope	2-6 / 4-6		6-2 / 6-3	6-7 / 6-2 / 10-9
+Guillem Sa/Ramon Sans	3-6 / 4-6	2-6 / 3-6		7-6 / 3-6 / 10-8
+Joan Pujol/Marc Armen	4-6 / 2-6	7-6 / 2-6 / 9-10	6-7 / 6-3 / 8-10	
+Grupo 12
+Equipo	Marc Guix /Miguel Rom	Tim Kohlst/Pedro Lope	Alex Expos/Pablo Fern	Iscle Mach/Roc Mach P
+Marc Guix /Miguel Rom		7-6 / 6-2		WO+
+Tim Kohlst/Pedro Lope	6-7 / 2-6		3-6 / 3-6	6-4 / 7-6
+Alex Expos/Pablo Fern		6-3 / 6-3		
+Iscle Mach/Roc Mach P	WO-	4-6 / 6-7		
+Grupo 13
+Equipo	Anskar Gal/Carlos Cue	Josep Mª A/MIguel Mar	Izan Alave/Ivan Rodri	Jose Luis /Carlos Qui
+Anskar Gal/Carlos Cue		6-1 / 6-4	5-7 / 3-6	6-4 / 6-4
+Josep Mª A/MIguel Mar	1-6 / 4-6			6-2 / 7-5
+Izan Alave/Ivan Rodri	7-5 / 6-3			
+Jose Luis /Carlos Qui	4-6 / 4-6	2-6 / 5-7		
+Grupo 14
+Equipo	Ivan Badal/Ivan Badal	Chema Mur /Sergi Mur	Ernesto Sa/Jordi de l	Xavier And/David Andu
+Ivan Badal/Ivan Badal		7-5 / 6-4	7-5 / 6-1	6-2 / 6-3
+Chema Mur /Sergi Mur	5-7 / 4-6		2-6 / 7-6 / 7-6	6-1 / 6-1
+Ernesto Sa/Jordi de l	5-7 / 1-6	6-2 / 6-7 / 6-7		6-1 / 6-2
+Xavier And/David Andu	2-6 / 3-6	1-6 / 1-6	1-6 / 2-6	
+Grupo 15
+Equipo	Carlos San/Felix Lópe	Miguel Rod/Luke Treas	Xavi Moya /Jonathan C	Quim Valde/Javier San
+Carlos San/Felix Lópe		6-1 / 6-2	6-3 / 6-3	6-4 / 3-6 / 8-10
+Miguel Rod/Luke Treas	1-6 / 2-6		4-6 / 6-3 / 10-9	WO+
+Xavi Moya /Jonathan C	3-6 / 3-6	6-4 / 3-6 / 9-10		4-6 / 6-2 / 10-7
+Quim Valde/Javier San	4-6 / 6-3 / 10-8	WO-	6-4 / 2-6 / 7-10	
+Grupo 16
+Equipo	Biel Cirer/Eloi Paez	Alberto Lopez/Juan Jose	Yago Garcí/Edgar Pere	Sergio Cej/Francesc d
+Biel Cirer/Eloi Paez		6-2 / 2-6 / 6-10	6-0 / 6-0	6-1 / 6-2
+Alberto Lopez/Juan Jose	2-6 / 6-2 / 10-6		WO-	6-0 / 6-1
+Yago Garcí/Edgar Pere	0-6 / 0-6	WO+		
+Sergio Cej/Francesc d	1-6 / 2-6	0-6 / 1-6		
+Grupo 17
+Equipo	Toni Llove/Joaquim Gi	Daniel Arm/Oriol Camp	Josep Bels/Luca Belsa	Enric Cast/Miquel Bal
+Toni Llove/Joaquim Gi		7-6 / 6-0	WO-	6-4 / 6-2
+Daniel Arm/Oriol Camp	6-7 / 0-6		7-5 / 6-1	3-6 / 7-5 / 8-10
+Josep Bels/Luca Belsa	WO+	5-7 / 1-6		
+Enric Cast/Miquel Bal	4-6 / 2-6	6-3 / 5-7 / 10-8		
+Grupo 18
+Equipo	Pere Armen/Sergi Oliv	Ferran Cod/Max Belsa	David Mart/Guillem Lo	Eduardo Ro/Daniel Ala	Lluis Palo/Joan Roca
+Pere Armen/Sergi Oliv		7-6 / 4-6 / 10-7		6-4 / 6-3	6-0 / 6-3
+Ferran Cod/Max Belsa	6-7 / 6-4 / 7-10		2-6 / 6-3 / 6-4	7-5 / 6-4	
+David Mart/Guillem Lo		6-2 / 3-6 / 4-6		6-3 / 4-6 / 2-6	WO+
+Eduardo Ro/Daniel Ala	4-6 / 3-6	5-7 / 4-6	3-6 / 6-4 / 6-2		
+Lluis Palo/Joan Roca	0-6 / 3-6		WO-		
+MES 2
+Grupo 1
+Equipo	Gerard Sel/Ruben Rami	Nicolas Ur/Javier Zaz	Miquel Mor/Ivan Figue	Roger Vilo/Joan Mendo
+Gerard Sel/Ruben Rami		2-6 / 3-6	7-5 / 4-6 / 10-5	6-3 / 2-6 / 6-2
+Nicolas Ur/Javier Zaz	6-2 / 6-3			6-2 / 6-0
+Miquel Mor/Ivan Figue	5-7 / 6-4 / 5-10			6-2 / 6-3
+Roger Vilo/Joan Mendo	3-6 / 6-2 / 2-6	2-6 / 0-6	2-6 / 3-6	
+Grupo 2
+Equipo	Marc Buitr/Pau Buitra	Felipe Dia/Marc Coll	Xavi Alvar/Edu Javega	Carlos Jim/Alberto Ji
+Marc Buitr/Pau Buitra		1-6 / 6-4 / 7-5	6-4 / 6-3	6-4 / 6-4
+Felipe Dia/Marc Coll	6-1 / 4-6 / 5-7		6-4 / 7-6	6-1 / 7-5
+Xavi Alvar/Edu Javega	4-6 / 3-6	4-6 / 6-7		6-4 / 6-3
+Carlos Jim/Alberto Ji	4-6 / 4-6	1-6 / 5-7	4-6 / 3-6	
+Grupo 3
+Equipo	Alejandro /Arnau Amet	David Bale/Xavier Bal	Alex Camin/Joan Ramón	Marc Boliv/Adrian Veg
+Alejandro /Arnau Amet		6-7 / 6-3 / 10-7	6-4 / 7-5	6-2 / 4-6 / 6-2
+David Bale/Xavier Bal	7-6 / 3-6 / 7-10		7-6 / 6-3	WO+
+Alex Camin/Joan Ramón	4-6 / 5-7	6-7 / 3-6		WO+
+Marc Boliv/Adrian Veg	2-6 / 6-4 / 2-6	WO-	WO-	
+Grupo 4
+Equipo	Jose Manue/Fernando V	Pau Guille/Marti Mitj	Hugo Roca /Xavi Tamam	Aleix Samp/Gerardo Ca
+Jose Manue/Fernando V		6-3 / 6-4	6-1 / 6-1	6-1 / 6-2
+Pau Guille/Marti Mitj	3-6 / 4-6		6-4 / 6-3	6-2 / 6-3
+Hugo Roca /Xavi Tamam	1-6 / 1-6	4-6 / 3-6		6-4 / 6-4
+Aleix Samp/Gerardo Ca	1-6 / 2-6	2-6 / 3-6	4-6 / 4-6	
+Grupo 5
+Equipo	Ferran Obi/Jaume Bale	Adria Mont/José Migue	Chimo Cala/Marc Raven	Esteve Bra/Sergio de
+Ferran Obi/Jaume Bale		4-6 / 6-3 / 10-6	3-6 / 6-2 / 6-3	3-6 / 6-3 / 4-6
+Adria Mont/José Migue	6-4 / 3-6 / 6-10		6-3 / 6-4	7-6 / 7-6
+Chimo Cala/Marc Raven	6-3 / 2-6 / 3-6	3-6 / 4-6		7-5 / 7-5
+Esteve Bra/Sergio de	6-3 / 3-6 / 6-4	6-7 / 6-7	5-7 / 5-7	
+Grupo 6
+Equipo	Sergio Rod/Eugenio Cu	Toni Grael/Francesc V	Paco López/Antonio He	Enrique Ja/Enric Jaul
+Sergio Rod/Eugenio Cu		6-4 / 6-7 / 10-5	6-4 / 6-3	3-6 / 6-3 / 5-10
+Toni Grael/Francesc V	4-6 / 7-6 / 5-10		7-6 / 6-2	6-1 / 6-1
+Paco López/Antonio He	4-6 / 3-6	6-7 / 2-6		6-3 / 6-4
+Enrique Ja/Enric Jaul	6-3 / 3-6 / 10-5	1-6 / 1-6	3-6 / 4-6	
+Grupo 7
+Equipo	Rafael Her/Xavi Maten	Narcis Ber/Carles Vic	Andres Pra/Javier Igl	Javi Leon /David Lope
+Rafael Her/Xavi Maten		WO+	3-6 / 6-2 / 10-2	6-3 / 2-6 / 10-9
+Narcis Ber/Carles Vic	WO-		6-3 / 6-2	7-5 / 6-3
+Andres Pra/Javier Igl	6-3 / 2-6 / 2-10	3-6 / 2-6		6-4 / 0-6 / 10-8
+Javi Leon /David Lope	3-6 / 6-2 / 9-10	5-7 / 3-6	4-6 / 6-0 / 8-10	
+Grupo 8
+Equipo	Carlos Rod/Andres Rod	Xavi Duart/Sergi Sanc	Arnau Casa/Ramon Casa	Alex Sabat/Raul Garci
+Carlos Rod/Andres Rod		6-4 / 7-6	7-6 / 4-6 / 9-10	6-3 / 6-2
+Xavi Duart/Sergi Sanc	4-6 / 6-7		6-2 / 6-4	6-0 / 6-1
+Arnau Casa/Ramon Casa	6-7 / 6-4 / 10-9	2-6 / 4-6		6-1 / 6-3
+Alex Sabat/Raul Garci	3-6 / 2-6	0-6 / 1-6	1-6 / 3-6	
+Grupo 9
+Equipo	Tomàs Fern/Xavier Fer	Ferran Urg/Marc Lope	David Port/Jesús Garc	Juan Galdo/Jose Luis
+Tomàs Fern/Xavier Fer		6-4 / 6-4	6-0 / 6-2	6-2 / 6-2
+Ferran Urg/Marc Lope	4-6 / 4-6		6-1 / 6-0	7-6 / 6-2
+David Port/Jesús Garc	0-6 / 2-6	1-6 / 0-6		6-7 / 6-4 / 10-6
+Juan Galdo/Jose Luis	2-6 / 2-6	6-7 / 2-6	7-6 / 4-6 / 6-10	
+Grupo 10
+Equipo	Albert Sab/Carlos Cal	David Lope/David Lope	Marc Guix /Miguel Rom	Albert Art/Anibal Gon
+Albert Sab/Carlos Cal		6-4 / 6-7 / 10-2	6-3 / 3-6 / 10-6	
+David Lope/David Lope	4-6 / 7-6 / 2-10		4-6 / 3-6	WO+
+Marc Guix /Miguel Rom	3-6 / 6-3 / 6-10	6-4 / 6-3		
+Albert Art/Anibal Gon		WO-		
+Grupo 11
+Equipo	Joan Masot/Alex Vicen	Anskar Gal/Carlos Cue	Tim Kohlst/Pedro Lope	Enrique Ja/Ignacio Ja
+Joan Masot/Alex Vicen		6-4 / 6-2	6-3 / 4-6 / 10-5	
+Anskar Gal/Carlos Cue	4-6 / 2-6		6-4 / 6-4	
+Tim Kohlst/Pedro Lope	3-6 / 6-4 / 5-10	4-6 / 4-6		
+Enrique Ja/Ignacio Ja				
+Grupo 12
+Equipo	Ivan Badal/Ivan Badal	Eric Perez/Marc Perez	Josep Mª A/MIguel Mar	Guillem Sa/Ramon Sans
+Ivan Badal/Ivan Badal		6-4 / 3-6 / 10-1	7-5 / 6-0	6-3 / 6-7 / 10-7
+Eric Perez/Marc Perez	4-6 / 6-3 / 1-10		6-2 / 6-1	6-2 / 6-1
+Josep Mª A/MIguel Mar	5-7 / 0-6	2-6 / 1-6		6-4 / 2-6 / 10-9
+Guillem Sa/Ramon Sans	3-6 / 7-6 / 7-10	2-6 / 1-6	4-6 / 6-2 / 9-10	
+Grupo 13
+Equipo	Joan Pujol/Marc Armen	Carlos San/Felix Lópe	Alex Expos/Pablo Fern	Chema Mur /Sergi Mur
+Joan Pujol/Marc Armen		3-6 / 6-2 / 10-8	WO+	7-5 / 6-4
+Carlos San/Felix Lópe	6-3 / 2-6 / 8-10		WO+	1-6 / 6-4 / 10-6
+Alex Expos/Pablo Fern	WO-	WO-		6-4 / 6-2
+Chema Mur /Sergi Mur	5-7 / 4-6	6-1 / 4-6 / 6-10	4-6 / 2-6	
+Grupo 14
+Equipo	Biel Cirer/Eloi Paez	Iscle Mach/Roc Mach P	Izan Alave/Ivan Rodri	Miguel Rod/Luke Treas
+Biel Cirer/Eloi Paez		6-4 / 6-2	WO+	6-2 / 6-3
+Iscle Mach/Roc Mach P	4-6 / 2-6			6-3 / 7-6
+Izan Alave/Ivan Rodri	WO-			6-2 / 6-3
+Miguel Rod/Luke Treas	2-6 / 3-6	3-6 / 6-7	2-6 / 3-6	
+Grupo 15
+Equipo	Alberto Lopez/Juan Jose	Jose Luis /Carlos Qui	Toni Llove/Joaquim Gi	Ernesto Sa/Jordi de l
+Alberto Lopez/Juan Jose		6-4 / 6-4	6-4 / 6-3	6-4 / 6-1
+Jose Luis /Carlos Qui	4-6 / 4-6		6-4 / 2-6 / 6-4	6-2 / 6-1
+Toni Llove/Joaquim Gi	4-6 / 3-6	4-6 / 6-2 / 4-6		6-3 / 6-4
+Ernesto Sa/Jordi de l	4-6 / 1-6	2-6 / 1-6	3-6 / 4-6	
+Grupo 16
+Equipo	Pere Armen/Sergi Oliv	Xavi Moya /Jonathan C	Daniel Arm/Oriol Camp	Xavier And/David Andu
+Pere Armen/Sergi Oliv		6-4 / 6-1	6-7 / 6-4 / 10-6	6-2 / 6-4
+Xavi Moya /Jonathan C	4-6 / 1-6		6-0 / 6-3	6-4 / 6-2
+Daniel Arm/Oriol Camp	7-6 / 4-6 / 6-10	0-6 / 3-6		6-2 / 6-4
+Xavier And/David Andu	2-6 / 4-6	4-6 / 2-6	2-6 / 4-6	
+Grupo 17
+Equipo	Quim Valde/Javier San	Ferran Cod/Max Belsa	Francisco /Cristian C	Yago Garcí/Edgar Pere	Josep Bels/Luca Belsa
+Quim Valde/Javier San		7-5 / 6-0	6-1 / 6-4	4-6 / 2-6	7-5 / 1-6 / 10-8
+Ferran Cod/Max Belsa	5-7 / 0-6		6-3 / 0-6 / 10-7	6-2 / 6-1	6-3 / 5-7 / 10-8
+Francisco /Cristian C	1-6 / 4-6	3-6 / 6-0 / 7-10		6-3 / 7-5	3-6 / 7-5 / 10-5
+Yago Garcí/Edgar Pere	6-4 / 6-2	2-6 / 1-6	3-6 / 5-7		6-4 / 7-5
+Josep Bels/Luca Belsa	5-7 / 6-1 / 8-10	3-6 / 7-5 / 8-10	6-3 / 5-7 / 5-10	4-6 / 5-7	
+Grupo 18
+Equipo	Enric Castillo/Marc Gelabert	Eduardo Ro/Daniel Ala	David Mart/Guillem Lo	Sergio Cej/Francesc d	Lluis Palo/Joan Roca
+Enric Castillo/Marc Gelabert		6-1 / 4-6 / 6-4	6-4 / 5-7 / 10-8	6-4 / 6-2	6-1 / 6-0
+Eduardo Ro/Daniel Ala	1-6 / 6-4 / 4-6		6-3 / 6-2	WO+	6-4 / 6-4
+David Mart/Guillem Lo	4-6 / 7-5 / 8-10	3-6 / 2-6		1-6 / 4-6	7-5 / 6-1
+Sergio Cej/Francesc d	4-6 / 2-6	WO-	6-1 / 6-4		
+Lluis Palo/Joan Roca	1-6 / 0-6	4-6 / 4-6	5-7 / 1-6		
+MES 3
+Grupo 1
+Equipo	Alejandro /Arnau Amet	Marc Buitr/Pau Buitra	Nicolas Ur/Javier Zaz	Gerard Sel/Ruben Rami
+Alejandro /Arnau Amet		4-6 / 6-3 / 7-5	6-3 / 6-3	7-6 / 6-3
+Marc Buitr/Pau Buitra	6-4 / 3-6 / 5-7		WO+	6-3 / 6-3
+Nicolas Ur/Javier Zaz	3-6 / 3-6	WO-		3-6 / 6-0 / 6-1
+Gerard Sel/Ruben Rami	6-7 / 3-6	3-6 / 3-6	6-3 / 0-6 / 1-6	
+Grupo 2
+Equipo	Felipe Dia/Marc Coll	Jose Manue/Fernando V	Miquel Mor/Ivan Figue	David Bale/Xavier Bal
+Felipe Dia/Marc Coll		7-6 / 3-6 / 10-7		6-0 / 6-1
+Jose Manue/Fernando V	6-7 / 6-3 / 7-10		3-6 / 6-3 / 10-5	6-2 / 6-7 / 4-10
+Miquel Mor/Ivan Figue		6-3 / 3-6 / 5-10		6-4 / 7-6
+David Bale/Xavier Bal	0-6 / 1-6	2-6 / 7-6 / 10-4	4-6 / 6-7	
+Grupo 3
+Equipo	Ferran Obi/Jaume Bale	Xavi Alvar/Edu Javega	Pau Guille/Marti Mitj	Roger Vilo/Joan Mendo
+Ferran Obi/Jaume Bale		5-6 / 6-3 / 10-9		6-2 / 7-5
+Xavi Alvar/Edu Javega	6-5 / 3-6 / 9-10		6-2 / 7-6	6-7 / 4-6
+Pau Guille/Marti Mitj		2-6 / 6-7		WO+
+Roger Vilo/Joan Mendo	2-6 / 5-7	7-6 / 6-4	WO-	
+Grupo 4
+Equipo	Carlos Jim/Alberto Ji	Adria Mont/José Migue	Alex Camin/Joan Ramón	Sergio Rod/Eugenio Cu
+Carlos Jim/Alberto Ji		1-6 / 6-4 / 10-9	2-6 / 6-2 / 10-8	6-1 / 6-3
+Adria Mont/José Migue	6-1 / 4-6 / 9-10		WO+	6-2 / 6-3
+Alex Camin/Joan Ramón	6-2 / 2-6 / 8-10	WO-		6-3 / 4-6 / 10-7
+Sergio Rod/Eugenio Cu	1-6 / 3-6	2-6 / 3-6	3-6 / 6-4 / 7-10	
+Grupo 5
+Equipo	Toni Grael/Francesc V	Rafael Her/Xavi Maten	Marc Boliv/Adrian Veg	Hugo Roca/Hugo Roca
+Toni Grael/Francesc V		6-4 / 6-1	4-6 / 4-6 / 9-10	6-1 / 6-4
+Rafael Her/Xavi Maten	4-6 / 1-6		WO+	4-6 / 6-4 / 10-7
+Marc Boliv/Adrian Veg	6-4 / 6-4 / 10-9	WO-		WO+
+Hugo Roca/Hugo Roca	1-6 / 4-6	6-4 / 4-6 / 7-10	WO-	
+Grupo 6
+Equipo	Chimo Cala/Marc Raven	Narcis Ber/Carles Vic	Carlos Rod/Andres Rod	Aleix Samp/Gerardo Ca
+Chimo Cala/Marc Raven		6-2 / 0-6 / 6-2	2-6 / 6-1 / 10-6	6-3 / 3-6 / 3-6
+Narcis Ber/Carles Vic	2-6 / 6-0 / 2-6		7-6 / 3-6 / 10-4	4-6 / 6-2 / 6-1
+Carlos Rod/Andres Rod	6-2 / 1-6 / 6-10	6-7 / 6-3 / 4-10		6-3 / 6-4
+Aleix Samp/Gerardo Ca	3-6 / 6-3 / 6-3	6-4 / 2-6 / 1-6	3-6 / 4-6	
+Grupo 7
+Equipo	Xavi Duart/Sergi Sanc	Tomàs Fern/Xavier Fer	Esteve Bra/Sergio de	Paco López/Antonio He
+Xavi Duart/Sergi Sanc		3-6 / 6-2 / 10-9	6-1 / 1-6 / 9-10	6-2 / 6-3
+Tomàs Fern/Xavier Fer	6-3 / 2-6 / 9-10		6-4 / 6-2	6-7 / 6-3 / 10-8
+Esteve Bra/Sergio de	1-6 / 6-1 / 10-9	4-6 / 2-6		6-3 / 6-3
+Paco López/Antonio He	2-6 / 3-6	7-6 / 3-6 / 8-10	3-6 / 3-6	
+Grupo 8
+Equipo	Andres Pra/Javier Igl	Albert Sab/Carlos Cal	Ferran Urg/Marc Lope	Enrique Ja/Enric Jaul
+Andres Pra/Javier Igl		6-2 / 6-3	6-3 / 1-6 / 10-7	5-7 / 6-3 / 5-10
+Albert Sab/Carlos Cal	2-6 / 3-6		5-7 / 7-5 / 10-3	7-5 / 4-6 / 10-9
+Ferran Urg/Marc Lope	3-6 / 6-1 / 7-10	7-5 / 5-7 / 3-10		4-6 / 6-3 / 10-7
+Enrique Ja/Enric Jaul	7-5 / 3-6 / 10-5	5-7 / 6-4 / 9-10	6-4 / 3-6 / 7-10	
+Grupo 9
+Equipo	Arnau Casa/Ramon Casa	David Lope/David Lope	Joan Masot/Alex Vicen	Javi Leon /David Lope
+Arnau Casa/Ramon Casa		6-2 / 6-1	7-5 / 6-4	
+David Lope/David Lope	2-6 / 1-6		6-2 / 6-3	
+Joan Masot/Alex Vicen	5-7 / 4-6	2-6 / 3-6		
+Javi Leon /David Lope				
+Grupo 10
+Equipo	Ivan Badal/Ivan Badal	David Port/Jesús Garc	Anskar Gal/Carlos Cue	Alex Sabat/Raul Garci
+Ivan Badal/Ivan Badal		6-3 / 0-6 / 6-4	6-4 / 2-6 / 10-6	6-1 / 6-4
+David Port/Jesús Garc	3-6 / 6-0 / 4-6		6-4 / 4-6 / 10-7	6-4 / 2-6 / 6-2
+Anskar Gal/Carlos Cue	4-6 / 6-2 / 6-10	4-6 / 6-4 / 7-10		4-6 / 6-0 / 10-5
+Alex Sabat/Raul Garci	1-6 / 4-6	4-6 / 6-2 / 2-6	6-4 / 0-6 / 5-10	
+Grupo 11
+Equipo	Marc Guix /Miguel Rom	Juan Galdo/Jose Luis	Joan Pujol/Marc Armen	Eric Perez/Marc Perez
+Marc Guix /Miguel Rom		6-3 / 7-6	6-3 / 6-2	6-3 / 6-7 / 10-6
+Juan Galdo/Jose Luis	3-6 / 6-7		7-5 / 6-4	2-6 / 6-2 / 10-8
+Joan Pujol/Marc Armen	3-6 / 2-6	5-7 / 4-6		1-6 / 6-2 / 10-6
+Eric Perez/Marc Perez	3-6 / 7-6 / 6-10	6-2 / 2-6 / 8-10	6-1 / 2-6 / 6-10	
+Grupo 12
+Equipo	Carlos San/Felix Lópe	Biel Cirer/Eloi Paez	Tim Kohlst/Pedro Lope	Albert Art/Anibal Gon
+Carlos San/Felix Lópe		4-6 / 2-6	3-6 / 7-5 / 10-9	WO+
+Biel Cirer/Eloi Paez	6-4 / 6-2		6-3 / 6-4	
+Tim Kohlst/Pedro Lope	6-3 / 5-7 / 9-10	3-6 / 4-6		7-6 / 0-6 / 10-6
+Albert Art/Anibal Gon	WO-		6-7 / 6-0 / 6-10	
+Grupo 13
+Equipo	Alberto Lopez/Juan Jose	Josep Mª A/MIguel Mar	Enrique Ja/Ignacio Ja	Iscle Mach/Roc Mach P
+Alberto Lopez/Juan Jose		6-3 / 6-1		
+Josep Mª A/MIguel Mar	3-6 / 1-6			
+Enrique Ja/Ignacio Ja				
+Iscle Mach/Roc Mach P				
+Grupo 14
+Equipo	Jose Luis /Carlos Qui	Pere Armen/Sergi Oliv	Guillem Sa/Ramon Sans	Alex Expos/Pablo Fern
+Jose Luis /Carlos Qui		6-1 / 4-6 / 6-4	6-1 / 6-4	WO+
+Pere Armen/Sergi Oliv	1-6 / 6-4 / 4-6		6-2 / 7-6	WO+
+Guillem Sa/Ramon Sans	1-6 / 4-6	2-6 / 6-7		
+Alex Expos/Pablo Fern	WO-	WO-		
+Grupo 15
+Equipo	Izan Alave/Ivan Rodri	Quim Valde/Javier San	Chema Mur /Sergi Mur	Xavi Moya /Jonathan C
+Izan Alave/Ivan Rodri		7-5 / 6-2	6-0 / 6-3	7-6 / 6-2
+Quim Valde/Javier San	5-7 / 2-6		6-2 / 1-6 / 10-8	6-4 / 4-6 / 9-10
+Chema Mur /Sergi Mur	0-6 / 3-6	2-6 / 6-1 / 8-10		6-1 / 7-6
+Xavi Moya /Jonathan C	6-7 / 2-6	4-6 / 6-4 / 10-9	1-6 / 6-7	
+Grupo 16
+Equipo	Ferran Cod/Max Belsa	Enric Castillo/Marc Gelabert	Toni Llove/Joaquim Gi	Miguel Rod/Luke Treas
+Ferran Cod/Max Belsa		6-0 / 7-5	5-7 / 6-4 / 10-9	7-6 / 6-3
+Enric Castillo/Marc Gelabert	0-6 / 5-7		6-4 / 3-6 / 9-10	6-3 / 7-6
+Toni Llove/Joaquim Gi	7-5 / 4-6 / 9-10	4-6 / 6-3 / 10-9		
+Miguel Rod/Luke Treas	6-7 / 3-6	3-6 / 6-7		
+Grupo 17
+Equipo	Francisco /Cristian C	Eduardo Ro/Daniel Ala	Ernesto Sa/Jordi de l	Yago Garcí/Edgar Pere	Daniel Arm/Oriol Camp
+Francisco /Cristian C		2-6 / 6-1 / 10-8	6-1 / 4-6 / 10-9	5-7 / 6-4 / 10-7	3-6 / 6-2 / 10-6
+Eduardo Ro/Daniel Ala	6-2 / 1-6 / 8-10		7-6 / 6-3	6-7 / 6-4 / 10-9	6-4 / 6-1
+Ernesto Sa/Jordi de l	1-6 / 6-4 / 9-10	6-7 / 3-6		6-1 / 6-3	6-1 / 6-4
+Yago Garcí/Edgar Pere	7-5 / 4-6 / 7-10	7-6 / 4-6 / 9-10	1-6 / 3-6		6-1 / 6-4
+Daniel Arm/Oriol Camp	6-3 / 2-6 / 6-10	4-6 / 1-6	1-6 / 4-6	1-6 / 4-6	
+Grupo 18
+Equipo	Josep Bels/Luca Belsa	Sergio Cej/Francesc d	David Mart/Guillem Lo	Lluis Palo/Joan Roca
+Josep Bels/Luca Belsa		6-3 / 4-6 / 5-10	6-3 / 6-4	4-6 / 6-1 / 10-2
+Sergio Cej/Francesc d	3-6 / 6-4 / 10-5		7-6 / 4-6 / 10-4	
+David Mart/Guillem Lo	3-6 / 4-6	6-7 / 6-4 / 4-10		6-2 / 6-1
+Lluis Palo/Joan Roca	6-4 / 1-6 / 2-10		2-6 / 1-6	
+MES 4
+Grupo 1
+Equipo	Felipe Dia/Marc Coll	Marc Buitr/Pau Buitra	Alejandro /Arnau Amet	Ferran Obi/Jaume Bale
+Felipe Dia/Marc Coll		7-6 / 6-0	6-4 / 7-6	6-2 / 6-4
+Marc Buitr/Pau Buitra	6-7 / 0-6		7-5 / 6-3	7-5 / 7-6
+Alejandro /Arnau Amet	4-6 / 6-7	5-7 / 3-6		6-4 / 6-4
+Ferran Obi/Jaume Bale	2-6 / 4-6	5-7 / 6-7	4-6 / 4-6	
+Grupo 2
+Equipo	Jose Manue/Fernando V	Carlos Jim/Alberto Ji	Nicolas Ur/Javier Zaz	Xavi Alvar/Edu Javega
+Jose Manue/Fernando V		6-4 / 2-6 / 10-8	6-7 / 6-0 / 10-3	6-3 / 6-3
+Carlos Jim/Alberto Ji	4-6 / 6-2 / 8-10		6-2 / 0-6 / 10-8	3-6 / 6-4 / 6-10
+Nicolas Ur/Javier Zaz	7-6 / 0-6 / 3-10	2-6 / 6-0 / 8-10		6-4 / 6-4
+Xavi Alvar/Edu Javega	3-6 / 3-6	6-3 / 4-6 / 10-6	4-6 / 4-6	
+Grupo 3
+Equipo	Miquel Mor/Ivan Figue	Gerard Sel/Ruben Rami	Adria Mont/José Migue	Toni Grael/Francesc V
+Miquel Mor/Ivan Figue		6-0 / 6-1	6-0 / 6-3	6-2 / 6-1
+Gerard Sel/Ruben Rami	0-6 / 1-6		7-5 / 6-4	6-3 / 6-2
+Adria Mont/José Migue	0-6 / 3-6	5-7 / 4-6		6-4 / 6-4
+Toni Grael/Francesc V	2-6 / 1-6	3-6 / 2-6	4-6 / 4-6	
+Grupo 4
+Equipo	David Bale/Xavier Bal	Rafael Her/Xavi Maten	Chimo Cala/Marc Raven	Pau Guille/Marti Mitj
+David Bale/Xavier Bal		6-0 / 6-4	2-6 / 7-5 / 6-4	
+Rafael Her/Xavi Maten	0-6 / 4-6		4-6 / 7-5 / 10-6	
+Chimo Cala/Marc Raven	6-2 / 5-7 / 4-6	6-4 / 5-7 / 6-10		
+Pau Guille/Marti Mitj				
+Grupo 5
+Equipo	Alex Camin/Joan Ramón	Narcis Ber/Carles Vic	Roger Vilo/Joan Mendo	Xavi Duart/Sergi Sanc
+Alex Camin/Joan Ramón		6-7 / 6-3 / 10-4	6-3 / 6-1	6-2 / 7-6
+Narcis Ber/Carles Vic	7-6 / 3-6 / 4-10		3-6 / 6-2 / 8-10	WO+
+Roger Vilo/Joan Mendo	3-6 / 1-6	6-3 / 2-6 / 10-8		6-7 / 1-6
+Xavi Duart/Sergi Sanc	2-6 / 6-7	WO-	7-6 / 6-1	
+Grupo 6
+Equipo	Marc Boliv/Adrian Veg	Sergio Rod/Eugenio Cu	Tomàs Fern/Xavier Fer	Andres Pra/Javier Igl
+Marc Boliv/Adrian Veg		6-2 / 6-4	6-2 / 5-7 / 8-10	6-1 / 6-1
+Sergio Rod/Eugenio Cu	2-6 / 4-6		6-2 / 6-2	6-2 / 6-3
+Tomàs Fern/Xavier Fer	2-6 / 7-5 / 10-8	2-6 / 2-6		6-1 / 6-4
+Andres Pra/Javier Igl	1-6 / 1-6	2-6 / 3-6	1-6 / 4-6	
+Grupo 7
+Equipo	Hugo Roca/Hugo Roca	Albert Sab/Carlos Cal	Carlos Rod/Andres Rod	Arnau Casa/Ramon Casa
+Hugo Roca/Hugo Roca		7-6 / 6-4	7-6 / 4-6 / 10-5	7-6 / 6-4
+Albert Sab/Carlos Cal	6-7 / 4-6		6-3 / 3-6 / 10-6	6-2 / 6-4
+Carlos Rod/Andres Rod	6-7 / 6-4 / 5-10	3-6 / 6-3 / 6-10		6-0 / 6-4
+Arnau Casa/Ramon Casa	6-7 / 4-6	2-6 / 4-6	0-6 / 4-6	
+Grupo 8
+Equipo	Esteve Bra/Sergio de	Aleix Samp/Gerardo Ca	David Lope/David Lope	Ivan Badal/Ivan Badal
+Esteve Bra/Sergio de		5-7 / 6-0 / 10-1	6-2 / 6-2	6-4 / 3-6 / 6-4
+Aleix Samp/Gerardo Ca	7-5 / 0-6 / 1-10		4-6 / 7-6 / 10-5	6-3 / 6-0
+David Lope/David Lope	2-6 / 2-6	6-4 / 6-7 / 5-10		7-5 / 6-3
+Ivan Badal/Ivan Badal	4-6 / 6-3 / 4-6	3-6 / 0-6	5-7 / 3-6	
+Grupo 9
+Equipo	Marc Guix /Miguel Rom	Paco López/Antonio He	Ferran Urg/Marc Lope	David Port/Jesús Garc
+Marc Guix /Miguel Rom		4-6 / 7-6 / 10-3	6-3 / 7-5	6-4 / 6-2
+Paco López/Antonio He	6-4 / 6-7 / 3-10		6-3 / 2-6 / 10-3	6-3 / 6-4
+Ferran Urg/Marc Lope	3-6 / 5-7	3-6 / 6-2 / 3-10		6-2 / 6-4
+David Port/Jesús Garc	4-6 / 2-6	3-6 / 4-6	2-6 / 4-6	
+Grupo 10
+Equipo	Juan Galdo/Jose Luis	Enrique Ja/Enric Jaul	Joan Masot/Alex Vicen	Carlos San/Felix Lópe
+Juan Galdo/Jose Luis		6-4 / 7-6	6-4 / 6-2	6-4 / 6-4
+Enrique Ja/Enric Jaul	4-6 / 6-7		7-5 / 6-0	6-3 / 6-4
+Joan Masot/Alex Vicen	4-6 / 2-6	5-7 / 0-6		6-2 / 4-6 / 10-4
+Carlos San/Felix Lópe	4-6 / 4-6	3-6 / 4-6	2-6 / 6-4 / 4-10	
+Grupo 11
+Equipo	Alberto Lopez/Juan Jose	Javi Leon /David Lope	Anskar Gal/Carlos Cue	Biel Cirer/Eloi Paez
+Alberto Lopez/Juan Jose		6-1 / 6-4	6-4 / 4-6 / 10-9	
+Javi Leon /David Lope	1-6 / 4-6		6-3 / 6-4	
+Anskar Gal/Carlos Cue	4-6 / 6-4 / 9-10	3-6 / 4-6		
+Biel Cirer/Eloi Paez				
+Grupo 12
+Equipo	Alex Sabat/Raul Garci	Jose Luis /Carlos Qui	Joan Pujol/Marc Armen	Josep Mª A/MIguel Mar
+Alex Sabat/Raul Garci			6-4 / 6-4	7-5 / 6-2
+Jose Luis /Carlos Qui			6-4 / 1-6 / 6-2	6-4 / 6-1
+Joan Pujol/Marc Armen	4-6 / 4-6	4-6 / 6-1 / 2-6		6-3 / 4-6 / 10-4
+Josep Mª A/MIguel Mar	5-7 / 2-6	4-6 / 1-6	3-6 / 6-4 / 4-10	
+Grupo 13
+Equipo	Izan Alave/Ivan Rodri	Eric Perez/Marc Perez	Tim Kohlst/Pedro Lope	Pere Armen/Sergi Oliv
+Izan Alave/Ivan Rodri		7-6 / 6-3	6-3 / 6-4	6-3 / 6-2
+Eric Perez/Marc Perez	6-7 / 3-6		WO+	6-7 / 6-1 / 10-3
+Tim Kohlst/Pedro Lope	3-6 / 4-6	WO-		6-2 / 6-3
+Pere Armen/Sergi Oliv	3-6 / 2-6	7-6 / 1-6 / 3-10	2-6 / 3-6	
+Grupo 14
+Equipo	Ferran Cod/Max Belsa	Albert Art/Anibal Gon	Iscle Mach/Roc Mach P	Quim Valde/Javier San
+Ferran Cod/Max Belsa		6-4 / 6-4	6-0 / 4-6 / 9-10	6-1 / 6-2
+Albert Art/Anibal Gon	4-6 / 4-6		6-4 / 6-1	6-1 / 6-0
+Iscle Mach/Roc Mach P	0-6 / 6-4 / 10-9	4-6 / 1-6		6-3 / 5-7 / 8-10
+Quim Valde/Javier San	1-6 / 2-6	1-6 / 0-6	3-6 / 7-5 / 10-8	
+Grupo 15
+Equipo	Enric Castillo/Marc Gelabert	Francisco /Cristian C	Guillem Sa/Ramon Sans	Eduardo Ro/Daniel Ala
+Enric Castillo/Marc Gelabert		7-6 / 6-2	6-2 / 4-6 / 10-8	6-4 / 6-7 / 10-8
+Francisco /Cristian C	6-7 / 2-6		6-4 / 6-3	6-4 / 7-6
+Guillem Sa/Ramon Sans	2-6 / 6-4 / 8-10	4-6 / 3-6		6-4 / 6-4
+Eduardo Ro/Daniel Ala	4-6 / 7-6 / 8-10	4-6 / 6-7	4-6 / 4-6	
+Grupo 16
+Equipo	Ernesto Sa/Jordi de l	Chema Mur /Sergi Mur	Josep Bels/Luca Belsa	Alex Expos/Pablo Fern
+Ernesto Sa/Jordi de l		4-6 / 6-3 / 10-8	WO+	
+Chema Mur /Sergi Mur	6-4 / 3-6 / 8-10		6-4 / 7-6	
+Josep Bels/Luca Belsa	WO-	4-6 / 6-7		
+Alex Expos/Pablo Fern				
+Grupo 17
+Equipo	Xavi Moya /Jonathan C	Toni Llove/Joaquim Gi	Yago Garcí/Edgar Pere	Sergio Cej/Francesc d
+Xavi Moya /Jonathan C		1-6 / 4-6	4-6 / 5-7	6-3 / 6-4
+Toni Llove/Joaquim Gi	6-1 / 6-4			
+Yago Garcí/Edgar Pere	6-4 / 7-5			
+Sergio Cej/Francesc d	3-6 / 4-6			
+Grupo 18
+Equipo	David Mart/Guillem Lo	Lluis Palo/Joan Roca	Miguel Rod/Luke Treas	Daniel Arm/Oriol Camp
+David Mart/Guillem Lo		6-2 / 6-0	7-6 / 2-6 / 10-4	WO+
+Lluis Palo/Joan Roca	2-6 / 0-6		WO+	2-6 / 4-6
+Miguel Rod/Luke Treas	6-7 / 6-2 / 4-10	WO-		6-2 / 6-2
+Daniel Arm/Oriol Camp	WO-	6-2 / 6-4	2-6 / 2-6	
+MES 5
+Grupo 1
+Equipo	Miquel Mor/Ivan Figue	Jose Manue/Fernando V	Marc Buitr/Pau Buitra	Felipe Dia/Marc Coll
+Miquel Mor/Ivan Figue		5-7 / 6-3 / 10-4	4-6 / 6-4 / 8-10	WO+
+Jose Manue/Fernando V	7-5 / 3-6 / 4-10		6-4 / 6-1	WO+
+Marc Buitr/Pau Buitra	6-4 / 4-6 / 10-8	4-6 / 1-6		WO+
+Felipe Dia/Marc Coll	WO-	WO-	WO-	
+Grupo 2
+Equipo	Alejandro /Arnau Amet	David Bale/Xavier Bal	Carlos Jim/Alberto Ji	Gerard Sel/Ruben Rami
+Alejandro /Arnau Amet		6-3 / 6-3	6-2 / 7-6	WO+
+David Bale/Xavier Bal	3-6 / 3-6		7-6 / 6-2	6-1 / 6-3
+Carlos Jim/Alberto Ji	2-6 / 6-7	6-7 / 2-6		0-6 / 6-4 / 10-7
+Gerard Sel/Ruben Rami	WO-	1-6 / 3-6	6-0 / 4-6 / 7-10	
+Grupo 3
+Equipo	Nicolas Ur/Javier Zaz	Alex Camin/Joan Ramón	Jaume Bal/Albert Gom	Rafael Her/Xavi Maten
+Nicolas Ur/Javier Zaz		6-3 / 3-6 / 10-2	6-3 / 6-4	6-0 / 6-1
+Alex Camin/Joan Ramón	3-6 / 6-3 / 2-10		WO+	WO+
+Jaume Bal/Albert Gom	3-6 / 4-6	WO-		6-1 / 5-7 / 10-3
+Rafael Her/Xavi Maten	0-6 / 1-6	WO-	1-6 / 7-5 / 3-10	
+Grupo 4
+Equipo	Adria Mont/José Migue	Xavi Alvar/Edu Javega	Narcis Ber/Carles Vic	Marc Boliv/Adrian Veg
+Adria Mont/José Migue		2-6 / 6-3 / 10-6	6-4 / 6-1	WO+
+Xavi Alvar/Edu Javega	6-2 / 3-6 / 6-10		6-0 / 7-5	WO+
+Narcis Ber/Carles Vic	4-6 / 1-6	0-6 / 5-7		6-3 / 6-4
+Marc Boliv/Adrian Veg	WO-	WO-	3-6 / 4-6	
+Grupo 5
+Equipo	Toni Grael/Francesc V	Sergio Rod/Eugenio Cu	Hugo Roca/Hugo Roca	Chimo Cala/Marc Raven
+Toni Grael/Francesc V		6-3 / 6-2	6-2 / 6-4	WO+
+Sergio Rod/Eugenio Cu	3-6 / 2-6		2-6 / 6-2 / 10-5	6-2 / 5-7 / 10-9
+Hugo Roca/Hugo Roca	2-6 / 4-6	6-2 / 2-6 / 5-10		6-2 / 6-2
+Chimo Cala/Marc Raven	WO-	2-6 / 7-5 / 9-10	2-6 / 2-6	
+Grupo 6
+Equipo	Pau Guille/Marti Mitj	Roger Vilo/Joan Mendo	Albert Sab/Carlos Cal	Esteve Bra/Sergio de
+Pau Guille/Marti Mitj		6-1 / 2-6 / 8-10	WO+	6-1 / 1-6 / 6-3
+Roger Vilo/Joan Mendo	1-6 / 6-2 / 10-8			6-0 / 6-4
+Albert Sab/Carlos Cal	WO-			7-5 / 7-5
+Esteve Bra/Sergio de	1-6 / 6-1 / 3-6	0-6 / 4-6	5-7 / 5-7	
+Grupo 7
+Equipo	Aleix Samp/Gerardo Ca	Tomàs Fern/Xavier Fer	Xavi Duart/Sergi Sanc	Marc Guix /Miguel Rom
+Aleix Samp/Gerardo Ca		6-3 / 7-5	2-6 / 1-6	6-1 / 6-4
+Tomàs Fern/Xavier Fer	3-6 / 5-7		6-1 / 6-2	WO+
+Xavi Duart/Sergi Sanc	6-2 / 6-1	1-6 / 2-6		
+Marc Guix /Miguel Rom	1-6 / 4-6	WO-		
+Grupo 8
+Equipo	Paco López/Antonio He	Carlos Rod/Andres Rod	Andres Pra/Javier Igl	Juan Galdo/Jose Luis
+Paco López/Antonio He		2-6 / 6-3 / 10-9	6-3 / 6-4	6-4 / 6-3
+Carlos Rod/Andres Rod	6-2 / 3-6 / 9-10		6-3 / 6-2	6-3 / 6-4
+Andres Pra/Javier Igl	3-6 / 4-6	3-6 / 2-6		6-3 / 7-6
+Juan Galdo/Jose Luis	4-6 / 3-6	3-6 / 4-6	3-6 / 6-7	
+Grupo 9
+Equipo	Enrique Ja/Enric Jaul	Alberto Lopez/Juan Jose	David Lope/David Lope	Arnau Casa/Ramon Casa
+Enrique Ja/Enric Jaul		7-5 / 6-3	6-4 / 6-3	6-2 / 6-2
+Alberto Lopez/Juan Jose	5-7 / 3-6		7-6 / 6-2	WO+
+David Lope/David Lope	4-6 / 3-6	6-7 / 2-6		6-4 / 7-6
+Arnau Casa/Ramon Casa	2-6 / 2-6	WO-	4-6 / 6-7	
+Grupo 10
+Equipo	Javi Leon /David Lope	Ivan Badal/Ivan Badal	Ferran Urg/Marc Lope	Alex Sabat/Raul Garci
+Javi Leon /David Lope		2-6 / 6-3 / 5-10	6-3 / 7-6	6-2 / 6-3
+Ivan Badal/Ivan Badal	6-2 / 3-6 / 10-5		6-4 / 6-3	2-6 / 2-6
+Ferran Urg/Marc Lope	3-6 / 6-7	4-6 / 3-6		6-1 / 6-3
+Alex Sabat/Raul Garci	2-6 / 3-6	6-2 / 6-2	1-6 / 3-6	
+Grupo 11
+Equipo	Izan Alave/Ivan Rodri	David Port/Jesús Garc	Joan Masot/Alex Vicen	Jose Luis /Carlos Qui
+Izan Alave/Ivan Rodri		3-6 / 1-6	5-7 / 6-4 / 10-9	WO+
+David Port/Jesús Garc	6-3 / 6-1		6-7 / 6-2 / 10-8	
+Joan Masot/Alex Vicen	7-5 / 4-6 / 9-10	7-6 / 2-6 / 8-10		6-2 / 4-6 / 10-6
+Jose Luis /Carlos Qui	WO-		2-6 / 6-4 / 6-10	
+Grupo 12
+Equipo	Ferran Cod/Aleix Samb	Eric Perez/Marc Perez	Carlos San/Felix Lópe	Anskar Gal/Carlos Cue
+Ferran Cod/Aleix Samb		6-3 / 6-2	7-6 / 6-1	6-1 / 7-6
+Eric Perez/Marc Perez	3-6 / 2-6		7-5 / 6-1	5-7 / 6-3 / 10-9
+Carlos San/Felix Lópe	6-7 / 1-6	5-7 / 1-6		7-5 / 6-3
+Anskar Gal/Carlos Cue	1-6 / 6-7	7-5 / 3-6 / 9-10	5-7 / 3-6	
+Grupo 13
+Equipo	Albert Art/Anibal Gon	Enric Castillo/Marc Gelabert	Joan Pujol/Manel Loza	Biel Cirer/Eloi Paez
+Albert Art/Anibal Gon		2-6 / 7-6 / 10-6	6-2 / 6-3	
+Enric Castillo/Marc Gelabert	6-2 / 6-7 / 6-10		6-3 / 7-6	
+Joan Pujol/Manel Loza	2-6 / 3-6	3-6 / 6-7		
+Biel Cirer/Eloi Paez				
+Grupo 14
+Equipo	Tim Kohlst/Pedro Lope	Francisco /Cristian C	Ernesto Sa/Jordi de l	Josep Mª A/MIguel Mar
+Tim Kohlst/Pedro Lope		6-4 / 7-5	7-6 / 4-6 / 10-6	7-6 / 6-4
+Francisco /Cristian C	4-6 / 5-7		6-2 / 6-2	7-6 / 6-3
+Ernesto Sa/Jordi de l	6-7 / 6-4 / 6-10	2-6 / 2-6		6-4 / 7-5
+Josep Mª A/MIguel Mar	6-7 / 4-6	6-7 / 3-6	4-6 / 5-7	
+Grupo 15
+Equipo	Pere Armen/Sergi Oliv	Chema Mur /Sergi Mur	Iscle Mach/Roc Mach P	Xavi Moya /Jonathan C
+Pere Armen/Sergi Oliv		3-6 / 6-4 / 6-4	6-2 / 6-4	WO+
+Chema Mur /Sergi Mur	6-3 / 4-6 / 4-6		6-4 / 6-7 / 5-10	WO+
+Iscle Mach/Roc Mach P	2-6 / 4-6	4-6 / 7-6 / 10-5		2-6 / 2-6
+Xavi Moya /Jonathan C	WO-	WO-	6-2 / 6-2	
+Grupo 16
+Equipo	Guillem Sa/Ramon Sans	Toni Llove/Joaquim Gi	Quim Valde/Javier San	David Mart/Guillem Lo
+Guillem Sa/Ramon Sans		WO+	6-3 / 6-3	6-3 / 6-4
+Toni Llove/Joaquim Gi	WO-		6-4 / 6-2	6-4 / 7-6
+Quim Valde/Javier San	3-6 / 3-6	4-6 / 2-6		6-3 / 3-6 / 10-7
+David Mart/Guillem Lo	3-6 / 4-6	4-6 / 6-7	3-6 / 6-3 / 7-10	
+Grupo 17
+Equipo	Josep Bels/Luca Belsa	Yago Garcí/Edgar Pere	Eduardo Ro/Daniel Ala	Lluis Palo/Joan Roca
+Josep Bels/Luca Belsa		7-5 / 4-6 / 10-9	5-7 / 2-6	6-4 / 6-2
+Yago Garcí/Edgar Pere	5-7 / 6-4 / 9-10		6-1 / 6-3	
+Eduardo Ro/Daniel Ala	7-5 / 6-2	1-6 / 3-6		
+Lluis Palo/Joan Roca	4-6 / 2-6			
+Grupo 18
+Equipo	Sergio Cej/Francesc d	Miguel Rod/Luke Treas	Daniel Arm/Oriol Camp	Alex Expos/Pablo Fern
+Sergio Cej/Francesc d		7-5 / 4-6 / 10-1	6-7 / 6-2 / 10-3	
+Miguel Rod/Luke Treas	5-7 / 6-4 / 1-10		6-3 / 7-6	
+Daniel Arm/Oriol Camp	7-6 / 2-6 / 3-10	3-6 / 6-7		
+Alex Expos/Pablo Fern				
+MES 6
+Grupo 1
+Equipo	Nicolas Ur/Javier Zaz	Alejandro /Arnau Amet	Miquel Mor/Ivan Figue	Jose Manue/Fernando V
+Nicolas Ur/Javier Zaz		3-6 / 1-6	4-6 / 6-3 / 10-4	
+Alejandro /Arnau Amet	6-3 / 6-1			
+Miquel Mor/Ivan Figue	6-4 / 3-6 / 4-10			
+Jose Manue/Fernando V				
+Grupo 2
+Equipo	Marc Buitr/Pau Buitra	David Bale/Xavier Bal	Adria Mont/José Migue	Alex Camin/Joan Ramón
+Marc Buitr/Pau Buitra		6-3 / 6-7 / 10-5	6-3 / 6-1	3-6 / 6-7
+David Bale/Xavier Bal	3-6 / 7-6 / 5-10		6-3 / 7-5	
+Adria Mont/José Migue	3-6 / 1-6	3-6 / 5-7		6-1 / 5-7 / 10-4
+Alex Camin/Joan Ramón	6-3 / 7-6		1-6 / 7-5 / 4-10	
+Grupo 3
+Equipo	Xavi Alvar/Edu Javega	Felipe Dia/Marc Coll	Carlos Jim/Alberto Ji	Toni Grael/Francesc V
+Xavi Alvar/Edu Javega		6-7 / 4-6	5-7 / 6-4 / 10-3	6-2 / 6-4
+Felipe Dia/Marc Coll	7-6 / 6-4			7-5 / 6-0
+Carlos Jim/Alberto Ji	7-5 / 4-6 / 3-10			5-7 / 6-4 / 10-2
+Toni Grael/Francesc V	2-6 / 4-6	5-7 / 0-6	7-5 / 4-6 / 2-10	
+Grupo 4
+Equipo	Pau Guille/Marti Mitj	Gerard Sel/Ruben Rami	Jaume Bal/Albert Gom	Sergio Rod/Eugenio Cu
+Pau Guille/Marti Mitj		6-4 / 6-2	6-2 / 6-4	6-2 / 4-6 / 10-6
+Gerard Sel/Ruben Rami	4-6 / 2-6		6-4 / 7-5	6-2 / 6-4
+Jaume Bal/Albert Gom	2-6 / 4-6	4-6 / 5-7		3-6 / 6-2 / 10-6
+Sergio Rod/Eugenio Cu	2-6 / 6-4 / 6-10	2-6 / 4-6	6-3 / 2-6 / 6-10	
+Grupo 5
+Equipo	Narcis Ber/Carles Vic	Aleix Samp/Gerardo Ca	Rafael Her/Xavi Maten	Roger Vilo/Joan Mendo
+Narcis Ber/Carles Vic		2-6 / 6-1 / 6-2		
+Aleix Samp/Gerardo Ca	6-2 / 1-6 / 2-6			
+Rafael Her/Xavi Maten				
+Roger Vilo/Joan Mendo				
+Grupo 6
+Equipo	Tomàs Fern/Xavier Fer	Paco López/Antonio He	Hugo Roca/Hugo Roca	Marc Boliv/Adrian Veg
+Tomàs Fern/Xavier Fer		6-2 / 5-7 / 10-9		WO+
+Paco López/Antonio He	2-6 / 7-5 / 9-10			WO+
+Hugo Roca/Hugo Roca				
+Marc Boliv/Adrian Veg	WO-	WO-		
+Grupo 7
+Equipo	Carlos Rod/Andres Rod	Chimo Cala/Marc Raven	Enrique Ja/Enric Jaul	Albert Sab/Carlos Cal
+Carlos Rod/Andres Rod		4-6 / 6-4 / 9-10	6-7 / 6-2 / 10-5	WO+
+Chimo Cala/Marc Raven	6-4 / 4-6 / 10-9			WO+
+Enrique Ja/Enric Jaul	7-6 / 2-6 / 5-10			WO+
+Albert Sab/Carlos Cal	WO-	WO-	WO-	
+Grupo 8
+Equipo	Xavi Duart/Sergi Sanc	Javi Leon /David Lope	Esteve Bra/Sergio de	Alberto Lopez/Juan Jose
+Xavi Duart/Sergi Sanc		6-4 / 6-4	6-3 / 6-3	6-0 / 7-5
+Javi Leon /David Lope	4-6 / 4-6		6-3 / 7-5	
+Esteve Bra/Sergio de	3-6 / 3-6	3-6 / 5-7		
+Alberto Lopez/Juan Jose	0-6 / 5-7			
+Grupo 9
+Equipo	Marc Guix /Miguel Rom	Andres Pra/Javier Igl	Ivan Badal/Ivan Badal	Izan Alave/Ivan Rodri
+Marc Guix /Miguel Rom		4-6 / 6-4 / 6-3	6-2 / 6-1	
+Andres Pra/Javier Igl	6-4 / 4-6 / 3-6		5-7 / 4-6	6-4 / 6-3
+Ivan Badal/Ivan Badal	2-6 / 1-6	7-5 / 6-4		
+Izan Alave/Ivan Rodri		4-6 / 3-6		
+Grupo 10
+Equipo	David Lope/David Lope	David Port/Jesús Garc	Ferran Cod/Aleix Samb	Juan Galdo/Jose Luis
+David Lope/David Lope				
+David Port/Jesús Garc				
+Ferran Cod/Aleix Samb				
+Juan Galdo/Jose Luis				
+Grupo 11
+Equipo	Eric Perez/Marc Perez	Albert Art/Anibal Gon	Ferran Urg/Marc Lope	Marc Boher/Ramon Font
+Eric Perez/Marc Perez		5-7 / 7-6 / 9-10	2-6 / 6-0 / 10-4	6-2 / 6-4
+Albert Art/Anibal Gon	7-5 / 6-7 / 10-9			6-1 / 6-0
+Ferran Urg/Marc Lope	6-2 / 0-6 / 4-10			6-0 / 6-2
+Marc Boher/Ramon Font	2-6 / 4-6	1-6 / 0-6	0-6 / 2-6	
+Grupo 12
+Equipo	Enric Castillo/Marc Gelabert	Alex Sabat/Raul Garci	Joan Masot/Alex Vicen	Tim Kohlst/Pedro Lope
+Enric Castillo/Marc Gelabert		6-7 / 7-6 / 10-8	4-6 / 6-2 / 10-6	
+Alex Sabat/Raul Garci	7-6 / 6-7 / 8-10		4-6 / 6-4 / 10-6	
+Joan Masot/Alex Vicen	6-4 / 2-6 / 6-10	6-4 / 4-6 / 6-10		5-7 / 1-6
+Tim Kohlst/Pedro Lope			7-5 / 6-1	
+Grupo 13
+Equipo	Jose Luis /Carlos Qui	Francisco /Cristian C	Carlos San/Felix Lópe	Pere Armen/Sergi Oliv
+Jose Luis /Carlos Qui		6-2 / 7-5	6-4 / 6-4	6-2 / 6-2
+Francisco /Cristian C	2-6 / 5-7		6-1 / 6-3	6-1 / 7-5
+Carlos San/Felix Lópe	4-6 / 4-6	1-6 / 3-6		6-3 / 6-2
+Pere Armen/Sergi Oliv	2-6 / 2-6	1-6 / 5-7	3-6 / 2-6	
+Grupo 14
+Equipo	Anskar Gal/Carlos Cue	Joan Pujol/Manel Loza	Guillem Sa/Ramon Sans	Chema Mur /Sergi Mur
+Anskar Gal/Carlos Cue		3-6 / 6-3 / 10-5	6-2 / 6-3	6-2 / 6-2
+Joan Pujol/Manel Loza	6-3 / 3-6 / 5-10		6-3 / 6-0	6-4 / 6-4
+Guillem Sa/Ramon Sans	2-6 / 3-6	3-6 / 0-6		6-3 / 3-6 / 10-9
+Chema Mur /Sergi Mur	2-6 / 2-6	4-6 / 4-6	3-6 / 6-3 / 9-10	
+Grupo 15
+Equipo	Ernesto Sa/Jordi de l	Josep Bels/Luca Belsa	Biel Cirer/Eloi Paez	Toni Llove/Joaquim Gi
+Ernesto Sa/Jordi de l		6-4 / 7-5		
+Josep Bels/Luca Belsa	4-6 / 5-7			
+Biel Cirer/Eloi Paez				
+Toni Llove/Joaquim Gi				
+Grupo 16
+Equipo	Yago Garcí/Edgar Pere	Josep Mª A/MIguel Mar	Iscle Mach/Roc Mach P	Sergio Cej/Francesc d
+Yago Garcí/Edgar Pere		6-2 / 7-5		
+Josep Mª A/MIguel Mar	2-6 / 5-7			
+Iscle Mach/Roc Mach P				
+Sergio Cej/Francesc d				
+Grupo 17
+Equipo	Miguel Rod/Luke Treas	Xavi Moya /Jonathan C	Quim Valde/Javier San	Eduardo Ro/Daniel Ala
+Miguel Rod/Luke Treas			6-4 / 6-2	
+Xavi Moya /Jonathan C			7-6 / 3-6 / 10-7	
+Quim Valde/Javier San	4-6 / 2-6	6-7 / 6-3 / 7-10		
+Eduardo Ro/Daniel Ala				
+Grupo 18
+Equipo	Daniel Arm/Oriol Camp	David Mart/Guillem Lo	Lluis Palo/Joan Roca
+Daniel Arm/Oriol Camp		7-6 / 3-6 / 10-6	WO+
+David Mart/Guillem Lo	6-7 / 6-3 / 6-10		6-1 / 6-3
+Lluis Palo/Joan Roca	WO-	1-6 / 3-6

@@ -10,3 +10,6 @@ Thumbs.db
 # Backups locales de datos (no van al repo)
 backups/
 *.padel-backup.json
+
+# Artefactos de carga puntual
+tmp-sql/
