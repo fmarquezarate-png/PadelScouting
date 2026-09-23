@@ -6,6 +6,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Mixto: cada ronda con el mes en que se jugó.** La web de la liga nombra las rondas un mes
+  antes (su «Enero» se jugó en febrero; su «Junio», en julio-agosto; su «Julio», en septiembre).
+  Ningún partido faltaba: estaban bajo el nombre de la web. Ahora la app enseña Febrero… Julio-Agosto,
+  Septiembre (`league_months.played_label`) y por dentro conserva el nombre de la web, así que las
+  próximas cargas pegadas tal cual siguen encajando. Copia local renovada (`liga.v2`).
 - **Los WO no aparecían en Nuestra temporada.** Ahora salen en la lista de partidos (marcados
   «WO», a favor o en contra), en la ficha de cada rival y como nota bajo el balance
   («+ 1 WO a favor»). No cuentan en juegos, sets ni rating porque no se jugaron.

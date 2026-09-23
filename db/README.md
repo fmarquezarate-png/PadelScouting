@@ -85,6 +85,10 @@ jugador, categoría, si juega mixto, qué competición ver al abrir y su foto (J
 `get_my_profile()` y `update_my_profile(patch)` requieren sesión; `list_players()` es pública y
 dice en qué competiciones aparece cada jugador.
 
+**Nombre de la web y mes jugado**: `league_months.label` es el nombre que pone la web (con él
+se emparejan las cargas) y `played_label`, si existe, el mes en que de verdad se jugó; la foto de
+la temporada devuelve `played_label` cuando lo hay. En el mixto 2026 la web va un mes por delante.
+
 **Meses**: un mes con nombre («Junio») se empareja por nombre con el que ya existe. La carga se
 rechaza si intenta renombrar un mes existente o si pone a una pareja en otro grupo del que ya
 tiene ese mes (migraciones `ingest_league_months_by_name` e `ingest_league_group_consistency_guard`). Competiciones admitidas:

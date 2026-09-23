@@ -15,7 +15,7 @@
     seasonKey: 'padel-scouting.season.v1',
     seasonsKey: 'padel-scouting.seasons.v1',
     meKey: 'padel-scouting.me.v1',
-    cacheKey: 'padel-scouting.liga.v1',
+    cacheKey: 'padel-scouting.liga.v2',   /* v2: meses del mixto con su nombre real */
     maxAgeMinutes: 180
   };
 
