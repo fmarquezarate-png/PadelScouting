@@ -195,6 +195,13 @@
       '</g>';
   }
 
+  /* La pelota de pádel (foto recortada) y su sombra. La posición, el tamaño y
+     el giro los pone el movimiento; aquí solo nace escondida en el origen. */
+  function ballMarkup() {
+    return '<ellipse id="ballShadow" class="c-shadow" cx="0" cy="0" rx="0" ry="0" opacity="0"/>' +
+      '<g id="ball" class="ball" opacity="0"><image href="assets/pelota.webp" x="-0.5" y="-0.5" width="1" height="1"/></g>';
+  }
+
   /* ---------- la pista en foto ----------
      Cuatro puntos de la foto con posición conocida en la pista real (las
      esquinas del fondo y los extremos de la línea de saque cercana) bastan
@@ -256,10 +263,8 @@
       '<radialGradient id="cGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ED6C05" stop-opacity=".35"/>' +
       '<stop offset="1" stop-color="#ED6C05" stop-opacity="0"/></radialGradient></defs>'];
     ZONES.forEach(function (zn) { h.push(zoneMarkup(cam, zn, live, tall, k)); });
-    var b = P(cam, 0, 0, 1.5);
-    h.push('<ellipse id="ballShadow" class="c-shadow" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" rx="' + f(6 * k) + '" ry="' + f(2.4 * k) + '"/>');
-    h.push('<circle id="ball" class="ball" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" r="' + f((tall ? 5 : 6.5) * k) + '" fill="url(#cBall)"/>');
     h.push(doorMarkup(ph.door[0], ph.door[1], (tall ? 26 : 36) * k, (tall ? 14.5 : 20) * k, ph.label));
+    h.push(ballMarkup());
     h.push('</svg></div>');
     return { html: h.join(''), cam: cam };
   }
@@ -360,9 +365,6 @@
     ZONES.filter(function (zn) { return !zn.far; }).forEach(function (zn) { h.push(zoneSvg(zn)); });
 
     /* la sombra y la pelota */
-    var b = P(cam, 0, 0, 1.5);
-    h.push('<ellipse id="ballShadow" class="c-shadow" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" rx="6" ry="2.4"/>');
-    h.push('<circle id="ball" class="ball" cx="' + f(b[0]) + '" cy="' + f(b[1]) + '" r="' + (tall ? 5 : 6.5) + '" fill="url(#cBall)"/>');
 
     /* focos */
     [[-6.2, -0.6], [6.2, -0.6], [-6.2, 20.6], [6.2, 20.6]].forEach(function (l) {
@@ -375,51 +377,114 @@
     /* la puerta: el rival te espera fuera de la pista */
     var d = P(cam, 0, 0, -1.5);
     h.push(doorMarkup(d[0], d[1], tall ? 26 : 36, tall ? 14.5 : 20, d[1]));
+    h.push(ballMarkup());
 
     h.push('</svg>');
     return { html: h.join(''), cam: cam };
   }
 
   /* ---------- movimiento ---------- */
-  var current = null;   /* { cam, pos:[x,z] } */
+  /* La pelota bota de botón en botón. Todo se mide en la pantalla con los
+     propios botones: su radio dice cuán cerca está esa zona de la cámara,
+     así la pelota es más grande delante y más pequeña al fondo. */
+  var ball = null;   /* { x, y, r, rot, token, anchors } */
 
   function reduceMotion() {
     return global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  function placeBall(x, y, z) {
-    var ball = document.getElementById('ball'), sh = document.getElementById('ballShadow');
-    if (!ball || !current) return false;
-    var p = P(current.cam, x, y, z), s = P(current.cam, x, 0, z);
-    ball.setAttribute('cx', f(p[0])); ball.setAttribute('cy', f(p[1]));
-    sh.setAttribute('cx', f(s[0])); sh.setAttribute('cy', f(s[1]));
-    sh.setAttribute('opacity', String(Math.max(0.15, 0.55 - y * 0.08)));
-    current.pos = [x, z];
+  function anchorsOf(host) {
+    var out = {};
+    Array.prototype.forEach.call(host.querySelectorAll('.court .zone'), function (g) {
+      var c = g.querySelector('.zb');
+      if (!c) return;
+      out[g.getAttribute('data-zone')] = { x: +c.getAttribute('cx'), y: +c.getAttribute('cy'), r: +c.getAttribute('r') };
+    });
+    return out;
+  }
+
+  /* Tamaño de la pelota respecto al botón: exagerada frente a la escala real
+     (a escala mediría 2 px), pero en proporción con la profundidad. */
+  var BALL_OF_BADGE = 0.42;
+
+  function drawBall(x, y, r, lift, sx, sy) {
+    var g = document.getElementById('ball'), sh = document.getElementById('ballShadow');
+    if (!g || !sh) return false;
+    var hf = Math.min(1, lift / (r * 7));                 /* 0 en el suelo, 1 en lo alto */
+    var grow = 1 + 0.16 * hf;                             /* más alta = más cerca de la cámara */
+    var d = 2 * r * grow;
+    g.setAttribute('transform', 'translate(' + f(x) + ' ' + f(y - lift) + ') rotate(' + f(ball.rot) + ') scale(' +
+      (d * (sx || 1)).toFixed(2) + ' ' + (d * (sy || 1)).toFixed(2) + ')');
+    g.setAttribute('opacity', '1');
+    sh.setAttribute('cx', f(x)); sh.setAttribute('cy', f(y + r * 0.55));
+    sh.setAttribute('rx', f(r * 1.05 * (1 - 0.45 * hf))); sh.setAttribute('ry', f(r * 0.42 * (1 - 0.45 * hf)));
+    sh.setAttribute('opacity', (0.5 * (1 - 0.65 * hf)).toFixed(2));
     return true;
   }
 
-  /* Un golpe: de donde está la pelota a (x, z) con una parábola. */
-  function shot(x, z, dur, height, done) {
-    if (!current) { done && done(); return; }
-    var from = current.pos.slice(), t0 = null;
+  function ballInit(host) {
+    var anchors = anchorsOf(host);
+    var start = anchors.rival || anchors.historial;
+    ball = { anchors: anchors, token: (ball ? ball.token + 1 : 0), rot: 0,
+      x: start.x, y: start.y, r: start.r * BALL_OF_BADGE };
+    drawBall(ball.x, ball.y, ball.r, 0);
+  }
+
+  /* Un golpe: avance a velocidad constante y altura en parábola, como una
+     pelota de verdad. Distancia larga = golpe más alto y más largo. */
+  function hop(target, opts, done) {
+    if (!ball) { done && done(); return; }
+    var token = ball.token;
+    var a = ball.anchors[target];
+    if (!a) { done && done(); return; }
+    var x0 = ball.x, y0 = ball.y, r0 = ball.r, r1 = a.r * BALL_OF_BADGE;
+    var dist = Math.hypot(a.x - x0, a.y - y0);
+    var unit = (r0 + r1) / 2 / BALL_OF_BADGE;            /* radio medio de botón */
+    var peak = Math.max(unit * 1.6, Math.min(dist * 0.42, unit * 5.5)) * (opts.peak || 1);
+    var dur = Math.max(380, Math.min(900, 300 + dist / unit * 55)) * (opts.speed || 1);
+    var spin = (a.x >= x0 ? 1 : -1) * (360 + dist / unit * 40);
+    var rot0 = ball.rot, t0 = null;
     function step(ts) {
-      if (!document.getElementById('ball')) return;
+      if (!ball || ball.token !== token || !document.getElementById('ball')) return;
       if (!t0) t0 = ts;
       var k = Math.min(1, (ts - t0) / dur);
-      var e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-      placeBall(from[0] + (x - from[0]) * e, 0.25 + Math.sin(Math.PI * k) * height, from[1] + (z - from[1]) * e);
+      ball.x = x0 + (a.x - x0) * k;
+      ball.y = y0 + (a.y - y0) * k;
+      ball.r = r0 + (r1 - r0) * k;
+      ball.rot = rot0 + spin * k;
+      drawBall(ball.x, ball.y, ball.r, 4 * peak * k * (1 - k));
+      if (k < 1) { global.requestAnimationFrame(step); return; }
+      squash(token, done);
+    }
+    global.requestAnimationFrame(step);
+  }
+
+  /* El bote: un instante aplastada contra el botón y vuelta a su forma. */
+  function squash(token, done) {
+    var t0 = null, dur = 150;
+    function step(ts) {
+      if (!ball || ball.token !== token || !document.getElementById('ball')) return;
+      if (!t0) t0 = ts;
+      var k = Math.min(1, (ts - t0) / dur);
+      var q = Math.sin(Math.PI * k);
+      drawBall(ball.x, ball.y + ball.r * 0.12 * q, ball.r, 0, 1 + 0.2 * q, 1 - 0.24 * q);
       if (k < 1) global.requestAnimationFrame(step); else if (done) done();
     }
     global.requestAnimationFrame(step);
   }
 
+  /* El peloteo: cruza la red de un lado a otro botando en cada botón,
+     descansa en la puerta y vuelve a empezar. Se para si la pestaña no se ve. */
+  var RALLY = ['historial', 'analisis', 'liga', 'cronica', 'temporada', 'registro', 'historial', 'rival'];
+
   function rally() {
-    if (reduceMotion()) return;
-    var pts = [[-2.6, 17.5], [2.8, 4], [-1.5, 15.5], [0.5, 6.5]], i = 0;
+    if (reduceMotion() || !ball) return;
+    var token = ball.token, i = 0;
     (function next() {
-      if (i >= pts.length || !document.getElementById('ball')) return;
-      var p = pts[i++];
-      shot(p[0], p[1], 620, 2.6, next);
+      if (!ball || ball.token !== token || !document.getElementById('ball')) return;
+      if (document.hidden) { setTimeout(next, 1000); return; }
+      if (i >= RALLY.length) { i = 0; setTimeout(next, 2600); return; }
+      hop(RALLY[i++], {}, function () { setTimeout(next, 70); });
     })();
   }
 
@@ -428,16 +493,16 @@
       function activate() {
         var target = g.getAttribute('data-view');
         g.classList.add('hit');
-        if (reduceMotion() || !current) { go(target); return; }
-        shot(Number(g.getAttribute('data-cx')), Number(g.getAttribute('data-cz')), 380, 1.8,
-          function () { go(target); });
+        if (reduceMotion() || !ball) { go(target); return; }
+        ball.token++;                                       /* corta el peloteo */
+        hop(g.getAttribute('data-zone'), { speed: 0.55, peak: 0.8 }, function () { go(target); });
       }
       g.addEventListener('click', activate);
       g.addEventListener('keydown', function (ev) {
         if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activate(); }
       });
     });
-    setTimeout(rally, 300);
+    setTimeout(rally, 500);
   }
 
   /* Pinta la pista en `host` y la redibuja si cambia la orientación. */
@@ -459,8 +524,7 @@
       host.classList.toggle('is-photo', !!out.cam.photo);
       var home = host.closest('.home');
       if (home) home.classList.toggle('has-photo', !!out.cam.photo);
-      current = { cam: out.cam, pos: [0, 1.5] };
-      placeBall(0, 0.25, 1.5);
+      ballInit(host);
       bind(host, go);
     }
     draw();

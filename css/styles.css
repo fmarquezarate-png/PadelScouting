@@ -673,7 +673,7 @@ body[data-view="inicio"] .view{max-width:none;padding:0}
   paint-order:stroke;stroke:rgba(5,10,20,.5);stroke-width:2.5px}
 .zdot{fill:#ffb35c;filter:drop-shadow(0 0 4px rgba(255,179,92,.9))}
 .c-shadow{fill:rgba(0,0,0,.5);pointer-events:none}
-.court-3d .ball{filter:drop-shadow(0 0 7px rgba(237,108,5,.85));pointer-events:none}
+.court-3d .ball{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.45));pointer-events:none}
 
 @media(min-width:900px){
   .home{display:block}

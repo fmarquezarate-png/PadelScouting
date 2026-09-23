@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — la pelota
+- La pelota naranja pasa a ser una **pelota de pádel de verdad** (`assets/pelota.webp`, 6 KB,
+  recortada de la foto que pasó Fran). Tamaño proporcional a la profundidad (se mide con los
+  botones: más grande delante, más pequeña al fondo), avance a velocidad constante con altura en
+  parábola, sombra que se achica al subir, giro en el aire y aplastamiento al botar.
+- El peloteo bota por los botones del menú cruzando la red, descansa en la puerta y vuelve a
+  empezar; se para si la pestaña no se ve. Al tocar una zona, la pelota va hasta ese botón.
+
 ### Changed — la pista realista
 - La portada usa las fotos del diseñador (`assets/pista-web.webp` y `assets/pista-movil.webp`,
   convertidas a WebP: 2,5 MB → 250 KB cada una). Los botones de la app van encima, colocados con
