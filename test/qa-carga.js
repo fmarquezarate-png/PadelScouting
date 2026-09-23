@@ -90,6 +90,14 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
 
   // --- guardar de verdad, como mixta ---
   await page.click('[data-chips="kind"] .chip[data-value="mixta"]'); await page.waitForTimeout(300);
+  check('Propone un identificador propio para el mixto',
+    (await page.inputValue('#ld-slug')) === '2026-s1-mixta', await page.inputValue('#ld-slug'));
+  await page.fill('#ld-text', RAW); await page.click('[data-action="parse"]'); await page.waitForTimeout(800);
+  await page.fill('#ld-slug', '2026-S1');
+  await page.click('[data-action="save-league"]'); await page.waitForTimeout(400);
+  check('No deja meter el mixto en la temporada masculina',
+    (await page.textContent('#view')).includes('ya es de la competición masculina') && ingest === null,
+    ((await page.textContent('#view')).match(/notice bad|[^.]*competición[^.]*/) || [''])[0] + ' ingest=' + (ingest && ingest.season.slug));
   await page.fill('#ld-text', RAW); await page.click('[data-action="parse"]'); await page.waitForTimeout(800);
   await page.fill('#ld-slug', '2026-s1-mixto');
   await page.fill('#ld-name', 'Mixto 2026 · primer semestre');
@@ -131,6 +139,12 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   check('Mixto: avisa de los nombres que va a unir',
     mx.includes('Carla Caye') && mx.includes('Carla Cayero'));
   check('Mixto: avisa del enlace con gente ya cargada', mx.includes('ya en la base'));
+  const mergeLines = await page.$$eval('.notice.warn li', els => els.map(e => e.textContent.replace('ya en la base', '').trim()));
+  check('Mixto: cada unión va de corto a largo, sin «X → X»',
+    mergeLines.length > 0 && mergeLines.every(t => { const n = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); const [a, b] = t.split(' → '); return a && b && a !== b && n(b).indexOf(n(a)) === 0; }),
+    mergeLines.join(' | '));
+  check('Mixto: una línea por nombre',
+    new Set(mergeLines.map(t => t.split(' → ')[0])).size === mergeLines.length, mergeLines.join(' | '));
   check('Mixto: explica la regla de las 10 letras', mx.includes('10 letras'));
 
   await page.fill('#ld-slug', 'mixto-qa');

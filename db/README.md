@@ -72,6 +72,10 @@ tie-break desde el marcador, para que no haya dos sitios donde se calcule distin
 grupos, posiciones y partidos, resolviendo todo por nombre. Es **idempotente** —cargar el mismo mes
 dos veces no duplica nada— y guarda el texto crudo en `league_imports` para poder reprocesar sin
 volver a la web. Solo la puede ejecutar una sesión autenticada.
+El identificador se guarda en minúsculas y **pertenece a una sola competición**: si ya existe con
+otra (`2026-s1` es masculina), la carga se rechaza en vez de mezclar datos. Supabase bloquea los
+`DELETE` sin `WHERE` que llegan desde la API, así que la función no usa ninguno
+(migración `ingest_league_safe_delete_and_kind_guard`).
 
 `list_seasons()` y `get_league_snapshot(slug)` son de lectura pública.
 

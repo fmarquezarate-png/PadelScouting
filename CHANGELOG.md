@@ -16,6 +16,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - Botón «volver» en la barra superior y navegación inferior de 5 botones.
 
 ### Fixed
+- Guardar una temporada desde la app fallaba con «DELETE requires a WHERE clause»: Supabase
+  bloquea ese tipo de borrado desde la API. Arreglado en la base; no se había escrito nada.
+- Un identificador ya usado por otra competición se rechaza (antes el mixto podía acabar mezclado
+  con el masculino). La app propone uno propio por competición (`2026-s1-mixta`).
+- La vista previa mostraba uniones como «Alberto Lopez → Alberto Lopez» y repetía algunas: ahora
+  siempre es «corto → largo», una línea por nombre.
 - La forma reciente se lee siempre igual en toda la app: el más reciente primero.
 
 ### Fixed

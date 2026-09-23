@@ -109,8 +109,9 @@
 
     h.push('<div class="row two">' +
       '<div class="field"><label for="ld-slug">Identificador</label>' +
-      '<input type="text" id="ld-slug" placeholder="2026-s2" value="' + esc(l.slug) + '">' +
-      '<p class="field-note">Corto y único. Cargar dos veces el mismo no duplica nada.</p></div>' +
+      '<input type="text" id="ld-slug" placeholder="' + suggestSlug(l.kind) + '" value="' + esc(l.slug) + '">' +
+      '<p class="field-note">Uno distinto por competición (el masculino ya usa <b>' +
+      esc(currentSeasonSlug()) + '</b>). Cargar dos veces el mismo no duplica nada.</p></div>' +
       '<div class="field"><label for="ld-first">Primer mes</label>' +
       '<select id="ld-first"><option value="">—</option>' +
       MESES.map(function (m, i) {
@@ -146,14 +147,23 @@
       }
 
       /* Nombres que se van a unir, dentro del texto y contra la base. */
-      var merges = (p.aliases || []).map(function (a) {
-        return esc(a.from) + ' → ' + esc(a.to);
-      });
+      /* Siempre «corto → largo», una línea por nombre corto. */
+      var mergeMap = {}, mergeOrder = [];
+      function addMerge(short, long, inBase) {
+        if (!mergeMap[short]) { mergeMap[short] = { long: long, inBase: false }; mergeOrder.push(short); }
+        if (inBase) mergeMap[short].inBase = true;
+      }
+      (p.aliases || []).forEach(function (a) { addMerge(a.from, a.to, false); });
       var known = knownPlayerNames();
       (global.LigaParser.mergesAgainstKnown(global.LigaParser.playerNames(p), known) || [])
         .forEach(function (m) {
-          merges.push(esc(m.existing) + ' → ' + esc(m.keeps) + ' <span class="tag">ya en la base</span>');
+          var short = m.keeps === m.existing ? m.incoming : m.existing;
+          addMerge(short, m.keeps, true);
         });
+      var merges = mergeOrder.map(function (k) {
+        return esc(k) + ' → ' + esc(mergeMap[k].long) +
+          (mergeMap[k].inBase ? ' <span class="tag">ya en la base</span>' : '');
+      });
       if (merges.length) {
         h.push('<div class="notice warn"><b>Voy a tratar estos nombres como la misma persona</b>' +
           '<p class="field-note" style="margin:7px 0">La liga corta los nombres a 10 letras. ' +
@@ -279,7 +289,9 @@
     if (kinds) kinds.addEventListener('click', function (ev) {
       var chip = ev.target.closest('.chip');
       if (!chip) return;
+      var prevSuggestion = suggestSlug(l.kind);
       l.kind = chip.getAttribute('data-value');
+      if (!l.slug.trim() || normSlug(l.slug) === prevSuggestion) l.slug = suggestSlug(l.kind);
       redraw();
     });
 
@@ -304,11 +316,19 @@
     if (saveBtn) saveBtn.addEventListener('click', function () {
       if (!l.parsed) return;
       if (!l.slug.trim()) { l.error = 'Ponle un identificador a la temporada.'; redraw(); return; }
+      l.slug = normSlug(l.slug);
+      var cur = state.model && state.model.season;
+      if (cur && cur.slug === l.slug && (cur.kind || 'masculina') !== l.kind) {
+        l.error = 'El identificador «' + l.slug + '» ya es de la competición ' + (cur.kind || 'masculina') +
+          '. Usa otro, por ejemplo «' + suggestSlug(l.kind) + '».';
+        redraw(); return;
+      }
       l.busy = true; l.error = null; redraw();
 
       var labels = {};
       l.parsed.months.forEach(function (M, i) {
-        labels[M.n] = l.firstMonth == null ? ('Mes ' + M.n) : MESES[(l.firstMonth + i) % 12];
+        labels[M.n] = M.label ? M.label
+          : (l.firstMonth == null ? ('Mes ' + M.n) : MESES[(l.firstMonth + i) % 12]);
       });
       var payload = global.LigaParser.toPayload(l.parsed, {
         slug: l.slug.trim(), name: l.name.trim() || l.slug.trim(),
@@ -323,6 +343,21 @@
         l.busy = false; l.error = err.message; redraw();
       });
     });
+  }
+
+  function currentSeasonSlug() {
+    var m = state.model;
+    return (m && m.season && m.season.slug) || '2026-s1';
+  }
+
+  /* Minúsculas y guiones: «2026-S1 Mixta» y «2026-s1-mixta» son lo mismo. */
+  function normSlug(v) {
+    return String(v || '').trim().toLowerCase().replace(/\s+/g, '-');
+  }
+
+  function suggestSlug(kind) {
+    var base = currentSeasonSlug();
+    return kind === 'masculina' ? base : base + '-' + (kind === 'mixta' ? 'mixta' : kind);
   }
 
   function module_reload(done) {
