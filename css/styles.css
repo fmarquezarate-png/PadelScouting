@@ -789,3 +789,7 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
 
 /* La pelota sale por arriba de la pista y no debe pintarse sobre el marcador. */
 .court-host{overflow:hidden}
+
+/* WO: en la lista, pero se nota que no se jugó */
+.lg tr.wo-row td{opacity:.78}
+.lg .wo-note{font-weight:400;color:var(--mute);font-size:.8em;margin-left:4px}

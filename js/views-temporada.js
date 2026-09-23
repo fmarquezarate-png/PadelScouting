@@ -104,6 +104,51 @@
     return out;
   }
 
+  /* Los WO: cuentan en la liga (victoria o derrota) pero no se jugaron,
+     así que se enseñan en las listas marcados como WO y no entran en juegos,
+     sets ni rating. walkover = 'home' | 'away' dice quién ganó. */
+  function mineWO(m) {
+    var me = m.myTeamId;
+    if (!me) return [];
+    var label = {};
+    m.months.forEach(function (x) { label[x.n] = x.label; });
+    var lastLad = m.ladder[m.lastMonth] || {};
+    var lastTotal = null;
+    Object.keys(lastLad).some(function (k) { lastTotal = lastLad[k].total; return true; });
+    return m.matches.filter(function (x) {
+      return (x.home === me || x.away === me) && !x.sets && x.walkover;
+    }).map(function (x) {
+      var home = x.home === me, rival = home ? x.away : x.home, rl = lastLad[rival];
+      var mesnom = label[x.month] || ('Mes ' + x.month);
+      return { wo: true, mes: x.month, mesnom: mesnom, fecha: mesnom.slice(0, 3),
+        rivalId: rival, rival: m.teams[rival] ? m.teams[rival].label : '?',
+        win: (x.walkover === 'home') === home, lad: rl ? rl.place : null, ladTot: lastTotal };
+    });
+  }
+
+  /* Partidos jugados + WO, en orden de mes (los WO al final de su mes). */
+  function withWO(rows) {
+    var m = PL.state.model;
+    var wo = m ? mineWO(m) : [];
+    if (!wo.length) return rows;
+    var out = [];
+    var meses = {};
+    rows.concat(wo).forEach(function (r) { meses[r.mes] = true; });
+    Object.keys(meses).map(Number).sort(function (a, b) { return a - b; }).forEach(function (mes) {
+      rows.forEach(function (r) { if (r.mes === mes) out.push(r); });
+      wo.forEach(function (r) { if (r.mes === mes) out.push(r); });
+    });
+    return out;
+  }
+
+  /* «+1 WO a favor» bajo el balance: los WO no son partidos jugados. */
+  function woNote() {
+    var wo = PL.state.model ? mineWO(PL.state.model) : [];
+    if (!wo.length) return '';
+    var w = wo.filter(function (r) { return r.win; }).length, l = wo.length - w;
+    return '+ ' + [w ? w + ' WO a favor' : '', l ? l + ' WO en contra' : ''].filter(Boolean).join(', ');
+  }
+
   function agg(rows) {
     var w = rows.filter(function (r) { return r.win; }).length;
     var sum = function (f) { return rows.reduce(function (s, r) { return s + f(r); }, 0); };
@@ -177,7 +222,7 @@
       'Todo sale de los <b>' + m.matches.length + '</b> partidos de la liga entera, no solo de los vuestros.'));
     h.push('<div class="tiles">' +
       tile(a.n, 'Partidos jugados') +
-      tile(a.w + '–' + a.l, 'Victorias / derrotas') +
+      tile(a.w + '–' + a.l, 'Victorias / derrotas', woNote()) +
       tile(a.posIni + ' → ' + a.posFin, 'Puesto en la liga', 'de ' + a.totFin) +
       tile('G' + a.grIni + ' → G' + a.grFin, 'Grupos', (a.grIni - a.grFin) + ' escalones') +
       tile(Math.round(100 * a.w / a.n) + '<small>%</small>', 'Partidos ganados') +
@@ -604,10 +649,19 @@
     var t = document.getElementById('rows');
     if (!t) return;
     var f = ui.rowsFilter;
-    t.innerHTML = rows.filter(function (r) {
+    t.innerHTML = withWO(rows).filter(function (r) {
       return f === 'all' || (f === 'w' && r.win) || (f === 'l' && !r.win) ||
-        (f === 'tb' && r.stb) || (f === 'cb' && !r.ganoS1 && r.win);
+        (!r.wo && f === 'tb' && r.stb) || (!r.wo && f === 'cb' && !r.ganoS1 && r.win);
     }).map(function (r) {
+      if (r.wo) {
+        return '<tr class="wo-row"><td class="sc"><b>' + esc(r.fecha) + '</b></td>' +
+          '<td><span class="res ' + (r.win ? 'w' : 'l') + '">' + (r.win ? 'V' : 'D') + '</span></td>' +
+          '<td><button class="linkish" data-rival="' + r.rivalId + '">' + esc(r.rival) + '</button>' +
+          ' <span class="tag">WO</span></td>' +
+          '<td class="sc"><b>WO</b> <span class="wo-note">' + (r.win ? 'a favor' : 'en contra') + '</span></td>' +
+          '<td class="sc hide-sm">' + (r.lad ? '#' + r.lad + ' de ' + r.ladTot : '—') + '</td>' +
+          '<td class="sc">—</td></tr>';
+      }
       var dl = r.post - r.pre;
       return '<tr><td class="sc"><b>' + esc(r.fecha) + '</b></td>' +
         '<td><span class="res ' + (r.win ? 'w' : 'l') + '">' + (r.win ? 'V' : 'D') + '</span></td>' +
@@ -626,7 +680,7 @@
     var box = document.getElementById('rivs');
     if (!box) return;
     var by = {};
-    rows.forEach(function (r) { (by[r.rivalId] = by[r.rivalId] || []).push(r); });
+    withWO(rows).forEach(function (r) { (by[r.rivalId] = by[r.rivalId] || []).push(r); });
     var arr = Object.keys(by).map(function (id) {
       var ms = by[id];
       return { id: Number(id), name: ms[0].rival, ms: ms,
@@ -641,6 +695,7 @@
     box.innerHTML = arr.map(function (r) {
       var pctBar = r.lad ? Math.max(4, 100 - (r.lad / r.tot * 100)) : 50;
       var det = r.ms.map(function (m) {
+        if (m.wo) return '<b>' + esc(m.mesnom) + '</b> · WO · ' + (m.win ? 'victoria' : 'derrota') + ' sin jugar';
         return '<b>' + esc(m.mesnom) + '</b> · ' + m.sets.map(function (s) { return s[0] + '–' + s[1]; }).join(' ') +
           ' · ' + (m.win ? 'victoria' : 'derrota') + (m.stb ? ' · super tie-break' : '');
       }).join('<br>');
@@ -774,7 +829,7 @@
   }
 
   global.PadelTemporada = {
-    ui: ui, mine: mine, agg: agg, tile: tile, sectionHead: sectionHead,
+    ui: ui, mine: mine, mineWO: mineWO, agg: agg, tile: tile, sectionHead: sectionHead,
     withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, isS1: isS1,
     renderTemporada: renderTemporada
   };

@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Los WO no aparecían en Nuestra temporada.** Ahora salen en la lista de partidos (marcados
+  «WO», a favor o en contra), en la ficha de cada rival y como nota bajo el balance
+  («+ 1 WO a favor»). No cuentan en juegos, sets ni rating porque no se jugaron.
+
 ### Changed — la pelota
 - La pelota naranja pasa a ser una **pelota de pádel de verdad** (`assets/pelota.webp`, 6 KB,
   recortada de la foto que pasó Fran). Tamaño proporcional a la profundidad (se mide con los

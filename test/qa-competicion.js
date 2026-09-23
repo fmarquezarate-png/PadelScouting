@@ -3,7 +3,15 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8111';
 const MASC = fs.readFileSync(__dirname + '/fixtures/league-snapshot.json', 'utf8');
-const MIX = fs.readFileSync(__dirname + '/fixtures/mixto-snapshot.json', 'utf8');
+/* Al mixto de prueba se le añade un WO a nuestro favor (Julio, grupo 7) para
+   comprobar que los WO se ven en las listas sin contar como partido jugado. */
+const MIX = (() => {
+  const s = JSON.parse(fs.readFileSync(__dirname + '/fixtures/mixto-snapshot.json', 'utf8'));
+  const ours = s.teams.find(t => t[4])[0];
+  const other = s.standings.find(x => x[0] === 3 && x[1] === 7 && x[2] !== ours && x[2] !== 1010)[2];
+  s.matches.push([3, 7, ours, other, null, 'home']);
+  return JSON.stringify(s);
+})();
 const RAW_MIX = fs.readFileSync(__dirname + '/fixtures/mixto-muestra.txt', 'utf8');
 const ok = [], bad = [];
 const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
@@ -103,6 +111,15 @@ mx.matches.forEach(m => {
   await go('temporada');
   const tm = await text();
   check('Temporada: vuestro balance en el mixto', tm.includes(W + '–' + Lo), 'esperado ' + W + '–' + Lo);
+  check('Temporada: el WO sale en la lista de partidos', await page.locator('#rows tr.wo-row').count() === 1 &&
+    (await page.textContent('#rows tr.wo-row')).includes('WO'));
+  check('Temporada: el WO no cuenta como partido jugado, pero se anota bajo el balance',
+    tm.includes(W + '–' + Lo) && tm.includes('+ 1 WO a favor'));
+  await page.click('[data-f="w"]'); await page.waitForTimeout(200);
+  check('Temporada: el filtro de victorias incluye el WO ganado', await page.locator('#rows tr.wo-row').count() === 1);
+  await page.click('[data-f="tb"]'); await page.waitForTimeout(200);
+  check('Temporada: el filtro de super tie-break no mete el WO', await page.locator('#rows tr.wo-row').count() === 0);
+  await page.click('[data-f="all"]'); await page.waitForTimeout(200);
   check('Temporada: sin nivel del club (solo existe el del masculino)',
     await page.locator('[data-metric="club"]').count() === 0);
   check('Temporada: sin la leyenda del club', !tm.includes('solo en el nivel del club'));
