@@ -10,7 +10,8 @@
 
   var state = {
     model: null, calibration: null, source: null, savedAt: null, error: null,
-    rivalId: null, rivalQuery: '', loading: false,
+    rivalId: null, rivalQuery: '', loading: false, seasons: null, gen: 0, waiting: [],
+    me: { query: '', busy: false, error: null, editing: false },
     auth: { email: '', password: '', mode: 'in', busy: false, error: null, message: null },
     loader: { open: false, text: '', kind: 'masculina', slug: '', name: '', firstMonth: null,
               parsed: null, result: null, error: null, busy: false }
@@ -31,20 +32,53 @@
 
   /* ---------- carga ---------- */
   function ensureLoaded(onDone) {
-    if (state.model || state.loading) { onDone(); return; }
+    if (state.model) { onDone(); return; }
+    if (state.loading) { state.waiting.push(onDone); return; }
     state.loading = true;
+    var gen = state.gen;
     global.PadelDB.load().then(function (res) {
+      if (gen !== state.gen) return;   /* llegó tarde: ya estás en otra competición */
       state.loading = false;
       state.source = res.from;
       state.savedAt = res.savedAt;
       state.error = res.error || null;
-      if (res.snapshot) {
-        state.model = L.build(res.snapshot);
-        state.calibration = L.calibrate(state.model);
-        state.model.scale = state.calibration.scale;
-      }
+      if (res.snapshot) setModel(res.snapshot);
+      var waiting = state.waiting; state.waiting = [];
       onDone();
+      waiting.forEach(function (f) { f(); });
     });
+  }
+
+  function setModel(snapshot) {
+    state.model = L.build(snapshot);
+    applyMe(state.model);
+    state.calibration = L.calibrate(state.model);
+    state.model.scale = state.calibration.scale;
+  }
+
+  /* «Nuestra» pareja es la que lleva a tu jugador en esta temporada.
+     Sin perfil guardado se usa la marca de la base (Francisco). */
+  function applyMe(m) {
+    var me = global.PadelDB.myPlayer();
+    if (!me || !me.label) return;
+    var found = null;
+    m.order.forEach(function (id) {
+      var t = m.teams[id];
+      if (!found && (t.playerA === me.label || t.playerB === me.label)) found = id;
+    });
+    Object.keys(m.teams).forEach(function (id) { m.teams[id].isMine = false; });
+    m.myTeamId = found;
+    if (found) m.teams[found].isMine = true;
+  }
+
+  /* Cambiar de competición: otra temporada, otra foto, otro «nosotros». */
+  function switchSeason(slug, done) {
+    global.PadelDB.setSeason(slug);
+    state.gen++; state.loading = false; state.waiting = [];
+    state.model = null; state.calibration = null; state.rivalId = null; state.rivalQuery = '';
+    state.loader.result = null; state.loader.parsed = null;
+    if (global.PadelTemporada) global.PadelTemporada.resetUi();
+    ensureLoaded(done || function () {});
   }
 
   function sourceNote() {
@@ -99,10 +133,11 @@
 
     h.push('<div class="btn-row" style="margin-bottom:16px">' +
       '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div>');
+    h.push(meBlock());
 
     h.push('<div class="field"><span class="field-label">Competición</span>' +
       '<div class="chips tight" data-chips="kind">' +
-      [['masculina', 'Masculina'], ['mixta', 'Mixta']].map(function (k) {
+      [['masculina', 'Masculina'], ['mixta', 'Mixta'], ['femenina', 'Femenina']].map(function (k) {
         return '<button type="button" class="chip" data-value="' + k[0] + '" aria-pressed="' +
           (l.kind === k[0] ? 'true' : 'false') + '">' + k[1] + '</button>';
       }).join('') + '</div></div>');
@@ -110,8 +145,8 @@
     h.push('<div class="row two">' +
       '<div class="field"><label for="ld-slug">Identificador</label>' +
       '<input type="text" id="ld-slug" placeholder="' + suggestSlug(l.kind) + '" value="' + esc(l.slug) + '">' +
-      '<p class="field-note">Uno distinto por competición (el masculino ya usa <b>' +
-      esc(currentSeasonSlug()) + '</b>). Cargar dos veces el mismo no duplica nada.</p></div>' +
+      '<p class="field-note">Uno distinto por competición' + seasonsNote() +
+      '. Cargar dos veces el mismo no duplica nada.</p></div>' +
       '<div class="field"><label for="ld-first">Primer mes</label>' +
       '<select id="ld-first"><option value="">—</option>' +
       MESES.map(function (m, i) {
@@ -183,11 +218,16 @@
 
     if (l.result) {
       var r = l.result;
-      h.push('<div class="notice good"><b>Guardado.</b><ul>' +
+      var viewing = global.PadelDB.currentSeason() === r.season;
+      h.push('<div class="notice good"><b>Guardado en la base: ' + esc(r.season) + ' (' + esc(r.kind) + ').</b><ul>' +
+        '<li>' + r.monthsUpserted + ' meses · ' + r.groupsAdded + ' grupos nuevos</li>' +
         '<li>' + r.matchesAdded + ' partidos nuevos</li>' +
         '<li>' + r.teamsAdded + ' parejas nuevas · ' + r.playersAdded + ' jugadores nuevos</li>' +
         '<li>' + r.standingsUpserted + ' posiciones de clasificación</li>' +
-        '</ul></div>');
+        '</ul><p class="field-note">Si vuelves a cargar el mismo texto, «partidos nuevos» sale 0: ' +
+        'eso confirma que ya estaba todo dentro.</p>' +
+        (viewing ? '' : '<div class="btn-row"><button class="btn primary" data-action="view-season" data-slug="' +
+          esc(r.season) + '">Verla ahora</button></div>') + '</div>');
     }
 
     h.push('<div class="btn-row">' +
@@ -202,6 +242,72 @@
   }
 
   /* Nombres de jugador que ya están cargados, para avisar de enlaces. */
+  /* Quién eres en la liga: una vez por cuenta, vale para todas las competiciones. */
+  function meBlock() {
+    var me = global.PadelDB.myPlayer(), st = state.me;
+    var h = ['<div class="me-block" id="me-block">'];
+    if (me && me.label && !st.editing) {
+      h.push('<p class="me-line">En la liga eres <b>' + esc(me.label) + '</b> · ' +
+        '<button class="linkish" data-action="me-edit">cambiar</button></p>');
+      if (state.model && !state.model.myTeamId) {
+        h.push('<p class="field-note">En esta competición no apareces todavía.</p>');
+      }
+      h.push('</div>');
+      return h.join('');
+    }
+    h.push('<label for="me-q" class="field-label">¿Quién eres en la liga?</label>' +
+      '<input type="search" id="me-q" placeholder="Escribe tu nombre como sale en la liga" value="' +
+      esc(st.query) + '" autocomplete="off">');
+    var q = PadelNorm(st.query);
+    if (q.length >= 2) {
+      var hits = knownPlayerNames().filter(function (n) { return PadelNorm(n).indexOf(q) >= 0; })
+        .sort().slice(0, 8);
+      h.push(hits.length
+        ? '<div class="me-hits">' + hits.map(function (n) {
+            return '<button type="button" class="chip" data-me="' + esc(n) + '">' + esc(n) + '</button>';
+          }).join('') + '</div>'
+        : '<p class="field-note">No sale nadie así en esta competición.</p>');
+    } else {
+      h.push('<p class="field-note">Así la app sabe cuál es tu pareja en cada competición.</p>');
+    }
+    if (st.error) h.push('<div class="notice bad">' + esc(st.error) + '</div>');
+    h.push('</div>');
+    return h.join('');
+  }
+
+  function PadelNorm(x) {
+    return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function bindMe(view, redraw) {
+    var edit = view.querySelector('[data-action="me-edit"]');
+    if (edit) edit.addEventListener('click', function () { state.me.editing = true; redraw(); });
+    var q = document.getElementById('me-q');
+    if (q) q.addEventListener('input', function () {
+      state.me.query = q.value;
+      var pos = q.selectionStart;
+      redraw();
+      var again = document.getElementById('me-q');
+      if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {} }
+    });
+    view.querySelectorAll('[data-me]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.me.busy = true; state.me.error = null;
+        global.PadelDB.saveProfile(b.getAttribute('data-me')).then(function () {
+          state.me = { query: '', busy: false, error: null, editing: false };
+          if (state.model) applyMeAgain();
+          redraw();
+        }).catch(function (err) {
+          state.me.busy = false; state.me.error = err.message; redraw();
+        });
+      });
+    });
+  }
+
+  function applyMeAgain() {
+    applyMe(state.model);
+  }
+
   function knownPlayerNames() {
     if (!state.model) return [];
     var names = {};
@@ -264,8 +370,12 @@
         if (a.mode === 'up' && !(data && data.access_token)) {
           a.message = 'Cuenta creada. Confirma el email y vuelve a entrar.';
           a.mode = 'in';
+          redraw(); return;
         }
-        redraw();
+        global.PadelDB.fetchProfile().catch(function () { return null; }).then(function () {
+          if (state.model) applyMe(state.model);
+          redraw();
+        });
       }).catch(function (err) {
         a.busy = false; a.error = err.message; redraw();
       });
@@ -273,7 +383,25 @@
 
     var out = view.querySelector('[data-action="sign-out"]');
     if (out) out.addEventListener('click', function () {
-      global.PadelAuth.signOut().then(redraw);
+      global.PadelAuth.signOut().then(function () {
+        global.PadelDB.rememberMe(null);
+        if (state.model) {
+          /* Sin sesión vuelve la marca de la base. */
+          var snap = null; try { snap = global.PadelDB.readCache().snapshot; } catch (e) {}
+          if (snap) setModel(snap);
+        }
+        redraw();
+      });
+    });
+
+    bindMe(view, redraw);
+
+    var vs = view.querySelector('[data-action="view-season"]');
+    if (vs) vs.addEventListener('click', function () {
+      var slug = vs.getAttribute('data-slug');
+      switchSeason(slug, function () {
+        global.PadelApp.refreshSeasons().then(function () { global.PadelApp.go('temporada'); });
+      });
     });
 
     /* --- carga --- */
@@ -317,8 +445,9 @@
       if (!l.parsed) return;
       if (!l.slug.trim()) { l.error = 'Ponle un identificador a la temporada.'; redraw(); return; }
       l.slug = normSlug(l.slug);
-      var cur = state.model && state.model.season;
-      if (cur && cur.slug === l.slug && (cur.kind || 'masculina') !== l.kind) {
+      var cur = (state.seasons || []).filter(function (x) { return x.slug === l.slug; })[0] ||
+        (state.model && state.model.season && state.model.season.slug === l.slug ? state.model.season : null);
+      if (cur && (cur.kind || 'masculina') !== l.kind) {
         l.error = 'El identificador «' + l.slug + '» ya es de la competición ' + (cur.kind || 'masculina') +
           '. Usa otro, por ejemplo «' + suggestSlug(l.kind) + '».';
         redraw(); return;
@@ -338,6 +467,7 @@
       global.PadelDB.callAuthed('ingest_league', { payload: payload }).then(function (res) {
         l.busy = false; l.result = res; l.parsed = null; l.text = '';
         global.PadelDB.clearCache();
+        if (global.PadelApp && global.PadelApp.refreshSeasons) global.PadelApp.refreshSeasons();
         module_reload(redraw);
       }).catch(function (err) {
         l.busy = false; l.error = err.message; redraw();
@@ -345,9 +475,17 @@
     });
   }
 
+  function seasonsNote() {
+    var list = state.seasons || [];
+    if (!list.length) return '';
+    return ' (ya cargadas: ' + list.map(function (x) {
+      return '<b>' + esc(x.slug) + '</b> ' + esc(x.kind);
+    }).join(', ') + ')';
+  }
+
   function currentSeasonSlug() {
     var m = state.model;
-    return (m && m.season && m.season.slug) || '2026-s1';
+    return ((m && m.season && m.season.slug) || '2026-s1').replace(/-(mixta|femenina|mixto)$/, '');
   }
 
   /* Minúsculas y guiones: «2026-S1 Mixta» y «2026-s1-mixta» son lo mismo. */
@@ -357,17 +495,15 @@
 
   function suggestSlug(kind) {
     var base = currentSeasonSlug();
-    return kind === 'masculina' ? base : base + '-' + (kind === 'mixta' ? 'mixta' : kind);
+    return kind === 'masculina' ? base : base + '-' + kind;
   }
 
   function module_reload(done) {
+    var gen = state.gen;
     global.PadelDB.load({ force: true }).then(function (res) {
+      if (gen !== state.gen) return;
       state.source = res.from; state.savedAt = res.savedAt; state.error = res.error || null;
-      if (res.snapshot) {
-        state.model = L.build(res.snapshot);
-        state.calibration = L.calibrate(state.model);
-        state.model.scale = state.calibration.scale;
-      }
+      if (res.snapshot) setModel(res.snapshot);
       done();
     });
   }
@@ -657,7 +793,7 @@
   }
 
   global.PadelLiga = {
-    state: state,
+    state: state, switchSeason: switchSeason, applyMe: applyMe,
     esc: esc, pct: pct, stat: stat,
     loaderCard: loaderCard, bindLoader: bindLoader,
     calibrationCard: calibrationCard, sourceNote: sourceNote,

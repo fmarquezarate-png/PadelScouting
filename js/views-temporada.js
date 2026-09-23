@@ -211,7 +211,7 @@
     h.push('<div class="legend"><span><i style="background:var(--sage-dk)"></i>Victoria</span>' +
       '<span><i style="background:var(--brick)"></i>Derrota</span>' +
       '<span><i style="background:rgba(237,108,5,.30)"></i>El mes clutch</span>' +
-      '<span><i style="background:transparent;border:2px solid var(--sage-dk)"></i>Mixto (solo en el nivel del club)</span>' +
+      (isS1() ? '<span><i style="background:transparent;border:2px solid var(--sage-dk)"></i>Mixto (solo en el nivel del club)</span>' : '') +
       '</div></section>');
 
     /* 03 · Mes a mes */
@@ -310,10 +310,25 @@
     return METRICS[0];
   }
 
+  /* El nivel del club, las fechas reales y la línea de Cristian solo existen
+     para el masculino del primer semestre. */
+  function isS1() {
+    var m = PL.state.model;
+    return !!(m && m.season && m.season.slug === S1.slug);
+  }
+
+  function resetUi() {
+    stopTimer();
+    ui.metric = 'pos'; ui.upto = null; ui.rowsFilter = 'all'; ui.rivSort = 'lad'; ui.openRiv = {};
+    ui.tblSort = { k: 'pos', asc: true }; ui.tblQuery = ''; ui.tblOnlyRivals = false;
+    ui.expQuery = ''; ui.expSel = null;
+  }
+
   function renderMetrics(rows) {
     var box = document.getElementById('metrics');
     if (!box) return;
-    box.innerHTML = METRICS.map(function (mt) {
+    if (!isS1() && ui.metric === 'club') ui.metric = 'pos';
+    box.innerHTML = METRICS.filter(function (mt) { return !mt.club || isS1(); }).map(function (mt) {
       var disabled = mt.club && !(ui.club && ui.club.fran);
       return '<button data-metric="' + mt.id + '" class="' + (ui.metric === mt.id ? 'on' : '') + '"' +
         (disabled ? ' disabled title="Solo hay histórico del club del primer semestre"' : '') + '>' +
@@ -760,7 +775,7 @@
 
   global.PadelTemporada = {
     ui: ui, mine: mine, agg: agg, tile: tile, sectionHead: sectionHead,
-    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub,
+    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, isS1: isS1,
     renderTemporada: renderTemporada
   };
 })(window);

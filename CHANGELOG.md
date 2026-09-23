@@ -6,6 +6,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Competición arriba, para toda la app**: un botón en la barra superior cambia entre masculina,
+  mixta (y femenina cuando exista). La pista, Temporada, Rival y Liga pasan a esa competición; la
+  app la recuerda y guarda una copia por competición en el móvil.
+- **Quién eres**: cada cuenta elige una vez su jugador y la app encuentra su pareja en cada
+  competición. Sin sesión se usa la marca de la base (Francisco).
+- Tras guardar una carga, la app dice en qué temporada y cuántos meses, grupos y partidos entraron,
+  y ofrece «Verla ahora».
+- Cada competición tiene su crónica: la del masculino sigue; la del mixto se escribirá con sus datos
+  reales y mientras tanto se dice claro que falta.
 - **La pista**, nueva portada: una pista de pádel dibujada que hace de menú. Cada zona es una
   pantalla; al tocarla la bola vuela hasta allí. Puesto animado (#67 → #50), forma reciente y
   tarjetas de acceso. Se maneja también con teclado.

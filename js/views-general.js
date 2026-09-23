@@ -230,7 +230,26 @@
     /* Primero el aviso de carga y después los datos: si ya estaban en
        memoria, la crónica se pinta al instante y no queda tapada. */
     view.innerHTML = PL.loadingHtml('Cargando la crónica…');
-    PT.loadClub(function () { paintCronica(view, bind); });
+    PL.ensureLoaded(function () {
+      if (!PT.isS1()) { paintCronicaPendiente(view, bind); return; }
+      PT.loadClub(function () { paintCronica(view, bind); });
+    });
+  }
+
+  /* Cada competición tiene su propia crónica, escrita con sus datos reales.
+     Hasta que exista, se dice claro en vez de inventarla. */
+  function paintCronicaPendiente(view, bind) {
+    var m = PL.state.model;
+    var s = (m && m.season) || {};
+    view.innerHTML = '<div class="lg"><div class="stale">La crónica de <b>' + esc(s.name || 'esta temporada') +
+      '</b> (' + esc(s.kind || '') + ') todavía no está escrita.</div>' +
+      '<section class="blk"><p class="lede">Una crónica se escribe a mano con los partidos ya cargados: ' +
+      'los actos de la temporada, los duelos que la marcaron y lo que dicen los números de la pareja. ' +
+      'Los números de <b>Nuestra temporada</b>, <b>La liga</b> y <b>El rival</b> ya funcionan con esta ' +
+      'competición.</p><div class="btn-row">' +
+      '<button class="btn primary" data-goto="temporada">Ver nuestra temporada</button>' +
+      '<button class="btn ghost" data-goto="liga">Ver la liga</button></div></section></div>';
+    bind();
   }
 
   function paintCronica(view, bind) {
@@ -327,15 +346,19 @@
       registro: 'En 2 min',
       historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Vacío',
       analisis: 'Y briefing',
-      cronica: '1er semestre'
+      cronica: PT.isS1() ? '1er semestre' : 'Por escribir'
     };
 
     var h = [];
     h.push('<section class="home-hero">' +
       '<img class="home-crest" src="assets/logo.png" alt="Club Tennis El Molí" width="92" height="92">' +
       '<div class="eyebrow">Club Tennis El Molí · ' + esc((m.season && m.season.name) || 'Liga') + '</div>' +
-      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : 'Francisco') + '<em>' +
+      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : whoAmI()) + '<em>' +
       esc(me ? heroName(me.playerB) : '') + '</em></h2>');
+    if (!me) {
+      h.push('<p class="home-line">No apareces en <b>' + esc((m.season && m.season.name) || 'esta competición') +
+        '</b>. Cambia de competición arriba, o dinos quién eres desde <b>La liga → Cargar</b>.</p>');
+    }
     if (a) {
       var climb = a.posIni - a.posFin;
       h.push('<div class="home-rank"><span class="hr-lab">Puesto</span>' +
@@ -363,13 +386,19 @@
       card('registro', 'Registrar', 'La capa de scouting: lo que la liga no sabe de tu partido.', live.registro) +
       card('historial', 'Historial', 'Tus partidos anotados, con filtros y backup.', live.historial) +
       card('analisis', 'Análisis', 'Patrones que se repiten, win rate por arquetipo y briefing.', live.analisis) +
-      card('cronica', 'Crónica', 'Los tres actos, el duelo, las firmas y los dos niveles del club.', live.cronica) +
+      card('cronica', 'Crónica', PT.isS1() ? 'Los tres actos, el duelo, las firmas y los dos niveles del club.'
+        : 'El relato de esta competición: se escribe con sus partidos reales.', live.cronica) +
       '</section>');
 
     view.innerHTML = h.join('');
     animateRank();
     bindCourt(view, go);
     bind();
+  }
+
+  function whoAmI() {
+    var p = global.PadelDB.myPlayer();
+    return (p && p.label) || 'Francisco';
   }
 
   /* La liga escribe "Cristian C": en portada sobra la inicial suelta. */

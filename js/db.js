@@ -11,14 +11,70 @@
   var CFG = {
     url: 'https://etfsdoufdzibqlgpcdtx.supabase.co',
     key: 'sb_publishable_EMC-kHTVVDIMg0w7PIyCvw_-kxSH1Gk',
-    season: '2026-s1',
+    season: '2026-s1',            /* temporada por defecto */
+    seasonKey: 'padel-scouting.season.v1',
+    seasonsKey: 'padel-scouting.seasons.v1',
+    meKey: 'padel-scouting.me.v1',
     cacheKey: 'padel-scouting.liga.v1',
     maxAgeMinutes: 180
   };
 
+  /* ---------- qué temporada estás mirando ---------- */
+  function lsGet(k) { try { return global.localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { global.localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { global.localStorage.removeItem(k); } catch (e) {} }
+
+  function currentSeason() { return lsGet(CFG.seasonKey) || CFG.season; }
+  function setSeason(slug) { lsSet(CFG.seasonKey, slug); }
+
+  /* Cada temporada con su copia en el móvil. La de por defecto conserva
+     la clave de siempre para no perder lo ya descargado. */
+  function cacheKey() {
+    var s = currentSeason();
+    return s === CFG.season ? CFG.cacheKey : CFG.cacheKey + ':' + s;
+  }
+
+  function rpcPublic(fn, args) {
+    return global.fetch(CFG.url + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: { 'apikey': CFG.key, 'Authorization': 'Bearer ' + CFG.key,
+                 'Content-Type': 'application/json' },
+      body: JSON.stringify(args || {})
+    }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    });
+  }
+
+  /* Lista de competiciones cargadas. Sin red, la última conocida. */
+  function listSeasons() {
+    var fallback = [{ slug: CFG.season, name: 'Temporada 2026 · primer semestre', kind: 'masculina' }];
+    return rpcPublic('list_seasons').then(function (list) {
+      if (Array.isArray(list) && list.length) { lsSet(CFG.seasonsKey, JSON.stringify(list)); return list; }
+      return fallback;
+    }).catch(function () {
+      try { return JSON.parse(lsGet(CFG.seasonsKey)) || fallback; } catch (e) { return fallback; }
+    });
+  }
+
+  /* ---------- quién eres ---------- */
+  function myPlayer() {
+    try { return JSON.parse(lsGet(CFG.meKey)); } catch (e) { return null; }
+  }
+  function rememberMe(p) {
+    if (p && p.label) lsSet(CFG.meKey, JSON.stringify(p)); else lsDel(CFG.meKey);
+  }
+  function fetchProfile() {
+    return callAuthed('get_my_profile').then(function (p) { rememberMe(p); return p; });
+  }
+  function saveProfile(label) {
+    return callAuthed('set_my_profile_label', { p_label: label })
+      .then(function (p) { rememberMe(p); return p; });
+  }
+
   function readCache() {
     try {
-      var raw = global.localStorage.getItem(CFG.cacheKey);
+      var raw = global.localStorage.getItem(cacheKey());
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (!parsed || !parsed.snapshot) return null;
@@ -28,7 +84,7 @@
 
   function writeCache(snapshot) {
     try {
-      global.localStorage.setItem(CFG.cacheKey, JSON.stringify({
+      global.localStorage.setItem(cacheKey(), JSON.stringify({
         savedAt: new Date().toISOString(), snapshot: snapshot
       }));
     } catch (e) { /* sin espacio o navegación privada: seguimos sin caché */ }
@@ -48,7 +104,7 @@
         'Authorization': 'Bearer ' + CFG.key,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ season_slug: CFG.season })
+      body: JSON.stringify({ season_slug: currentSeason() })
     }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();
@@ -100,11 +156,13 @@
   }
 
   function clearCache() {
-    try { global.localStorage.removeItem(CFG.cacheKey); } catch (e) {}
+    lsDel(cacheKey()); lsDel(CFG.seasonsKey);
   }
 
   global.PadelDB = {
     load: load, CFG: CFG, readCache: readCache,
-    callAuthed: callAuthed, clearCache: clearCache
+    callAuthed: callAuthed, clearCache: clearCache,
+    currentSeason: currentSeason, setSeason: setSeason, listSeasons: listSeasons,
+    myPlayer: myPlayer, rememberMe: rememberMe, fetchProfile: fetchProfile, saveProfile: saveProfile
   };
 })(window);

@@ -7,7 +7,7 @@ SERVER=$!
 trap 'kill $SERVER 2>/dev/null' EXIT
 sleep 1.2
 FAIL=0
-for suite in qa-app qa-rival qa-carga qa-scouting; do
+for suite in qa-app qa-rival qa-carga qa-scouting qa-competicion; do
   printf '%-12s ' "$suite"
   out=$(node "test/$suite.js" 2>&1); code=$?
   echo "$out" | tail -1

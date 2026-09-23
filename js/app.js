@@ -1117,12 +1117,104 @@
     });
     var back = document.getElementById('back');
     if (back) back.addEventListener('click', function () { go('inicio'); });
+    initCompetition();
+    /* Con sesión abierta, recuerda quién eres (vale para todas las competiciones). */
+    if (global.PadelAuth.user && global.PadelAuth.user()) {
+      global.PadelDB.fetchProfile().then(function () {
+        var m = global.PadelLiga.state.model;
+        if (m) { global.PadelLiga.applyMe(m); go(state.view); }
+      }).catch(function () {});
+    }
     go('inicio');
   }
+
+  /* ============================================================
+     competición: un interruptor arriba para toda la app
+     ============================================================ */
+  var KIND = { masculina: 'Masculina', mixta: 'Mixta', femenina: 'Femenina' };
+
+  function initCompetition() {
+    var btn = document.getElementById('comp-btn');
+    var menu = document.getElementById('comp-menu');
+    if (!btn || !menu) return;
+
+    function paintButton() {
+      var list = global.PadelLiga.state.seasons || [];
+      var slug = global.PadelDB.currentSeason();
+      var cur = list.filter(function (x) { return x.slug === slug; })[0];
+      var kind = (cur && cur.kind) || 'masculina';
+      btn.setAttribute('data-kind', kind);
+      document.getElementById('comp-label').textContent = KIND[kind] || kind;
+      btn.title = 'Competición: ' + ((cur && cur.name) || slug) + ' · cambiar';
+    }
+
+    function paintMenu() {
+      var list = global.PadelLiga.state.seasons || [];
+      var slug = global.PadelDB.currentSeason();
+      menu.innerHTML = '<div class="comp-title">Competición</div>' + list.map(function (x) {
+        return '<button type="button" class="comp-item" role="menuitemradio" data-slug="' + esc(x.slug) +
+          '" data-kind="' + esc(x.kind) + '" aria-checked="' + (x.slug === slug) + '">' +
+          '<i class="comp-dot"></i><span><b>' + esc(KIND[x.kind] || x.kind) + '</b><small>' +
+          esc(x.name) + (x.matches != null ? ' · ' + x.matches + ' partidos' : '') + '</small></span></button>';
+      }).join('') + (list.length < 2
+        ? '<p class="comp-empty">Cuando cargues otra competición desde La liga, aparecerá aquí.</p>' : '');
+    }
+
+    function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    function open() {
+      paintMenu(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true');
+      var first = menu.querySelector('[aria-checked="true"]') || menu.querySelector('.comp-item');
+      if (first) first.focus();
+    }
+
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      if (menu.hidden) open(); else close();
+    });
+    document.addEventListener('click', function (ev) {
+      if (!menu.hidden && !menu.contains(ev.target)) close();
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !menu.hidden) { close(); btn.focus(); }
+    });
+    menu.addEventListener('click', function (ev) {
+      var item = ev.target.closest('[data-slug]');
+      if (!item) return;
+      var slug = item.getAttribute('data-slug');
+      close();
+      if (slug === global.PadelDB.currentSeason()) return;
+      document.body.classList.add('switching');
+      global.PadelLiga.switchSeason(slug, function () {
+        document.body.classList.remove('switching');
+        paintButton();
+        var s = (global.PadelLiga.state.seasons || []).filter(function (x) { return x.slug === slug; })[0];
+        toast('Ahora ves: ' + (s ? (KIND[s.kind] || s.kind) + ' · ' + s.name : slug));
+        go(state.view);
+      });
+    });
+
+    refreshSeasons = function () {
+      return global.PadelDB.listSeasons().then(function (list) {
+        global.PadelLiga.state.seasons = list;
+        /* Si la temporada guardada ya no existe, vuelve a la de por defecto. */
+        var slug = global.PadelDB.currentSeason();
+        if (!list.some(function (x) { return x.slug === slug; }) && list.length) {
+          global.PadelLiga.switchSeason(list.filter(function (x) {
+            return x.slug === global.PadelDB.CFG.season; })[0] ? global.PadelDB.CFG.season : list[0].slug,
+            function () { go(state.view); });
+        }
+        paintButton();
+      });
+    };
+    paintButton();
+    refreshSeasons();
+  }
+
+  var refreshSeasons = function () { return Promise.resolve(); };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { go: go, state: state };
+  global.PadelApp = { refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state };
 })(window);

@@ -77,6 +77,11 @@ otra (`2026-s1` es masculina), la carga se rechaza en vez de mezclar datos. Supa
 `DELETE` sin `WHERE` que llegan desde la API, así que la función no usa ninguno
 (migración `ingest_league_safe_delete_and_kind_guard`).
 
-`list_seasons()` y `get_league_snapshot(slug)` son de lectura pública.
+`list_seasons()` y `get_league_snapshot(slug)` son de lectura pública. La foto de una temporada
+trae solo las parejas que juegan en ella.
+
+`profiles` guarda qué jugador es cada cuenta (una fila por cuenta, cada una solo ve la suya).
+`get_my_profile()` y `set_my_profile_label(nombre)` requieren sesión. Competiciones admitidas:
+`masculina`, `mixta`, `femenina`.
 
 El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/liga-parser.js`.

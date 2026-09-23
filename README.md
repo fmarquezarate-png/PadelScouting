@@ -16,6 +16,7 @@ móvil, sentado en el banquillo, y que con el tiempo esos registros se convierta
 
 | Pantalla | Para qué |
 |---|---|
+| **Competición** (arriba) | Cambia toda la app entre masculina, mixta y femenina. |
 | **La pista** | Inicio. Una pista de pádel que es el menú: tocas una zona y la bola vuela hasta ella. Puesto animado, forma y accesos. |
 | **Nuestra temporada** | Números, escalera animada (5 métricas), mes a mes, acantilado, todos los partidos, rivales y techo. |
 | **La liga** | Clasificación general ordenable, explorador de cualquier pareja y carga de datos. |
