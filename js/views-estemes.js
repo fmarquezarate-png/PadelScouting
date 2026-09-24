@@ -286,7 +286,12 @@
         'lo que falta de <b>todos</b> los grupos y te digo con quién es más probable que te toque.</p></section>');
       return h.join('');
     }
-    var o = L.nextMonthOutlook(m, mo, kindOf(m), me, known, { simulations: 1200 });
+    /* 10.000 escenarios: se guarda y solo se repite si cambia algún resultado. */
+    var key = [m.season && m.season.slug, mo, me, m.matches.length, JSON.stringify(known)].join('|');
+    if (!state.cocina || state.cocina.key !== key) {
+      state.cocina = { key: key, o: L.nextMonthOutlook(m, mo, kindOf(m), me, known, { simulations: 10000 }) };
+    }
+    var o = state.cocina.o;
     if (!o) return '';
     h.push('<p class="lede">Provisional: se juega ' + o.simulations + ' veces lo que falta del mes en todos los grupos ' +
       '(lo ya jugado cuenta tal cual) y se aplican las subidas y bajadas.</p>');
@@ -295,11 +300,12 @@
         '"><b>' + pct(g.p) + '</b><span>Grupo ' + g.group + '</span></div>';
     }).join('') + '</div>');
     var list = o.rivals.filter(function (x) { return x.p >= 0.03; }).slice(0, 12);
-    h.push('<table class="table em-table"><thead><tr><th>Pareja</th><th>Grupo ahora</th><th>Prob. de tocarte</th></tr></thead><tbody>');
+    h.push('<table class="table em-table"><thead><tr><th>Pareja</th><th>Grupo ahora</th><th>Prob. de tocarte</th><th></th></tr></thead><tbody>');
     list.forEach(function (x) {
       var t = m.teams[x.id], cur = m.ladder[mo][x.id];
       h.push('<tr data-team="' + x.id + '"><td>' + esc(t ? t.label : '—') + '</td><td>' + (cur ? cur.group : '—') +
-        '</td><td><span class="em-bar"><i style="width:' + Math.round(x.p * 100) + '%"></i></span> <b>' + pct(x.p) + '</b></td></tr>');
+        '</td><td><span class="em-bar"><i style="width:' + Math.round(x.p * 100) + '%"></i></span> <b>' + pct(x.p) + '</b></td>' +
+        '<td class="em-cmp"><button class="btn ghost small" data-rival="' + x.id + '" title="Comparar con nosotros">Comparar</button></td></tr>');
     });
     h.push('</tbody></table><p class="note">Cambia cada vez que se apunta un resultado. Solo salen las parejas con 3% o más.</p></section>');
     return h.join('');
@@ -338,7 +344,7 @@
     var h = ['<article class="em-card" data-fx="' + f.id + '">'];
     h.push('<header><h3>' + esc(t ? t.label : f.rivalLabel) + '</h3>' + statusChip(f) + '</header>');
     if (t) {
-      var pr = L.project(m, me, t.id, { scale: m.scale, simulations: 2000 });
+      var pr = L.project(m, me, t.id, { scale: m.scale, simulations: 10000 });
       var lad = m.ladder[m.lastMonth] && m.ladder[m.lastMonth][t.id];
       var h2h = L.headToHead(m, me, t.id);
       var trend = trendOf(m, t.id);

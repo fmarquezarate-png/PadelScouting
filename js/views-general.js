@@ -294,7 +294,63 @@
     }).filter(function (x) { return x[0]; });
   }
 
-  var cronUi = { editing: false };
+  var cronUi = { editing: false, q: '' };
+
+  /* Filtros propios de la crónica: competición, temporada (o todo) y pareja.
+     Son filtros: cambian lo que se lee, no la pantalla. */
+  var KIND_NAMES = { masculina: 'Masculino', mixta: 'Mixto', femenina: 'Femenino' };
+  function cronicaFilters(m) {
+    var A = global.PadelApp, seasons = PL.state.seasons || [];
+    var slug = global.PadelDB.currentSeason(), kind = A.kindOfSlug(slug);
+    var kinds = [];
+    seasons.forEach(function (x) { if (kinds.indexOf(x.kind) < 0) kinds.push(x.kind); });
+    var mine = seasons.filter(function (x) { return x.kind === kind; }).map(function (x) { return x.slug; }).sort()
+      .concat(['all:' + kind]);
+    var t = m.myTeamId && m.teams[m.myTeamId];
+    return '<div class="cro-filters">' +
+      '<label><span>Competición</span><select id="cro-kind">' + kinds.map(function (k) {
+        return '<option value="' + esc(k) + '"' + (k === kind ? ' selected' : '') + '>' + esc(KIND_NAMES[k] || k) + '</option>';
+      }).join('') + '</select></label>' +
+      '<label><span>Temporada</span><select id="cro-season">' + mine.map(function (x) {
+        return '<option value="' + esc(x) + '"' + (x === slug ? ' selected' : '') + '>' + esc(A.seasonName(x)) + '</option>';
+      }).join('') + '</select></label>' +
+      '<label><span>Pareja</span><button type="button" id="cro-pair" class="cro-pair">' + esc(t ? t.label : 'Escoger') +
+      ' ▾</button></label></div>';
+  }
+  function cronicaPairList(m) {
+    var lad = m.ladder[m.lastMonth] || {}, q = String(cronUi.q || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    var ids = m.order.filter(function (id) {
+      var t = m.teams[id], txt = (t.label + ' ' + t.playerA + ' ' + t.playerB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      return m.matches.some(function (x) { return x.home === id || x.away === id; }) && (!q || txt.indexOf(q) >= 0);
+    }).sort(function (a, b) { return (lad[a] ? lad[a].place : 999) - (lad[b] ? lad[b].place : 999); });
+    if (!ids.length) return '<p class="note">No sale ninguna pareja así.</p>';
+    return ids.map(function (id) {
+      var l = lad[id];
+      return '<button class="pp-item" data-cro-id="' + id + '"><b>' + esc(m.teams[id].label) + '</b><small>' +
+        (l ? '#' + l.place + ' · Grupo ' + l.group : '') + '</small></button>';
+    }).join('');
+  }
+  function bindCronicaFilters(view, m) {
+    var A = global.PadelApp;
+    var k = view.querySelector('#cro-kind');
+    if (k) k.addEventListener('change', function () { A.switchTo(A.latestSlugOfKind(k.value), true); });
+    var se = view.querySelector('#cro-season');
+    if (se) se.addEventListener('change', function () { A.switchTo(se.value, true); });
+    var pb = view.querySelector('#cro-pair');
+    if (pb) pb.addEventListener('click', function () { A.openPairPicker(); });
+    function bindList() {
+      view.querySelectorAll('[data-cro-id]').forEach(function (b) {
+        b.addEventListener('click', function () { A.choosePair(Number(b.getAttribute('data-cro-id'))); });
+      });
+    }
+    var q = view.querySelector('#cro-q');
+    if (q) q.addEventListener('input', function () {
+      cronUi.q = q.value;
+      view.querySelector('#cro-list').innerHTML = cronicaPairList(m);
+      bindList();
+    });
+    bindList();
+  }
 
   function paintCronica(view, bind) {
     var m = PL.state.model;
@@ -303,11 +359,13 @@
     var club = PT.club ? PT.club() : null;
     var me = m.myTeamId ? m.teams[m.myTeamId] : null;
     var names = { me: club ? club.meName : (me ? me.playerA : 'Tú'), partner: club ? club.partnerName : (me ? me.playerB : 'Pareja') };
-    var h = ['<div class="lg cronica">'];
+    var h = ['<div class="lg cronica">', cronicaFilters(m)];
     if (!m.myTeamId) {
-      view.innerHTML = '<div class="lg"><div class="notice">La crónica cuenta la temporada de una pareja. Elige cuál. ' +
-        '<div class="btn-row" style="margin-top:10px"><button class="btn primary" data-pair="pick">Elegir una pareja</button></div></div></div>';
-      view.querySelector('[data-pair]').addEventListener('click', function () { global.PadelApp.openPairPicker(); });
+      h.push('<section class="blk"><p class="lede">La crónica cuenta la temporada de una pareja. ¿Cuál quieres leer?</p>' +
+        '<div class="field"><input type="search" id="cro-q" placeholder="Buscar pareja o jugador" value="' + esc(cronUi.q || '') +
+        '" autocomplete="off"></div><div class="pp-list cro-list" id="cro-list">' + cronicaPairList(m) + '</div></section></div>');
+      view.innerHTML = h.join('');
+      bindCronicaFilters(view, m);
       bind(); return;
     }
     var own = m.myTeamId === m.ownTeamId;
@@ -391,6 +449,7 @@
     h.push('</div>');
     view.innerHTML = h.join('');
 
+    bindCronicaFilters(view, m);
     view.querySelectorAll('[data-fm]').forEach(function (b) {
       b.addEventListener('click', function () {
         var a = b.getAttribute('data-fm');

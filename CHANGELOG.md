@@ -5,6 +5,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+- **Solo el administrador escribe la liga.** Antes cualquier cuenta podía escribir directamente en
+  partidos, parejas y temporadas. Ahora la base (RLS) solo deja escribir a quien esté en la tabla
+  `admins` (tu cuenta); `ingest_league` e `ingest_league_matches` lo comprueban y avisan. El cargador
+  solo aparece a los administradores. Los demás apuntan sus partidos y notas, nada más.
+
+### Changed
+- **Los filtros no navegan**: cambiar competición, temporada o pareja te deja en la misma pantalla,
+  a la misma altura, con tus ajustes (métrica, filtros, rival abierto) y sin avisos.
+- **Sin sesión**: La pista, La liga (solo la clasificación general), Temporada, El rival y Crónica.
+  Este mes, Registrar, Historial y Análisis llevan a iniciar sesión.
+- **Crónica con sus filtros**: competición, temporada (o todo el recorrido) y pareja arriba; sin
+  pareja, la lista de parejas sale en la propia página.
+- **10.000 escenarios** en todas las simulaciones (antes 4.000); «cómo se cocina el próximo mes»
+  guarda el resultado y solo repite si cambia algún resultado.
+
+### Added
+- **«Comparar»** a la derecha de cada posible rival del mes que viene.
+- **Tema claro / oscuro** en Configuración (por defecto, el del móvil). La pista sigue de noche.
+- **Foto de perfil en grande** al tocarla (se guarda a 640 px para que se vea nítida).
+- **Lado y mano** en tus datos (derecha / izquierda / me da igual · diestro / zurdo), opcionales.
+
 ### Changed — la app ya no es «de Francisco» por defecto
 - **Quien entra con el link sin ser jugador ve la liga**, no a una pareja: la portada enseña un
   resumen (parejas, grupos, mes en juego, quién va arriba) y el botón «Elegir una pareja».

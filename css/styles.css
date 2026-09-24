@@ -968,3 +968,47 @@ body{overscroll-behavior-y:contain}
 .pair-chip{max-width:min(170px,44vw)}
 @media(min-width:760px){.pair-chip{max-width:260px}}
 .reg-opt.locked{opacity:.55}
+.em-cmp{text-align:right;white-space:nowrap}
+.em-cmp .btn{padding:5px 9px;font-size:.72rem}
+@media (max-width:420px){.em-table td,.em-table th{padding-left:4px;padding-right:4px}}
+
+/* Crónica · filtros propios */
+.cro-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 18px}
+.cro-filters label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.cro-filters label span{font:600 9.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.cro-filters select,.cro-pair{width:100%;background:var(--panel);color:var(--bone);border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;font:600 12.5px/1.2 var(--mono);text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+@media (max-width:759px){.cro-filters select,.cro-pair{font-size:16px}}
+@media (max-width:420px){.cro-filters{grid-template-columns:1fr 1fr}.cro-filters label:last-child{grid-column:1 / -1}}
+.cro-list{max-height:none}
+
+/* ============================================================
+   Tema claro. Se activa con html[data-theme="light"] (lo pone el
+   script del <head>: el del móvil, o el que fijes en Configuración).
+   La pista de inicio es una foto nocturna: se queda siempre oscura.
+   ============================================================ */
+html[data-theme="light"]{
+  --ink:#F3F1EA; --panel:#FFFFFF; --panel2:#E9E6DC; --line:#D5D0C2;
+  --bone:#1B2015; --mute:#5C6650; --sage:#58733F; --sage-dk:#4A6534;
+  --orange:#C95A00; --brick:#A53C14;
+  color-scheme:light;
+}
+html[data-theme="dark"]{color-scheme:dark}
+html[data-theme="light"] .topbar{background:rgba(243,241,234,.94);border-bottom-color:var(--line)}
+html[data-theme="light"] .home{
+  --ink:#0E1109; --panel:#161B12; --panel2:#1E2418; --line:#2C3423;
+  --bone:#EDEBE3; --mute:#9AA48C; --sage:#8FA678; --sage-dk:#687F4E; --orange:#ED6C05; --brick:#B4491F;
+  color:var(--bone)
+}
+html[data-theme="light"] .scrim,html[data-theme="light"] .modal{background:rgba(30,32,26,.45)}
+
+/* Configuración · tema */
+.theme-chips{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Foto de perfil en grande */
+.avatar.zoomable{border:0;padding:0;cursor:zoom-in}
+.photo-zoom{display:flex;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+.photo-zoom img{max-width:min(92vw,640px);max-height:80vh;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);object-fit:contain}
+.pz-close{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;width:40px;height:40px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.4);color:#fff;font-size:24px;line-height:1}
+.wz-n.opt{background:transparent;border:1px dashed var(--line);color:var(--mute)}

@@ -229,7 +229,13 @@ async function mockApp(page, opts) {
       return Object.keys(l6).map(Number).filter(id => id !== me && l6[id].group === l6[me].group);
     });
     const top = await q.$$eval('.em-cocina tbody tr', els => els.slice(0, 3).map(e => +e.dataset.team));
+    check('Cocina: cada posible rival tiene «Comparar»', await q.locator('.em-cocina [data-rival]').count() === rows, 'n=' + rows);
     check('Cocina: con el mes cerrado acierta los rivales reales', JSON.stringify(top.sort()) === JSON.stringify(real.sort()), top + ' vs ' + real);
+    const firstRival = await q.getAttribute('.em-cocina [data-rival] >> nth=0', 'data-rival');
+    await q.click('.em-cocina [data-rival] >> nth=0'); await q.waitForTimeout(900);
+    check('Comparar lleva a El rival con esa pareja frente a la nuestra', (await q.textContent('#page-title')) === 'El rival' &&
+      await q.evaluate(id => { const s = window.PadelLiga.state; return s.rivalId === +id && s.model.myTeamId === s.model.ownTeamId; }, firstRival));
+    await q.evaluate(() => window.PadelApp.go('estemes')); await q.waitForTimeout(900);
     /* Sin clasificación del mes: explica qué falta */
     await q.evaluate(() => { window.PadelEsteMes.state.round.leagueMonth = null; window.PadelApp.go('estemes'); });
     await q.waitForTimeout(900);

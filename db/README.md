@@ -115,3 +115,11 @@ El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/lig
 - RPC `import_club_levels(p_who, p_ranking, p_name, p_rows)`: upsert por fecha y hora; devuelve
   `{added, updated, total}`. Las filas «Restaurar por corrección» se quitan antes, en `js/club.js`.
 - La fecha y hora de la web se guardan tal cual (como UTC) para que no se muevan.
+
+## Administradores
+
+- `admins (user_id)`: quién puede escribir la liga. `is_admin()` lo consulta (security definer).
+- Políticas `*_write` de `seasons`, `league_months`, `league_groups`, `group_standings`, `matches`,
+  `players`, `teams` y `league_imports`: solo `is_admin()`. La lectura sigue siendo pública.
+- `assert_admin()` da el mensaje claro al principio de `ingest_league` e `ingest_league_matches`.
+- `get_my_profile()` devuelve `isAdmin`, `side` y `hand`; `update_my_profile` acepta `side` y `hand`.

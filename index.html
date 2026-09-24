@@ -4,6 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0E1109">
+<script>
+/* Tema antes de pintar nada (sin parpadeo): el que elijas en Configuración o el del móvil. */
+(function () {
+  var pref = 'auto';
+  try { pref = localStorage.getItem('padel-scouting.theme.v1') || 'auto'; } catch (e) {}
+  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+  function apply() {
+    var t = pref === 'light' || pref === 'dark' ? pref : (mq && mq.matches ? 'light' : 'dark');
+    document.documentElement.setAttribute('data-theme', t);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', t === 'light' ? '#F3F1EA' : '#0E1109');
+  }
+  window.PadelTheme = {
+    get: function () { return pref; },
+    set: function (p) { pref = p; try { localStorage.setItem('padel-scouting.theme.v1', p); } catch (e) {} apply(); }
+  };
+  if (mq && mq.addEventListener) mq.addEventListener('change', function () { if (pref === 'auto') apply(); });
+  apply();
+})();
+</script>
 <meta name="description" content="Sistema personal de scouting y coaching de pádel: registrar, acumular, analizar y preparar el siguiente partido.">
 <title>Padel Scouting · Fran</title>
 <link rel="icon" href="assets/favicon.ico" sizes="any">

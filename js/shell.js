@@ -143,6 +143,7 @@
       label: p.label || '', category: p.category || null,
       playsMixed: p.playsMixed == null ? null : !!p.playsMixed,
       defaultKind: p.defaultKind || null, query: '', players: null, busy: false, error: null,
+      side: p.side || null, hand: p.hand || null,
       editing: !!editing
     };
     paintWelcome();
@@ -197,6 +198,10 @@
     }
     h.push('</div></div>');
 
+    /* 4 · opcional: cómo juegas (sirve para el scouting; se puede dejar en blanco) */
+    h.push('<div class="wz-step"><span class="wz-n opt">+</span><div class="wz-body">' +
+      '<span class="field-label">Opcional · ¿de qué lado juegas?</span>' + sideHandChips('wz', wz.side, wz.hand) + '</div></div>');
+
     if (wz.error) h.push('<div class="notice bad">' + esc(wz.error) + '</div>');
     var ready = wz.label && wz.category && wz.playsMixed != null;
     h.push('<div class="btn-row">' +
@@ -206,6 +211,20 @@
     h.push('</div>');
     return h.join('');
   }
+
+  /* Lado y mano: tocar el elegido otra vez lo quita (son opcionales). */
+  var SIDES = [['derecha', 'Derecha'], ['izquierda', 'Izquierda'], ['indiferente', 'Me da igual']];
+  var HANDS = [['diestro', 'Diestro'], ['zurdo', 'Zurdo']];
+  function sideHandChips(prefix, side, hand) {
+    return '<div class="chips tight">' + SIDES.map(function (o) {
+      return '<button type="button" class="chip" data-' + prefix + '-side="' + o[0] + '" aria-pressed="' + (side === o[0]) + '">' + o[1] + '</button>';
+    }).join('') + '</div><span class="field-label" style="margin-top:10px">Opcional · ¿diestro o zurdo?</span><div class="chips tight">' +
+      HANDS.map(function (o) {
+        return '<button type="button" class="chip" data-' + prefix + '-hand="' + o[0] + '" aria-pressed="' + (hand === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div>';
+  }
+  function sideLabel(v) { var o = SIDES.filter(function (x) { return x[0] === v; })[0]; return o ? o[1] : '—'; }
+  function handLabel(v) { var o = HANDS.filter(function (x) { return x[0] === v; })[0]; return o ? o[1] : '—'; }
 
   function defaultKind() {
     if (!wz.playsMixed) return wz.category;
@@ -235,6 +254,12 @@
     root.querySelectorAll('[data-wz-def]').forEach(function (b) {
       b.addEventListener('click', function () { wz.defaultKind = b.getAttribute('data-wz-def'); paintWelcome(); });
     });
+    root.querySelectorAll('[data-wz-side]').forEach(function (b) {
+      b.addEventListener('click', function () { var v = b.getAttribute('data-wz-side'); wz.side = wz.side === v ? null : v; paintWelcome(); });
+    });
+    root.querySelectorAll('[data-wz-hand]').forEach(function (b) {
+      b.addEventListener('click', function () { var v = b.getAttribute('data-wz-hand'); wz.hand = wz.hand === v ? null : v; paintWelcome(); });
+    });
     root.querySelectorAll('[data-wz]').forEach(function (b) {
       b.addEventListener('click', function () {
         var a = b.getAttribute('data-wz');
@@ -248,7 +273,8 @@
   function saveWelcome() {
     wz.busy = true; wz.error = null; paintWelcome();
     var kind = defaultKind();
-    DB().updateProfile({ label: wz.label, category: wz.category, playsMixed: wz.playsMixed, defaultKind: kind })
+    DB().updateProfile({ label: wz.label, category: wz.category, playsMixed: wz.playsMixed, defaultKind: kind,
+      side: wz.side || '', hand: wz.hand || '' })
       .then(function (p) {
         var editing = wz.editing;
         closeModal();
@@ -298,8 +324,9 @@
     }
 
     h.push('<section class="card profile-card"><div class="pf-head">' +
-      '<span class="avatar big">' + (p.avatar ? '<img src="' + esc(p.avatar) + '" alt="Tu foto">'
-        : '<span>' + esc(((p.label || u.email || '?').charAt(0)).toUpperCase()) + '</span>') + '</span>' +
+      (p.avatar ? '<button type="button" class="avatar big zoomable" data-pf="zoom" aria-label="Ver tu foto en grande">' +
+        '<img src="' + esc(p.avatar) + '" alt="Tu foto"></button>'
+        : '<span class="avatar big"><span>' + esc(((p.label || u.email || '?').charAt(0)).toUpperCase()) + '</span></span>') +
       '<div><h2>' + esc(p.label || 'Sin jugador') + '</h2><p class="field-note">' + esc(u.email || '') + '</p>' +
       '<div class="btn-row tight"><button class="btn ghost small" data-pf="photo">' +
       (photo.busy ? 'Subiendo…' : (p.avatar ? 'Cambiar foto' : 'Subir foto')) + '</button>' +
@@ -311,7 +338,9 @@
       '<dt>En la liga</dt><dd>' + esc(p.label || '—') + '</dd>' +
       '<dt>Categoría</dt><dd>' + esc(KIND[p.category] || '—') + '</dd>' +
       '<dt>Mixto</dt><dd>' + (p.playsMixed == null ? '—' : (p.playsMixed ? 'Sí' : 'No')) + '</dd>' +
-      '<dt>Al abrir</dt><dd>' + esc(KIND[p.defaultKind] || '—') + '</dd></dl>' +
+      '<dt>Al abrir</dt><dd>' + esc(KIND[p.defaultKind] || '—') + '</dd>' +
+      '<dt>Lado</dt><dd>' + esc(sideLabel(p.side)) + '</dd>' +
+      '<dt>Mano</dt><dd>' + esc(handLabel(p.hand)) + '</dd></dl>' +
       '<div class="btn-row"><button class="btn" data-pf="edit">Editar mis datos</button>' +
       '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div></section>');
     h.push('</div>');
@@ -324,17 +353,31 @@
         if (a === 'photo') file.click();
         else if (a === 'nophoto') saveAvatar('', redraw);
         else if (a === 'edit') openWelcome(me() || {}, true);
+        else if (a === 'zoom') openPhoto(p.avatar);
       });
     });
     file.addEventListener('change', function () {
       var f = file.files && file.files[0];
       if (!f) return;
       photo.busy = true; photo.error = null; redraw();
-      shrink(f, 256).then(function (url) { saveAvatar(url, redraw); })
+      shrink(f, 640).then(function (url) { saveAvatar(url, redraw); })
         .catch(function () { photo.busy = false; photo.error = 'No he podido leer esa imagen.'; redraw(); });
     });
     PL().bindAuth(view, function () { go('inicio'); });
     bind();
+  }
+
+  /* Foto en grande: toca fuera, la X o Escape para cerrar. */
+  function openPhoto(src) {
+    if (!src) return;
+    var root = document.getElementById('modal-root');
+    root.innerHTML = '<div class="modal photo-zoom" role="dialog" aria-label="Tu foto"><img src="' + esc(src) + '" alt="Tu foto">' +
+      '<button type="button" class="pz-close" aria-label="Cerrar">×</button></div>';
+    document.body.classList.add('has-modal');
+    function close() { root.innerHTML = ''; document.body.classList.remove('has-modal'); document.removeEventListener('keydown', esc1); }
+    function esc1(e) { if (e.key === 'Escape') close(); }
+    root.querySelector('.photo-zoom').addEventListener('click', close);
+    document.addEventListener('keydown', esc1);
   }
 
   function saveAvatar(url, redraw) {
@@ -380,6 +423,14 @@
     var slug = DB().currentSeason();
     var h = ['<div class="page-narrow">'];
 
+    var th = global.PadelTheme ? global.PadelTheme.get() : 'auto';
+    h.push('<section class="card"><h3>Apariencia</h3><span class="field-label">Tema</span>' +
+      '<div class="chips tight theme-chips" id="cfg-theme">' +
+      [['auto', 'Como el móvil'], ['light', 'Claro'], ['dark', 'Oscuro']].map(function (o) {
+        return '<button type="button" class="chip" data-theme-set="' + o[0] + '" aria-pressed="' + (th === o[0]) + '">' + o[1] + '</button>';
+      }).join('') + '</div><p class="field-note">«Como el móvil» cambia solo cuando tu móvil pasa a modo claro u oscuro. ' +
+      'La pista de inicio se ve siempre de noche.</p></section>');
+
     h.push('<section class="card"><h3>Competición</h3>' +
       '<p class="field-note">Estás viendo <b>' + esc((global.PadelApp.KIND[global.PadelApp.kindOfSlug(slug)] || '') + ' · ' +
       global.PadelApp.seasonName(slug)) + '</b>. La competición se cambia arriba, junto al título; el semestre, dentro de cada página.</p>');
@@ -404,6 +455,13 @@
     h.push('<p class="note center">Padel Scouting · Club Tennis El Molí</p></div>');
     view.innerHTML = h.join('');
 
+    var tc = document.getElementById('cfg-theme');
+    if (tc) tc.addEventListener('click', function (ev) {
+      var c = ev.target.closest('[data-theme-set]');
+      if (!c || !global.PadelTheme) return;
+      global.PadelTheme.set(c.getAttribute('data-theme-set'));
+      redraw();
+    });
     var def = document.getElementById('cfg-def');
     if (def) def.addEventListener('click', function (ev) {
       var c = ev.target.closest('[data-kind]');

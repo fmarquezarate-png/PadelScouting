@@ -1405,7 +1405,8 @@
   }
 
   /* ---------- semestres ---------- */
-  var SEASON_VIEWS = ['temporada', 'liga', 'cronica', 'rival'];
+  /* La crónica lleva sus propios filtros dentro de la página. */
+  var SEASON_VIEWS = ['temporada', 'liga', 'rival'];
 
   function kindOfSlug(slug) {
     if (/^all:/.test(slug || '')) return slug.slice(4);

@@ -23,6 +23,7 @@ node test/qa-semestres.js  # Competición arriba, semestre dentro, «todo el rec
 node test/qa-club.js       # Nivel del club: lector del histórico, importar, igual en masc y mixto
 node test/qa-cronica.js    # Crónica automática con los datos reales del mixto y masculino S1
 node test/qa-publico.js    # Visitante sin pareja por defecto; elegir cualquier pareja; volver a la tuya
+node test/qa-extras.js     # Tema claro/oscuro, foto en grande, lado y mano, 10.000 escenarios
 ```
 
 Cada suite termina imprimiendo cuántas comprobaciones pasan y cuáles fallan, y sale con

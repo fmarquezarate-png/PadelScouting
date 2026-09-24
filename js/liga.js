@@ -19,7 +19,7 @@
     baseRating: 1500,
     k: 30,
     superTieBreakTarget: 10,
-    simulations: 4000
+    simulations: 10000
   };
 
   /* ---------- utilidades de marcador ---------- */
@@ -379,7 +379,7 @@
      reglas de la competición, si subes, te mantienes o bajas. */
   function groupOutlook(model, members, known, kind, options) {
     var opts = options || {};
-    var n = opts.simulations || 3000;
+    var n = opts.simulations || 10000;
     var me = members[0];
     var pairs = [];
     for (var i = 0; i < members.length; i++) {
@@ -454,7 +454,7 @@
      Devuelve en qué grupo caes y con qué probabilidad te toca cada pareja. */
   function nextMonthOutlook(model, month, kind, me, extraKnown, options) {
     var opts = options || {};
-    var n = opts.simulations || 1200;
+    var n = opts.simulations || 10000;
     var lad = model.ladder[month] || {};
     var groups = {}, maxG = 1;
     Object.keys(lad).forEach(function (id) {

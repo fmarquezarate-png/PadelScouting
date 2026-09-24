@@ -43,6 +43,22 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await go(page, 'rival');
   check('El rival sin pareja: explica que se mira desde una', (await text(page)).includes('se mira desde una pareja'));
 
+  await go(page, 'cronica');
+  check('Crónica sin pareja: la lista de parejas sale en la página', await page.locator('#cro-list .pp-item').count() >= 70);
+  check('Crónica: filtros de competición, temporada y pareja', await page.locator('#cro-kind').count() === 1 &&
+    await page.locator('#cro-season').count() === 1 && await page.locator('#cro-pair').count() === 1);
+  const croSeasons = await page.$$eval('#cro-season option', e => e.map(x => x.textContent));
+  check('Crónica: temporada o todo el recorrido', croSeasons.includes('Todo el recorrido'), croSeasons.join(','));
+  await page.fill('#cro-q', 'ernesto'); await page.waitForTimeout(200);
+  await page.click('#cro-list .pp-item >> nth=0'); await page.waitForTimeout(1200);
+  check('Crónica: al elegir, se lee su crónica en la misma pantalla', (await page.textContent('#page-title')) === 'Crónica' &&
+    (await text(page)).includes('Acto I'));
+  await page.selectOption('#cro-season', 'all:masculina'); await page.waitForTimeout(2000);
+  check('Crónica: cambiar a todo el recorrido mantiene la crónica y la pareja', (await page.textContent('#page-title')) === 'Crónica' &&
+    /Ernesto/.test(await page.textContent('#cro-pair')), await page.textContent('#cro-pair'));
+  await page.evaluate(() => { window.PadelLiga.setViewPair(null); });
+  await page.selectOption('#cro-season', '2026-s1').catch(() => {}); await page.waitForTimeout(1500);
+
   /* elegir una pareja */
   await go(page, 'temporada');
   await page.click('#pair-btn'); await page.waitForTimeout(300);
