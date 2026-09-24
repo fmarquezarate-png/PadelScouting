@@ -61,13 +61,24 @@
       '<th class="srt hide-sm" data-k="pct">% juegos</th><th class="srt" data-k="elo">Nivel</th>' +
       '</tr></thead><tbody id="tblRows"></tbody></table></div><p class="note" id="tblNote"></p></section>');
 
+    /* Sin sesión: solo la clasificación general. */
+    var logged = !!(global.PadelAuth && global.PadelAuth.user());
+    if (!logged) {
+      h.push('<section class="blk"><p class="note">Entra con tu cuenta para el explorador de cada pareja. ' +
+        '<button class="linkish" data-goto="perfil">Iniciar sesión →</button></p></section></div>');
+      view.innerHTML = h.join('');
+      drawTable(m, rows);
+      bindGeneral(view, m, rows, bind);
+      return;
+    }
+
     h.push('<section class="blk">' + PT.sectionHead('08', 'Explorador de la liga',
       'Busca a cualquiera y mira su temporada entera: por qué grupos pasó, qué puesto ocupó y todos sus resultados.'));
     h.push('<div class="exp"><div class="exp-list"><input type="search" id="expSearch" ' +
       'placeholder="Buscar pareja o jugador…" autocomplete="off" value="' + esc(ui.expQuery) + '">' +
       '<div class="exp-items" id="expItems"></div></div><div class="exp-detail" id="expDetail"></div></div></section>');
 
-    h.push('<section class="blk"><p class="note">¿Hay mes nuevo en la web de la liga? ' +
+    if (global.PadelDB.isAdmin()) h.push('<section class="blk"><p class="note">¿Hay mes nuevo en la web de la liga? ' +
       '<button class="linkish" data-goto="config">Cárgalo desde Configuración →</button></p></section>');
     h.push('</div>');
     view.innerHTML = h.join('');
@@ -200,16 +211,24 @@
       bindRowLinks();
     });
     var es = document.getElementById('expSearch');
-    es.addEventListener('input', function () { ui.expQuery = es.value; drawExpList(m); });
-    document.getElementById('expItems').addEventListener('click', function (ev) {
-      var b = ev.target.closest('[data-t]');
-      if (!b) return;
-      showTeam(m, Number(b.getAttribute('data-t')));
-      bind();
-    });
+    if (es) {
+      es.addEventListener('input', function () { ui.expQuery = es.value; drawExpList(m); });
+      document.getElementById('expItems').addEventListener('click', function (ev) {
+        var b = ev.target.closest('[data-t]');
+        if (!b) return;
+        showTeam(m, Number(b.getAttribute('data-t')));
+        bind();
+      });
+    }
     function bindRowLinks() {
       document.querySelectorAll('[data-exp]').forEach(function (b) {
         b.onclick = function () {
+          /* Sin explorador (sin sesión): tocar una pareja la elige y abre su temporada. */
+          if (!document.getElementById('expDetail')) {
+            global.PadelLiga.setViewPair(Number(b.getAttribute('data-exp')));
+            global.PadelApp.go('temporada');
+            return;
+          }
           showTeam(m, Number(b.getAttribute('data-exp')));
           var d = document.getElementById('expDetail');
           if (d && d.scrollIntoView) d.scrollIntoView({ behavior: 'smooth', block: 'start' });

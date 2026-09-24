@@ -106,9 +106,9 @@
       if (id === 'own') global.localStorage.removeItem(VIEW_KEY + kind);
       else global.localStorage.setItem(VIEW_KEY + kind, id == null ? 'none' : String(id));
     } catch (e) {}
-    state.rivalId = null;
-    if (global.PadelTemporada) global.PadelTemporada.resetUi();
+    if (global.PadelTemporada) global.PadelTemporada.softReset();
     if (m) applyView(m);
+    if (m && state.rivalId === m.myTeamId) state.rivalId = null;
     if (global.PadelApp && global.PadelApp.paintPairBtn) global.PadelApp.paintPairBtn();
   }
 
@@ -116,10 +116,17 @@
   function switchSeason(slug, done) {
     global.PadelDB.setSeason(slug);
     state.gen++; state.loading = false; state.waiting = [];
-    state.model = null; state.calibration = null; state.rivalId = null; state.rivalQuery = '';
+    /* Filtro, no navegación: se conservan el rival abierto y los ajustes de la
+       pantalla; solo se olvida lo que depende del número de partidos. */
+    var keepRival = state.rivalId;
+    state.model = null; state.calibration = null;
     state.loader.result = null; state.loader.parsed = null;
-    if (global.PadelTemporada) global.PadelTemporada.resetUi();
-    ensureLoaded(done || function () {});
+    if (global.PadelTemporada) global.PadelTemporada.softReset();
+    ensureLoaded(function () {
+      var m = state.model;
+      state.rivalId = m && keepRival && inSeason(m, keepRival) && keepRival !== m.myTeamId ? keepRival : null;
+      (done || function () {})();
+    });
   }
 
   function sourceNote() {

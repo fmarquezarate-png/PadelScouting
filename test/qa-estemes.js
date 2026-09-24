@@ -58,8 +58,8 @@ async function mockApp(page, opts) {
     check('Sin sesión: la red invita a montar el grupo', (await p.textContent('.net-btn')).toUpperCase().includes('TU GRUPO DEL MES'));
     check('Sin sesión: no salta ningún aviso', await p.locator('.modal').count() === 0);
     await p.click('.net-btn'); await p.waitForTimeout(900);
-    check('La red abre «Este mes»', (await p.textContent('#page-title')) === 'Este mes');
-    check('Sin sesión: pide entrar', (await text(p)).includes('Entrar con mi cuenta'));
+    check('Sin sesión: la red lleva a iniciar sesión', (await p.textContent('#page-title')) === 'Mi perfil');
+    check('Sin sesión: avisa de que es personal', (await p.textContent('#toast')).includes('inicia sesión'));
     await p.close();
   }
 

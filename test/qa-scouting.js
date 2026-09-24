@@ -9,6 +9,15 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   /* Entras como Francisco (lo que hace Mi perfil). Sin esto la app no enseña ninguna pareja. */
   await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });
+  /* Con sesión (el scouting es personal). La base de la cuenta se simula: sin ronda y sin registros remotos. */
+  await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.session.v1')) localStorage.setItem('padel-scouting.session.v1', JSON.stringify({
+    access_token: 't', refresh_token: 'r', expires_at: Math.floor(Date.now() / 1000) + 3600, user: { email: 'fmarquezarate@gmail.com' } })); });
+  await page.route('**/rest/v1/rpc/get_my_round', r => r.abort());
+  await page.route('**/rest/v1/rpc/get_my_profile', r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ label: 'Francisco', category: 'masculina', playsMixed: true, defaultKind: 'masculina' }) }));
+  await page.route('**/rest/v1/rpc/list_my_records', r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await page.route('**/rest/v1/rpc/push_my_records', r => r.fulfill({ status: 200, contentType: 'application/json', body: '1' }));
+  await page.route('**/rest/v1/rpc/get_my_club_levels', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => {
@@ -38,7 +47,8 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   check('Elegir uno rellena rivales y sets', !!pre.rivals[0].name && pre.sets[0].own != null, JSON.stringify(pre.rivals));
   await page.evaluate(() => { window.PadelApp.state.form = null; window.PadelApp.go('registro'); }); await page.waitForTimeout(200);
   await page.click('[data-reg="masiva"]'); await page.waitForTimeout(400);
-  check('Carga masiva lleva al cargador de la liga', await page.textContent('#page-title') === 'Configuración');
+  check('Carga masiva: sin ser administrador no deja entrar', await page.textContent('#page-title') !== 'Configuración' &&
+    (await page.textContent('#toast')).includes('administrador'));
   await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(200);
   await page.click('[data-reg="detallada"]'); await page.click('[data-reg="blank"]'); await page.waitForTimeout(200);
   check('Fecha automática = hoy',

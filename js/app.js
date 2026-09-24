@@ -88,6 +88,16 @@
      la tienen, se asignan por los nombres de los rivales: si coinciden con
      jugadores de esta competición, son de aquí.
      ============================================================ */
+  /* Vuelve a la altura de antes cuando la pantalla termina de pintarse. */
+  function restoreScroll(y) {
+    if (!y) return;
+    var tries = 0;
+    (function again() {
+      global.scrollTo({ top: y });
+      if (Math.abs((global.scrollY || 0) - y) > 2 && tries++ < 12) setTimeout(again, 120);
+    })();
+  }
+
   function norm(x) {
     return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   }
@@ -1159,12 +1169,24 @@
     });
   }
 
-  function go(view) {
+  /* Pantallas personales: sin sesión llevan a iniciar sesión. */
+  var PRIVATE = { estemes: 'Este mes', registro: 'Registrar', historial: 'Historial', analisis: 'Análisis' };
+
+  /* opts.keep: lo usan los filtros (competición, temporada, pareja). Se queda
+     en la misma pantalla y a la misma altura; solo cambian los datos. */
+  function go(view, opts) {
     if (!VIEWS[view]) view = 'registro';
+    var keep = !!(opts && opts.keep);
+    if (PRIVATE[view] && !(global.PadelAuth && global.PadelAuth.user())) {
+      toast(PRIVATE[view] + ' es personal: inicia sesión para verlo');
+      view = 'perfil'; keep = false;
+    }
+    var y = opts && opts.y != null ? opts.y : (global.scrollY || 0);
     state.view = view;
     $title.textContent = VIEWS[view].title;
     fitTitle();
-    global.scrollTo({ top: 0 });
+    if (!keep) global.scrollTo({ top: 0 });
+    else restoreScroll(y);
     document.body.setAttribute('data-view', view);
     paintSeasonBar();
     /* Mirando a otra pareja, «Nuestra temporada» pasa a ser «su» temporada. */
@@ -1349,13 +1371,18 @@
 
     switchTo = function (slug, announce) {
       if (slug === global.PadelDB.currentSeason()) return;
+      var y0 = global.scrollY || 0;
+      /* Mientras llegan los datos, la página no encoge (si no, el navegador sube solo). */
+      $view.style.minHeight = $view.offsetHeight + 'px';
       document.body.classList.add('switching');
       global.PadelLiga.switchSeason(slug, function () {
         document.body.classList.remove('switching');
         paintButton();
-        if (global.PadelEsteMes) global.PadelEsteMes.load(function () { global.PadelEsteMes.checkPrompts(); });
+        /* Un filtro no abre avisos: el grupo del mes se recarga en silencio. */
+        if (global.PadelEsteMes) global.PadelEsteMes.load(function () {});
         if (announce) toast('Ahora ves: ' + (KIND[kindOfSlug(slug)] || '') + ' · ' + seasonName(slug));
-        go(state.view);
+        go(state.view, { keep: true, y: y0 });
+        setTimeout(function () { $view.style.minHeight = ''; }, 1600);
       });
     };
 
@@ -1486,7 +1513,10 @@
     global.PadelLiga.setViewPair(id);
     var m = global.PadelLiga.state.model, t = m.myTeamId && m.teams[m.myTeamId];
     toast(t ? 'Miras a ' + t.label : 'Vista general de la liga');
-    go(state.view);
+    var y0 = global.scrollY || 0;
+    $view.style.minHeight = $view.offsetHeight + 'px';
+    go(state.view, { keep: true, y: y0 });
+    setTimeout(function () { $view.style.minHeight = ''; }, 1600);
   }
 
   var refreshSeasons = function () { return Promise.resolve(); };

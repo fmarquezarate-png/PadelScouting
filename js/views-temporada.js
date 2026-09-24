@@ -367,6 +367,13 @@
     return !!(m && m.season && m.season.slug === S1.slug);
   }
 
+  /* Al cambiar un filtro: se mantienen métrica, filtros y orden; solo se
+     reinicia lo que depende de los partidos (reproductor y fichas abiertas). */
+  function softReset() {
+    stopTimer();
+    ui.upto = null; ui.openRiv = {}; ui.expSel = null;
+  }
+
   function resetUi() {
     stopTimer();
     ui.metric = 'pos'; ui.upto = null; ui.rowsFilter = 'all'; ui.rivSort = 'lad'; ui.openRiv = {};
@@ -989,7 +996,7 @@
 
   global.PadelTemporada = {
     ui: ui, mine: mine, mineWO: mineWO, agg: agg, tile: tile, sectionHead: sectionHead,
-    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, isS1: isS1, club: club,
+    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, softReset: softReset, isS1: isS1, club: club,
     renderTemporada: renderTemporada
   };
 })(window);

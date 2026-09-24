@@ -26,6 +26,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   let t = await text(page);
   check('Portada: sin pareja por defecto (ni Francisco ni Cristian)', !/Francisco|Cristian/.test(t));
   check('Portada: resumen de la liga', t.includes('parejas') && t.includes('grupos'));
+  check('Sin sesión el avatar invita a entrar', (await page.getAttribute('#avatar-btn', 'aria-label')) === 'Entrar');
   check('Portada: invita a elegir una pareja', await page.locator('[data-pair="pick"]').count() >= 1);
   check('La píldora de pareja se ve ya en la pista', await page.isVisible('#pair-btn'));
   await page.click('#pair-btn'); await page.waitForTimeout(300);
@@ -65,7 +66,15 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Recuerda la pareja elegida', await page.evaluate(() => {
     const m = window.PadelLiga.state.model; return !!m.myTeamId && /Yago/.test(m.teams[m.myTeamId].label); }));
   await go(page, 'estemes');
-  check('Este mes sigue siendo personal: pide entrar', (await text(page)).includes('Entrar con mi cuenta'));
+  check('Este mes sigue siendo personal: lleva a iniciar sesión', (await page.textContent('#page-title')) === 'Mi perfil');
+  for (const v of ['registro', 'historial', 'analisis']) {
+    await go(page, v);
+    check('Sin sesión, ' + v + ' lleva a iniciar sesión', (await page.textContent('#page-title')) === 'Mi perfil');
+  }
+  await go(page, 'liga');
+  t = await text(page);
+  check('La liga sin sesión: solo la clasificación', t.includes('Clasificación general') && !t.includes('Explorador de la liga'));
+  check('La liga sin sesión: sin enlace a cargar datos', !t.includes('Cárgalo desde Configuración'));
   await page.close();
 
   /* ---------- Francisco identificado ---------- */

@@ -21,6 +21,7 @@ const SNAPS = { '2026-s1': A, '2026-s2': B, '2026-s1-mixta': X };
 (async () => {
   const browser = await chromium.launch({ executablePath: EXE });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.addInitScript(() => localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })));
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   const calls = [];
@@ -58,6 +59,29 @@ const SNAPS = { '2026-s1': A, '2026-s2': B, '2026-s1-mixta': X };
   check('En Mixta solo sus semestres', JSON.stringify(opts2) === '["S1 26","Todo el recorrido"]', opts2.join(','));
   await page.click('#comp-btn'); await page.click('#comp-menu [data-kind="masculina"]'); await page.waitForTimeout(1500);
   check('Volver a Masculina lleva a S2 (la más reciente)', await page.evaluate(() => window.PadelDB.currentSeason()) === '2026-s2');
+
+  /* ---------- los filtros no navegan ---------- */
+  await page.evaluate(() => window.PadelApp.go('temporada')); await page.waitForTimeout(900);
+  await page.selectOption('#season-sel', '2026-s1'); await page.waitForTimeout(1800);
+  await page.evaluate(() => window.scrollTo(0, 900)); await page.waitForTimeout(300);
+  const y1 = await page.evaluate(() => window.scrollY);
+  await page.selectOption('#season-sel', 'all:masculina'); await page.waitForTimeout(1800);
+  check('Cambiar de temporada: sigue en la misma pantalla', (await page.textContent('#page-title')).includes('temporada'),
+    await page.textContent('#page-title'));
+  const y = await page.evaluate(() => window.scrollY);
+  check('Cambiar de temporada: sigue a la misma altura', y1 > 800 && Math.abs(y - y1) < 60, 'antes=' + y1 + ' después=' + y);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('[data-metric="elo"]'); await page.waitForTimeout(300);
+  await page.selectOption('#season-sel', 'all:masculina'); await page.waitForTimeout(1800);
+  check('Cambiar de temporada: conserva la métrica elegida', await page.getAttribute('[data-metric="elo"]', 'class').then(c => /on/.test(c || '')));
+  await page.click('#comp-btn'); await page.click('#comp-menu [data-kind="mixta"]'); await page.waitForTimeout(1800);
+  check('Cambiar de competición: sigue en la misma pantalla', (await page.textContent('#page-title')).includes('temporada'));
+  check('Cambiar de competición: no salta ningún aviso', await page.locator('.modal').count() === 0);
+  await page.click('#comp-btn'); await page.click('#comp-menu [data-kind="masculina"]'); await page.waitForTimeout(1800);
+  await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(800);
+  await page.click('#pair-btn'); await page.waitForTimeout(300);
+  await page.click('.pp-item >> nth=0'); await page.waitForTimeout(1200);
+  check('Elegir pareja: sigue en La liga', (await page.textContent('#page-title')) === 'La liga');
 
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();

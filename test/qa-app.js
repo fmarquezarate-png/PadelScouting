@@ -17,6 +17,15 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
   /* Entras como Francisco (lo que hace Mi perfil). Sin esto la app no enseña ninguna pareja. */
   await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });
+  /* Con sesión (el scouting es personal). La base de la cuenta se simula: sin ronda y sin registros remotos. */
+  await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.session.v1')) localStorage.setItem('padel-scouting.session.v1', JSON.stringify({
+    access_token: 't', refresh_token: 'r', expires_at: Math.floor(Date.now() / 1000) + 3600, user: { email: 'fmarquezarate@gmail.com' } })); });
+  await page.route('**/rest/v1/rpc/get_my_round', r => r.abort());
+  await page.route('**/rest/v1/rpc/get_my_profile', r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ label: 'Francisco', category: 'masculina', playsMixed: true, defaultKind: 'masculina' }) }));
+  await page.route('**/rest/v1/rpc/list_my_records', r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await page.route('**/rest/v1/rpc/push_my_records', r => r.fulfill({ status: 200, contentType: 'application/json', body: '1' }));
+  await page.route('**/rest/v1/rpc/get_my_club_levels', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
@@ -37,7 +46,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
     await page.locator('.topbar [data-shell="config"]').count() === 1 &&
     await page.locator('.topbar [data-shell="home"].tb-icon').count() === 1 &&
     await page.locator('#menu-btn').count() === 1 && await page.locator('#avatar-btn').count() === 1);
-  check('Sin sesión el avatar invita a entrar', (await page.getAttribute('#avatar-btn', 'aria-label')) === 'Entrar');
+  check('Con sesión el avatar lleva a tu perfil', (await page.getAttribute('#avatar-btn', 'aria-label')) !== 'Entrar');
   let t = await text();
   check('Portada: puesto actual #50', t.includes('#50'));
   check('Portada: nombres sin la inicial recortada', t.includes('Cristian') && !/Cristian C\b/.test(t));
@@ -95,8 +104,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await page.click('.topbar [data-shell="config"]'); await page.waitForTimeout(900);
   check('El engranaje abre Configuración', await page.textContent('#page-title') === 'Configuración');
   await page.click('#avatar-btn'); await page.waitForTimeout(600);
-  check('El avatar abre Mi perfil (sin sesión, el acceso)',
-    await page.textContent('#page-title') === 'Mi perfil' && await page.locator('#au-email').count() === 1);
+  check('El avatar abre Mi perfil', await page.textContent('#page-title') === 'Mi perfil');
   check('Una sola descarga de la liga en toda la sesión', calls === 1, 'llamadas=' + calls);
 
   /* ---------------- 01 NÚMEROS ---------------- */
@@ -230,7 +238,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await go('config');
   check('La carga de datos vive en Configuración', await page.locator('[data-action="open-loader"]').count() === 1);
   await go('liga');
-  check('La liga enlaza con la carga', await page.locator('.lg [data-goto="config"]').count() === 1);
+  check('La liga no ofrece cargar a quien no es administrador', await page.locator('.lg [data-goto="config"]').count() === 0);
 
   /* ---------------- el resto sigue vivo ---------------- */
   for (const [v, title] of [['registro', 'Registro rápido'], ['historial', 'Historial'], ['analisis', 'Análisis']]) {
