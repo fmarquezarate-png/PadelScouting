@@ -885,3 +885,27 @@ body{overscroll-behavior-y:contain}
   .dr-item{font-size:1.18rem;padding:15px 14px;gap:18px;border-radius:10px}
   .dr-item .ico{width:26px;height:26px}
 }
+
+/* Este mes · tabla del grupo y «cómo se cocina» */
+.em-table{width:100%;margin-top:6px}
+.em-table tr.me td{color:var(--bone);font-weight:700;background:rgba(255,255,255,.04)}
+.em-grp{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.em-grp .em-o{padding:10px 4px}
+.em-grp .em-o b{font-size:1.5rem}
+.em-bar{display:inline-block;width:60px;height:6px;border-radius:3px;background:var(--line);vertical-align:middle;overflow:hidden}
+.em-bar i{display:block;height:100%;background:var(--sage)}
+@media (max-width:420px){.em-bar{width:36px}}
+
+/* Registrar · elegir cómo cargar */
+.reg-opts{display:grid;gap:10px;margin:12px 0 18px}
+@media (min-width:700px){.reg-opts{grid-template-columns:1fr 1fr}}
+.reg-opt{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;color:inherit;cursor:pointer;font:inherit}
+.reg-opt b{display:block;font-family:var(--disp);font-weight:900;font-size:1.25rem;text-transform:uppercase;letter-spacing:.02em;color:var(--bone)}
+.reg-opt span{display:block;color:var(--mute);margin-top:6px;line-height:1.4}
+.reg-opt:hover,.reg-opt:focus-visible{border-color:var(--accent,#ED6C05)}
+.reg-match{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;color:inherit;font:inherit;cursor:pointer}
+.reg-match .rm-res{flex:0 0 30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-family:var(--disp)}
+.reg-match .rm-res.w{background:var(--sage);color:#0E1109}
+.reg-match .rm-res.l{background:var(--brick);color:#fff}
+.reg-match .rm-txt b{display:block}
+.reg-match .rm-txt small{color:var(--mute)}

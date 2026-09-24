@@ -26,6 +26,19 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   check('Arranca en la pista, no en Registro', await page.textContent('#page-title') === 'La pista');
   await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
   check('Registrar sigue a un toque', await page.textContent('#page-title') === 'Registro rápido');
+  check('Registrar pregunta: carga masiva o detallada',
+    await page.locator('[data-reg="masiva"]').count() === 1 && await page.locator('[data-reg="detallada"]').count() === 1);
+  await page.click('[data-reg="detallada"]'); await page.waitForTimeout(200);
+  check('Carga detallada: enseña tus últimos 5 partidos', await page.locator('[data-reg-pick]').count() === 5,
+    'n=' + await page.locator('[data-reg-pick]').count());
+  await page.click('[data-reg-pick="0"]'); await page.waitForTimeout(300);
+  const pre = await page.evaluate(() => window.PadelApp.state.form);
+  check('Elegir uno rellena rivales y sets', !!pre.rivals[0].name && pre.sets[0].own != null, JSON.stringify(pre.rivals));
+  await page.evaluate(() => { window.PadelApp.state.form = null; window.PadelApp.go('registro'); }); await page.waitForTimeout(200);
+  await page.click('[data-reg="masiva"]'); await page.waitForTimeout(400);
+  check('Carga masiva lleva al cargador de la liga', await page.textContent('#page-title') === 'Configuración');
+  await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(200);
+  await page.click('[data-reg="detallada"]'); await page.click('[data-reg="blank"]'); await page.waitForTimeout(200);
   check('Fecha automática = hoy',
     (await page.inputValue('#f-date')) === new Date().toISOString().slice(0,10),
     await page.inputValue('#f-date'));
@@ -83,6 +96,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('padel-scouting.v1')).matches.length);
   check('Persiste tras recargar', stored === 1, 'partidos=' + stored);
+  await page.click('[data-reg="detallada"]'); await page.click('[data-reg="blank"]'); await page.waitForTimeout(200);
 
   // --- 4. autocompletado de rivales ---
   await page.fill('[data-rival-name="0"]', 'Pe');
@@ -113,6 +127,9 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
     await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(150);
     if (await page.locator('[data-action="new-match"]').count()) {
       await page.click('[data-action="new-match"]'); await page.waitForTimeout(150);
+    }
+    if (await page.locator('[data-reg="blank"]').count()) {
+      await page.click('[data-reg="detallada"]'); await page.click('[data-reg="blank"]'); await page.waitForTimeout(150);
     }
     await page.fill('[data-rival-name="0"]', r1);
     await page.click(`[data-chips="rival-archetype-0"] .chip[data-value="${a1}"]`);

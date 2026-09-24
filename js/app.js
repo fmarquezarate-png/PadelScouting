@@ -207,8 +207,8 @@
      VISTA · REGISTRO
      ============================================================ */
   function renderRegistro() {
-    if (!state.form) state.form = blankForm();
     if (state.savedId) return renderSaved();
+    if (!state.form) return renderChooser();
 
     var f = state.form;
     var status = D.findById(D.MATCH_STATUS, f.status);
@@ -546,7 +546,7 @@
     var fixtureId = state.form.fixtureId;
     if (fixtureId && global.PadelEsteMes) global.PadelEsteMes.linkRecord(fixtureId, match);
     state.savedId = match.id;
-    state.form = blankForm();
+    state.form = null;
     renderRegistro();
     global.scrollTo({ top: 0 });
     toast('Partido guardado');
@@ -586,9 +586,85 @@
     });
     $view.querySelector('[data-action="new-match"]').addEventListener('click', function () {
       state.savedId = null;
-      state.form = blankForm();
+      state.form = null;
       state.errors = [];
       renderRegistro();
+    });
+  }
+
+  /* ============================================================
+     Registrar: primero se elige cómo cargar
+     · Carga masiva: pegar la clasificación de la liga (Configuración).
+     · Carga detallada: uno de tus últimos 5 partidos, ya rellenado.
+     ============================================================ */
+  function lastMatches(n) {
+    var m = global.PadelLiga && global.PadelLiga.state.model;
+    if (!m || !m.myTeamId) return [];
+    var me = m.myTeamId, label = {};
+    m.months.forEach(function (x) { label[x.n] = x.label; });
+    var round = global.PadelEsteMes && global.PadelEsteMes.state.round;
+    var fixtures = (round && round.fixtures) || [];
+    return m.matches.filter(function (x) { return x.home === me || x.away === me; })
+      .slice().reverse().slice(0, n).map(function (x) {
+        var home = x.home === me, riv = home ? x.away : x.home;
+        var sets = (x.sets || []).map(function (s) { return home ? [s[0], s[1]] : [s[1], s[0]]; });
+        var won = home ? x.homeWon : !x.homeWon;
+        var fx = fixtures.filter(function (f) { return f.rivalTeamId === riv; })[0] || null;
+        return {
+          rival: riv, rivalLabel: (m.teams[riv] || {}).label || '', month: label[x.month] || '', sets: sets,
+          won: won, wo: !!x.walkover, provisional: !!x.provisional, fixture: fx
+        };
+      });
+  }
+
+  function alreadyNoted(item) {
+    var names = item.rivalLabel.toLowerCase().split('/').map(function (x) { return x.trim(); });
+    return records().some(function (r) {
+      if (item.fixture && r.fixtureId === item.fixture.id) return true;
+      var rn = (r.rivals || []).map(function (x) { return String(x.name || '').toLowerCase().trim(); });
+      return names.length === 2 && names.every(function (n) { return n && rn.indexOf(n) >= 0; });
+    });
+  }
+
+  function renderChooser() {
+    var list = lastMatches(5);
+    var h = ['<div class="reg-choose">',
+      '<p class="lede">¿Cómo quieres cargar?</p>',
+      '<div class="reg-opts">',
+      '<button class="reg-opt" data-reg="masiva"><b>Carga masiva</b><span>Pega la clasificación del mes de la web de la liga ' +
+        'y se cargan todos los resultados de golpe.</span></button>',
+      '<button class="reg-opt" data-reg="detallada"><b>Carga detallada</b><span>El scouting de un partido tuyo: rivales, ' +
+        'sets, cómo jugaron y qué funcionó.</span></button>',
+      '</div>',
+      '<section class="reg-last" id="reg-last" hidden><h3 class="em-h3">Tus últimos partidos</h3>'];
+    if (!list.length) h.push('<p class="note">No encuentro partidos tuyos en esta competición.</p>');
+    list.forEach(function (x, i) {
+      var res = x.wo ? 'WO ' + (x.won ? 'a favor' : 'en contra')
+        : x.sets.map(function (s) { return s[0] + '–' + s[1]; }).join(' · ');
+      h.push('<button class="reg-match" data-reg-pick="' + i + '"><span class="rm-res ' + (x.won ? 'w' : 'l') + '">' +
+        (x.won ? 'G' : 'P') + '</span><span class="rm-txt"><b>' + esc(x.rivalLabel) + '</b><small>' + esc(x.month) +
+        ' · ' + esc(res) + (x.provisional ? ' · provisional' : '') + (alreadyNoted(x) ? ' · ya registrado' : '') +
+        '</small></span></button>');
+    });
+    h.push('<button class="btn ghost block" data-reg="blank" style="margin-top:10px">Otro partido (en blanco)</button></section></div>');
+    $view.innerHTML = h.join('');
+
+    $view.querySelector('[data-reg="masiva"]').addEventListener('click', function () { go('config'); });
+    $view.querySelector('[data-reg="detallada"]').addEventListener('click', function () {
+      $view.querySelector('#reg-last').hidden = false;
+      $view.querySelector('#reg-last').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    $view.querySelector('[data-reg="blank"]').addEventListener('click', function () {
+      state.form = blankForm(); state.errors = []; renderRegistro();
+    });
+    $view.querySelectorAll('[data-reg-pick]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var x = list[+b.getAttribute('data-reg-pick')];
+        var fx = x.fixture ? Object.assign({}, x.fixture) : { id: null };
+        fx.rivalLabel = x.rivalLabel;
+        prefillRegistro(fx, x.wo ? null : x.sets);
+        if (x.wo) { state.form.status = 'wo'; renderRegistro(); }
+      });
     });
   }
 

@@ -429,6 +429,101 @@
     };
   }
 
+  /* Tabla de un grupo con los resultados que se saben (oficiales o tuyos).
+     known: [{a, b, sa, sb, wo, prov}] con sa/sb = sets de cada uno. */
+  function groupTable(members, known) {
+    var row = {};
+    members.forEach(function (id) { row[id] = { id: id, pj: 0, g: 0, p: 0, sf: 0, sc: 0, pts: 0, prov: false }; });
+    (known || []).forEach(function (k) {
+      var A = row[k.a], B = row[k.b];
+      if (!A || !B) return;
+      var aWon = k.sa > k.sb;
+      A.pj++; B.pj++;
+      if (aWon) { A.g++; B.p++; } else { B.g++; A.p++; }
+      if (!k.wo) { A.sf += k.sa; A.sc += k.sb; B.sf += k.sb; B.sc += k.sa; }
+      A.pts += pointsFor(k.sa, k.sb, k.wo); B.pts += pointsFor(k.sb, k.sa, k.wo);
+      if (k.prov) { A.prov = true; B.prov = true; }
+    });
+    return members.map(function (id) { return row[id]; }).sort(function (x, y) {
+      return y.pts - x.pts || (y.sf - y.sc) - (x.sf - x.sc) || y.g - x.g;
+    });
+  }
+
+  /* «Cómo se cocina el próximo mes»: se juega lo que queda de TODOS los grupos
+     del mes (lo ya jugado cuenta tal cual) y se aplican las subidas y bajadas.
+     Devuelve en qué grupo caes y con qué probabilidad te toca cada pareja. */
+  function nextMonthOutlook(model, month, kind, me, extraKnown, options) {
+    var opts = options || {};
+    var n = opts.simulations || 1200;
+    var lad = model.ladder[month] || {};
+    var groups = {}, maxG = 1;
+    Object.keys(lad).forEach(function (id) {
+      var g = lad[id].group;
+      (groups[g] = groups[g] || []).push(Number(id));
+      if (g > maxG) maxG = g;
+    });
+    if (!groups[lad[me] && lad[me].group]) return null;
+    var key = function (a, b) { return Math.min(a, b) + '-' + Math.max(a, b); };
+    var known = {};
+    model.matches.forEach(function (x) {
+      if (x.month !== month) return;
+      known[key(x.home, x.away)] = { a: x.home, b: x.away, sa: x.setsHome, sb: x.setsAway, wo: !!x.walkover };
+    });
+    (extraKnown || []).forEach(function (k) { if (!known[key(k.a, k.b)]) known[key(k.a, k.b)] = k; });
+
+    /* Por grupo: los pares y, para los que faltan, la distribución 2-0/2-1/1-2/0-2. */
+    var plan = Object.keys(groups).map(function (g) {
+      var ms = groups[g].slice().sort(function (a, b) { return lad[a].inGroup - lad[b].inGroup; });
+      var pairs = [];
+      for (var i = 0; i < ms.length; i++) for (var j = i + 1; j < ms.length; j++) {
+        var k = known[key(ms[i], ms[j])], dist = null;
+        if (!k) {
+          var pr = project(model, ms[i], ms[j], { simulations: 600, scale: model.scale });
+          dist = pr ? pr.setOutcomes.map(function (o) { return o.p; }) : [0.25, 0.25, 0.25, 0.25];
+        }
+        pairs.push({ a: ms[i], b: ms[j], k: k, dist: dist });
+      }
+      return { g: Number(g), members: ms, pairs: pairs, moves: movesFor(kind, ms.length) };
+    });
+
+    var rnd = seeded((me * 2654435761) % 2147483647 || 7);
+    var myG = {}, together = {};
+    for (var it = 0; it < n; it++) {
+      var dest = {};
+      plan.forEach(function (G) {
+        var pts = {};
+        G.members.forEach(function (x) { pts[x] = rnd() * 0.01; });
+        G.pairs.forEach(function (p) {
+          var sa, sb, wo = false;
+          if (p.k) {
+            if (p.k.a === p.a) { sa = p.k.sa; sb = p.k.sb; } else { sa = p.k.sb; sb = p.k.sa; }
+            wo = !!p.k.wo;
+          } else {
+            var r = rnd(), acc = 0, pick = 3;
+            for (var q = 0; q < 4; q++) { acc += p.dist[q]; if (r < acc) { pick = q; break; } }
+            sa = [2, 2, 1, 0][pick]; sb = [0, 1, 2, 2][pick];
+          }
+          pts[p.a] += pointsFor(sa, sb, wo); pts[p.b] += pointsFor(sb, sa, wo);
+        });
+        G.members.slice().sort(function (x, y) { return pts[y] - pts[x]; }).forEach(function (id, pos) {
+          dest[id] = Math.max(1, Math.min(maxG, G.g + (G.moves[pos] || 0)));
+        });
+      });
+      var mine = dest[me];
+      myG[mine] = (myG[mine] || 0) + 1;
+      Object.keys(dest).forEach(function (id) {
+        if (+id !== me && dest[id] === mine) together[id] = (together[id] || 0) + 1;
+      });
+    }
+    return {
+      groups: Object.keys(myG).map(function (g) { return { group: +g, p: myG[g] / n }; })
+        .sort(function (a, b) { return b.p - a.p; }),
+      rivals: Object.keys(together).map(function (id) { return { id: +id, p: together[id] / n }; })
+        .sort(function (a, b) { return b.p - a.p; }),
+      simulations: n
+    };
+  }
+
   /* ============================================================
      Capa 5: calibración contra los partidos ya jugados
      ============================================================ */
@@ -554,6 +649,6 @@
     tieBreakProbability: tieBreakProbability,
     tally: tally,
     movesFor: movesFor, predictGroups: predictGroups, suggestRivals: suggestRivals,
-    pointsFor: pointsFor, groupOutlook: groupOutlook
+    pointsFor: pointsFor, groupOutlook: groupOutlook, groupTable: groupTable, nextMonthOutlook: nextMonthOutlook
   };
 });

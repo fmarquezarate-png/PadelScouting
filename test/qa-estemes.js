@@ -91,7 +91,7 @@ async function mockApp(page, opts) {
   const t1 = await text(p);
   check('Probabilidad de subir y bajar', t1.includes('Subes') && t1.includes('Bajas'));
   check('Masculino: sin «Te mantienes» (en grupos de 4 nadie se mantiene)', !t1.includes('Te mantienes'));
-  const outs = await p.$$eval('.em-o b', els => els.map(e => parseInt(e.textContent, 10)));
+  const outs = await p.$$eval('.em-out .em-o b', els => els.map(e => parseInt(e.textContent, 10)));
   check('Subes + bajas ≈ 100 %', Math.abs(outs.reduce((a, b) => a + b, 0) - 100) <= 1, outs.join('+'));
   check('Cada rival: probabilidad, marcador y puesto', (await p.locator('.em-card').first().textContent()).includes('ganáis'));
   check('Cada rival: botón para comparar', await p.locator('.em-card [data-rival]').count() === 3);
@@ -191,6 +191,49 @@ async function mockApp(page, opts) {
     check('Mes nuevo con ronda abierta: vuelve a preguntar', await q.locator('[data-rm="keep"]').count() === 1);
     await q.click('[data-rm="keep"]'); await q.waitForTimeout(700);
     check('«Sigue la misma ronda» no crea otra', S2.calls.includes('keep_round') && !S2.calls.includes('start_round'));
+    await q.close();
+  }
+
+  /* ---------- tabla del grupo y «cómo se cocina el próximo mes» ---------- */
+  {
+    const q = await newPage();
+    const snap = JSON.parse(SNAP);
+    const lad = {}; /* grupo del mes 5 según el fixture: rivales de 81 */
+    const rnd = { id: 11, label: 'Junio', monthStart: '2026-06-01', leagueMonth: 5, group: 0, myTeamId: 81, status: 'en_curso', source: 'liga', fixtures: [] };
+    await mockApp(q, { round: rnd });
+    await q.addInitScript(() => { window.__PADEL_NOW__ = '2026-06-10T12:00:00Z'; });
+    await q.goto(BASE); await q.waitForTimeout(2000);
+    const info = await q.evaluate(() => {
+      const m = window.PadelLiga.state.model, l = m.ladder[5], me = m.myTeamId;
+      return { g: l[me].group, rivals: Object.keys(l).map(Number).filter(id => id !== me && l[id].group === l[me].group) };
+    });
+    await q.evaluate(i => {
+      const st = window.PadelEsteMes.state;
+      st.round.group = i.g;
+      st.round.fixtures = i.rivals.map((id, k) => ({ id: 500 + k, rivalTeamId: id, rivalLabel: '', status: 'pendiente', sets: null }));
+      window.PadelApp.go('estemes');
+    }, info);
+    await q.waitForTimeout(1500);
+    const t = await text(q);
+    check('Tabla del grupo: una fila por pareja', await q.locator('.em-table').first().locator('tbody tr').count() === 4);
+    check('Tabla del grupo: te marca a ti', await q.locator('.em-table tr.me').count() === 1);
+    check('Tabla del grupo: puntos con las reglas de la liga', t.includes('Cómo va el grupo') && t.includes('4 ganar'));
+    check('Cocina: sección del próximo mes', t.includes('Cómo se cocina el próximo mes'));
+    const grp = await q.$$eval('.em-grp .em-o b', els => els.reduce((a, e) => a + parseInt(e.textContent, 10), 0));
+    check('Cocina: reparto de grupos ≈ 100 %', grp >= 97 && grp <= 101, 'suma=' + grp);
+    const rows = await q.locator('.em-cocina tbody tr').count();
+    check('Cocina: lista de parejas con probabilidad', rows >= 3, 'n=' + rows);
+    /* Todo el mes 5 está jugado en el fixture: el grupo siguiente debe ser el real */
+    const real = await q.evaluate(() => {
+      const m = window.PadelLiga.state.model, me = m.myTeamId, l6 = m.ladder[6];
+      return Object.keys(l6).map(Number).filter(id => id !== me && l6[id].group === l6[me].group);
+    });
+    const top = await q.$$eval('.em-cocina tbody tr', els => els.slice(0, 3).map(e => +e.dataset.team));
+    check('Cocina: con el mes cerrado acierta los rivales reales', JSON.stringify(top.sort()) === JSON.stringify(real.sort()), top + ' vs ' + real);
+    /* Sin clasificación del mes: explica qué falta */
+    await q.evaluate(() => { window.PadelEsteMes.state.round.leagueMonth = null; window.PadelApp.go('estemes'); });
+    await q.waitForTimeout(900);
+    check('Cocina sin la clasificación: explica qué hace falta', (await text(q)).includes('Para esto necesito la clasificación'));
     await q.close();
   }
 

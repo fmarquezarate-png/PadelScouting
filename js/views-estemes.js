@@ -231,6 +231,8 @@
     }
     h.push('</section>');
 
+    if (members.length >= 2) h.push(groupTableHtml(m, me, members, known));
+
     h.push('<section class="blk"><div class="em-cards">');
     (r.fixtures || []).forEach(function (f) { h.push(card(m, me, f)); });
     h.push('</div></section>');
@@ -238,11 +240,59 @@
     var others = otherMatches(m, r, me);
     if (others) h.push('<section class="blk"><h3 class="em-h3">El resto del grupo</h3>' + others + '</section>');
 
+    h.push(cocinaHtml(m, me, r, known));
+
     h.push('<section class="blk"><div class="btn-row"><button class="btn ghost" data-em="round">Cambiar rivales</button></div>' +
       '<p class="note">Los resultados que apuntas cuentan ya en tus números como <b>provisionales</b>; ' +
       'cuando pegues la clasificación, manda la de la liga.</p></section></div>');
     view.innerHTML = h.join('');
     bindPaint(view, bind);
+  }
+
+  /* La tabla del grupo tal y como va: lo oficial y lo que has apuntado tú. */
+  function groupTableHtml(m, me, members, known) {
+    var rows = L.groupTable(members, known);
+    var h = ['<section class="blk"><h3 class="em-h3">Cómo va el grupo</h3>',
+      '<table class="table em-table"><thead><tr><th>#</th><th>Pareja</th><th>PJ</th><th>G</th><th>P</th>' +
+      '<th>Sets</th><th>Pts</th></tr></thead><tbody>'];
+    rows.forEach(function (x, i) {
+      var t = m.teams[x.id];
+      h.push('<tr' + (x.id === me ? ' class="me"' : '') + '><td>' + (i + 1) + '</td><td>' +
+        esc(t ? t.label : '—') + (x.prov ? ' <span class="tag prov">Provisional</span>' : '') + '</td><td>' + x.pj +
+        '</td><td>' + x.g + '</td><td>' + x.p + '</td><td>' + x.sf + '–' + x.sc + '</td><td><b>' + x.pts + '</b></td></tr>');
+    });
+    h.push('</tbody></table><p class="note">Puntos de la liga: 4 ganar, 2 perder en super tie-break, 1 perder en dos sets, ' +
+      '0 perder por WO. «Provisional» = incluye resultados que has apuntado tú y la liga aún no ha publicado.</p></section>');
+    return h.join('');
+  }
+
+  /* «Cómo se cocina el próximo mes»: juega con el motor lo que falta de todos
+     los grupos del mes y cuenta con quién coincides después. */
+  function cocinaHtml(m, me, r, known) {
+    var h = ['<section class="blk em-cocina"><h3 class="em-h3">Cómo se cocina el próximo mes</h3>'];
+    var mo = r.leagueMonth;
+    if (mo == null || !m.ladder[mo] || !m.ladder[mo][me]) {
+      h.push('<p class="note">Para esto necesito la clasificación de este mes pegada en Configuración: con ella juego ' +
+        'lo que falta de <b>todos</b> los grupos y te digo con quién es más probable que te toque.</p></section>');
+      return h.join('');
+    }
+    var o = L.nextMonthOutlook(m, mo, kindOf(m), me, known, { simulations: 1200 });
+    if (!o) return '';
+    h.push('<p class="lede">Provisional: se juega ' + o.simulations + ' veces lo que falta del mes en todos los grupos ' +
+      '(lo ya jugado cuenta tal cual) y se aplican las subidas y bajadas.</p>');
+    h.push('<div class="em-grp">' + o.groups.slice(0, 4).map(function (g) {
+      return '<div class="em-o' + (g.group < m.ladder[mo][me].group ? ' up' : g.group > m.ladder[mo][me].group ? ' down' : ' stay') +
+        '"><b>' + pct(g.p) + '</b><span>Grupo ' + g.group + '</span></div>';
+    }).join('') + '</div>');
+    var list = o.rivals.filter(function (x) { return x.p >= 0.03; }).slice(0, 12);
+    h.push('<table class="table em-table"><thead><tr><th>Pareja</th><th>Grupo ahora</th><th>Prob. de tocarte</th></tr></thead><tbody>');
+    list.forEach(function (x) {
+      var t = m.teams[x.id], cur = m.ladder[mo][x.id];
+      h.push('<tr data-team="' + x.id + '"><td>' + esc(t ? t.label : '—') + '</td><td>' + (cur ? cur.group : '—') +
+        '</td><td><span class="em-bar"><i style="width:' + Math.round(x.p * 100) + '%"></i></span> <b>' + pct(x.p) + '</b></td></tr>');
+    });
+    h.push('</tbody></table><p class="note">Cambia cada vez que se apunta un resultado. Solo salen las parejas con 3% o más.</p></section>');
+    return h.join('');
   }
 
   function outCell(p, label, cls) {
@@ -257,7 +307,7 @@
     if (r.leagueMonth != null) {
       m.matches.forEach(function (x) {
         if (x.month !== r.leagueMonth || ids.indexOf(x.home) < 0 || ids.indexOf(x.away) < 0) return;
-        list.push({ a: x.home, b: x.away, sa: x.setsHome, sb: x.setsAway, wo: !!x.walkover });
+        list.push({ a: x.home, b: x.away, sa: x.setsHome, sb: x.setsAway, wo: !!x.walkover, prov: !!x.provisional });
       });
     }
     (r.fixtures || []).forEach(function (f) {
@@ -266,9 +316,9 @@
       if (dup) return;
       if (f.status === 'jugado' && f.sets) {
         var w = f.sets.filter(function (s) { return s[0] > s[1]; }).length, l = f.sets.length - w;
-        list.push({ a: me, b: f.rivalTeamId, sa: w, sb: l });
-      } else if (f.status === 'wo_favor') list.push({ a: me, b: f.rivalTeamId, sa: 2, sb: 0, wo: true });
-      else if (f.status === 'wo_contra') list.push({ a: me, b: f.rivalTeamId, sa: 0, sb: 2, wo: true });
+        list.push({ a: me, b: f.rivalTeamId, sa: w, sb: l, prov: true });
+      } else if (f.status === 'wo_favor') list.push({ a: me, b: f.rivalTeamId, sa: 2, sb: 0, wo: true, prov: true });
+      else if (f.status === 'wo_contra') list.push({ a: me, b: f.rivalTeamId, sa: 0, sb: 2, wo: true, prov: true });
     });
     return list;
   }
