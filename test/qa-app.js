@@ -233,6 +233,29 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
       check('Sin scroll horizontal · ' + v + ' a ' + w + 'px', over <= 1, over > 1 ? 'sobra ' + over + 'px' : null);
     }
   }
+  /* ---------------- ningún botón de la pista pisa a otro ---------------- */
+  for (const [w, h] of [[360, 640], [390, 844], [768, 1024], [1440, 900], [1920, 1080]]) {
+    const vp = await browser.newPage({ viewport: { width: w, height: h } });
+    await vp.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
+    await vp.addInitScript(() => { window.__NET_LABEL__ = 'dom 27 · 19:00 · Annabelle/Alfred'; });
+    await vp.goto(BASE); await vp.waitForTimeout(1800);
+    const hits = await vp.evaluate(() => {
+      const boxes = [];
+      document.querySelectorAll('.court .zone').forEach(g => g.querySelectorAll('.zb, .zt, .zs, .nb-bg').forEach(e => {
+        const r = e.getBoundingClientRect(); if (r.width) boxes.push({ id: g.getAttribute('data-zone'), r });
+      }));
+      const sb = document.querySelector('.scoreboard'); if (sb) boxes.push({ id: 'marcador', r: sb.getBoundingClientRect() });
+      let n = 0;
+      for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i].r, c = boxes[j].r; if (boxes[i].id === boxes[j].id) continue;
+        if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 1 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 1) n++;
+      }
+      return n;
+    });
+    check(w + '×' + h + ': ningún botón, rótulo, «Este mes» ni el marcador se pisan', hits === 0, hits + ' solapes');
+    await vp.close();
+  }
+
   /* ---------------- la foto: móvil estrecho y reserva sin foto ---------------- */
   {
     const sm = await browser.newPage({ viewport: { width: 360, height: 640 } });

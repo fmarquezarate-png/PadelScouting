@@ -843,3 +843,12 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
 .rs-more{margin-top:12px}
 .tag.prov{background:transparent;border:1px dashed var(--orange);color:var(--orange)}
 .em-out.two{grid-template-columns:repeat(2,1fr)}
+
+/* Tablet en vertical: la foto entera y centrada (no se recorta el fondo de la pista). */
+.court-photo.tall.fit{aspect-ratio:941 / 1672!important;width:auto;max-width:100%;
+  height:calc(100vh - 66px - env(safe-area-inset-top));height:calc(100dvh - 66px - env(safe-area-inset-top))}
+.court-photo.tall.fit img{object-fit:contain}
+@media(min-width:600px) and (max-width:899px){
+  .home.has-photo .home-side{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 20px))}
+}
+.dr-group.first{border-top:0;padding-top:0}

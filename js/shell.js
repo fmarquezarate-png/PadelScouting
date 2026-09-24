@@ -11,10 +11,14 @@
   var PL = function () { return global.PadelLiga; };
   var DB = function () { return global.PadelDB; };
 
+  /* El mismo orden que la pista: portada; lo que toca ahora (la red y la
+     puerta); la liga (el fondo); tu scouting (vuestro lado); tu cuenta. */
   var SECTIONS = [
+    { group: '', items: [['inicio', 'La pista', 'inicio']] },
+    { group: 'Ahora', items: [
+      ['estemes', 'Este mes', 'estemes'], ['rival', 'El rival', 'rival']] },
     { group: 'La liga', items: [
-      ['inicio', 'La pista', 'inicio'], ['estemes', 'Este mes', 'estemes'], ['temporada', 'Nuestra temporada', 'temporada'],
-      ['rival', 'El rival', 'rival'], ['liga', 'La liga', 'liga'], ['cronica', 'Crónica', 'cronica']] },
+      ['liga', 'La liga', 'liga'], ['temporada', 'Nuestra temporada', 'temporada'], ['cronica', 'Crónica', 'cronica']] },
     { group: 'Tu scouting', items: [
       ['registro', 'Registrar partido', 'registro'], ['historial', 'Historial', 'historial'],
       ['analisis', 'Análisis y briefing', 'analisis']] },
@@ -41,7 +45,8 @@
     go = goFn;
     var nav = document.getElementById('drawer-nav');
     nav.innerHTML = SECTIONS.map(function (g) {
-      return '<div class="dr-group"><div class="dr-title">' + esc(g.group) + '</div>' +
+      return '<div class="dr-group' + (g.group ? '' : ' first') + '">' +
+        (g.group ? '<div class="dr-title">' + esc(g.group) + '</div>' : '') +
         g.items.map(function (it) {
           return '<button type="button" class="dr-item" data-drawer-go="' + it[0] + '">' +
             icon(it[2]) + '<span>' + esc(it[1]) + '</span></button>';

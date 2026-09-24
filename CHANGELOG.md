@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — orden del menú y la pista sin solapes
+- **Orden lógico**, igual en la pista y en el menú ☰: al fondo, la liga (La liga · Temporada ·
+  Crónica); en la red, **Este mes**; en vuestro lado, el scouting en el orden en que se usa
+  (Registrar · Historial · Análisis); en la puerta, El rival. Menú: La pista · Ahora · La liga ·
+  Tu scouting · Tu cuenta. La pelota recorre la pista en ese orden, cruzando la red.
+- **«Este mes» ya no pisa otros botones**: en el ordenador va en la malla de la red, la fila del
+  fondo muestra icono y título (sin subtítulo) y la de delante se equilibra; el texto de la red
+  se acorta si no cabe en el ancho de la pista. Tablet en vertical: la foto se ve entera.
+- Prueba permanente: en 5 tamaños (360 px a 1920 px) ningún botón, rótulo, «Este mes» ni el
+  marcador se solapan.
+
 ### Added — Este mes
 - **Este mes**: tu grupo en curso, con un botón iluminado en la red de la pista (enseña el
   próximo partido: «sáb 27 · 19:00 · Sonia/Annabelle») y en el menú ☰. Por rival: probabilidad de

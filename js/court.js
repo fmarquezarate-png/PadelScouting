@@ -101,13 +101,16 @@
 
   /* ---------- zonas ---------- */
   var COLS = [[-5, -5 / 3], [-5 / 3, 5 / 3], [5 / 3, 5]];
+  /* Orden lógico: al fondo, la liga (lo que ya pasó); en la red, lo que
+     toca ahora; en vuestro lado, el scouting en el orden en que se usa
+     (apuntas, repasas, sacas conclusiones). El rival espera en la puerta. */
   var ZONES = [
-    { id: 'cronica', view: 'cronica', col: 0, far: true, title: 'Crónica' },
-    { id: 'analisis', view: 'analisis', col: 1, far: true, title: 'Análisis' },
-    { id: 'registro', view: 'registro', col: 2, far: true, title: 'Registrar' },
-    { id: 'liga', view: 'liga', col: 0, far: false, title: 'La liga' },
+    { id: 'liga', view: 'liga', col: 0, far: true, title: 'La liga' },
+    { id: 'temporada', view: 'temporada', col: 1, far: true, title: 'Temporada' },
+    { id: 'cronica', view: 'cronica', col: 2, far: true, title: 'Crónica' },
+    { id: 'registro', view: 'registro', col: 0, far: false, title: 'Registrar' },
     { id: 'historial', view: 'historial', col: 1, far: false, title: 'Historial' },
-    { id: 'temporada', view: 'temporada', col: 2, far: false, title: 'Nuestra temporada' }
+    { id: 'analisis', view: 'analisis', col: 2, far: false, title: 'Análisis' }
   ];
 
   function zoneQuad(z) {
@@ -149,6 +152,9 @@
      k escala todo (1 en la pista dibujada; más en la foto, que tiene más píxeles). */
   function zoneMarkup(cam, zn, live, tall, k) {
     if (zn.far && cam.farK) k *= cam.farK;
+    if (!zn.far && cam.nearK) k *= cam.nearK;
+    /* En la foto horizontal la mitad del fondo no da para subtítulo: solo icono y título. */
+    var showSub = !(zn.far && cam.farSub === false);
     var q = zoneQuad(zn), c = zoneCenter(zn, cam), p = P(cam, c[0], c[1], c[2]);
     /* Todo se dimensiona con el ancho real de la zona en pantalla. */
     var col = COLS[zn.col];
@@ -176,9 +182,9 @@
       poly(cam, q, 'class="zone-hit"') +
       badge(cam, zn.id, p[0], p[1] - off, r) +
       titleText(p[0], ty - off, zn.title, ts, 'zt') +
-      '<text class="zs" x="' + f(p[0]) + '" y="' + f(sy - off) + '" font-size="' + f(ss) + '">' +
-      esc((live[zn.id] || '').toUpperCase()) + '</text>' +
-      '<circle class="zdot" cx="' + f(p[0]) + '" cy="' + f(sy - off + ts * 0.9) + '" r="' + f((tall ? 2 : 2.6) * k) + '"/>' +
+      (showSub ? '<text class="zs" x="' + f(p[0]) + '" y="' + f(sy - off) + '" font-size="' + f(ss) + '">' +
+        esc((live[zn.id] || '').toUpperCase()) + '</text>' +
+        '<circle class="zdot" cx="' + f(p[0]) + '" cy="' + f(sy - off + ts * 0.9) + '" r="' + f((tall ? 2 : 2.6) * k) + '"/>' : '') +
       '</g>';
   }
 
@@ -205,15 +211,18 @@
 
 
   /* «Este mes» en la red: lo que separa tu campo del rival es el partido que toca. */
-  function netMarkup(x, y, fs, label) {
+  function netMarkup(x, y, fs, label, maxW) {
     var text = String(label || 'Tu grupo del mes').toUpperCase();
-    var w = Math.max(text.length, 10) * fs * 0.64 + fs * 2.2, hgt = fs * 3;
+    /* Nunca más ancho que la pista a la altura de la red: se acorta el texto. */
+    var room = maxW ? Math.floor((maxW - fs * 2) / (fs * 0.62)) : 40;
+    if (text.length > room) text = text.slice(0, Math.max(8, room - 1)).trim() + '…';
+    var w = Math.max(text.length, 9) * fs * 0.62 + fs * 2, hgt = fs * 2.7;
     return '<g class="zone net-btn" data-zone="estemes" data-view="estemes" tabindex="0" role="button" ' +
       'aria-label="Este mes · ' + esc(label || '') + '">' +
       '<rect class="zone-hit nb-bg" x="' + f(x - w / 2) + '" y="' + f(y - hgt / 2) + '" width="' + f(w) + '" height="' + f(hgt) +
       '" rx="' + f(hgt / 2) + '"/>' +
-      '<text class="nb-k" x="' + f(x) + '" y="' + f(y - fs * 0.25) + '" font-size="' + f(fs * 0.72) + '">ESTE MES</text>' +
-      '<text class="nb-t" x="' + f(x) + '" y="' + f(y + fs * 0.95) + '" font-size="' + f(fs) + '">' + esc(text) + '</text></g>';
+      '<text class="nb-k" x="' + f(x) + '" y="' + f(y - fs * 0.2) + '" font-size="' + f(fs * 0.62) + '">ESTE MES</text>' +
+      '<text class="nb-t" x="' + f(x) + '" y="' + f(y + fs * 0.85) + '" font-size="' + f(fs) + '">' + esc(text) + '</text></g>';
   }
 
   /* ---------- la pista en foto ----------
@@ -223,13 +232,13 @@
   var PHOTOS = {
     wide: { src: 'assets/pista-web.webp', W: 1672, H: 941, k: 1.6,
       pts: [[[-5, 20], [568, 247]], [[5, 20], [1102, 247]], [[-5, 3.05], [230, 585]], [[5, 3.05], [1441, 585]]],
-      door: [835, 728], label: 824, net: [835, 352],
-      /* La mitad del fondo es muy estrecha en esta foto: botones algo menores y
-         más cerca de la red, para no tapar el escudo del club. */
-      farZ: 14, farK: 0.75 },
+      door: [835, 728], label: 824, net: [835, 372], netFs: 8.5, farSub: false, nearK: 0.82,
+      /* La mitad del fondo es muy estrecha en esta foto: botones menores, pegados
+         al fondo sin tapar el escudo, y «Este mes» sentado en la cinta de la red. */
+      farZ: 16.8, farK: 0.6, nearZ: 5.2 },
     tall: { src: 'assets/pista-movil.webp', W: 941, H: 1672, k: 2.35,
       pts: [[[-5, 20], [227, 447]], [[5, 20], [714, 447]], [[-5, 3.05], [-68, 1144]], [[5, 3.05], [1013, 1144]]],
-      door: [477, 1362], label: 1462, net: [470, 712],
+      door: [477, 1362], label: 1462, net: [470, 700], netFs: 10.5,
       /* En el móvil la foto se recorta un poco por los lados para llenar la pantalla. */
       safeX: [85, 856] }
   };
@@ -263,14 +272,17 @@
     };
   }
 
-  function photoSvg(mode, live) {
+  function photoSvg(mode, live, fit) {
     var ph = PHOTOS[mode], tall = mode === 'tall', k = ph.k;
+    /* En vertical la foto llena la pantalla recortando los lados; si la pantalla
+       es más ancha que la foto (tablet), se ve entera para no recortar el fondo. */
+    var slice = tall && !fit;
     var cam = { photo: true, mode: mode, W: ph.W, H: ph.H, hp: homography(ph.pts),
-      farZ: ph.farZ, farK: ph.farK, safeX: ph.safeX };
-    var h = ['<div class="court-photo ' + mode + '" style="aspect-ratio:' + ph.W + ' / ' + ph.H + '">' +
+      farZ: ph.farZ, farK: ph.farK, nearZ: ph.nearZ, nearK: ph.nearK, farSub: ph.farSub, safeX: ph.safeX };
+    var h = ['<div class="court-photo ' + mode + (tall && fit ? ' fit' : '') + '" style="aspect-ratio:' + ph.W + ' / ' + ph.H + '">' +
       '<img src="' + ph.src + '" alt="" decoding="async">' +
       '<svg class="court court-3d court-over ' + mode + '" viewBox="0 0 ' + ph.W + ' ' + ph.H + '"' +
-      (tall ? ' preserveAspectRatio="xMidYMax slice"' : '') + ' role="group" ' +
+      (slice ? ' preserveAspectRatio="xMidYMax slice"' : '') + ' role="group" ' +
       'aria-label="La pista: cada zona abre una parte de la app">' +
       '<defs><radialGradient id="cBall" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#FFE2B8"/>' +
       '<stop offset="1" stop-color="#ED6C05"/></radialGradient>' +
@@ -278,7 +290,8 @@
       '<stop offset="1" stop-color="#ED6C05" stop-opacity="0"/></radialGradient></defs>'];
     ZONES.forEach(function (zn) { h.push(zoneMarkup(cam, zn, live, tall, k)); });
     h.push(doorMarkup(ph.door[0], ph.door[1], (tall ? 26 : 36) * k, (tall ? 14.5 : 20) * k, ph.label));
-    h.push(netMarkup(ph.net[0], ph.net[1], (tall ? 11 : 12.5) * k, live.estemes));
+    var netW = cam.hp(4.6, 10)[0] - cam.hp(-4.6, 10)[0];
+    h.push(netMarkup(ph.net[0], ph.net[1], ph.netFs * k, live.estemes, netW));
     h.push(ballMarkup());
     h.push('</svg></div>');
     return { html: h.join(''), cam: cam };
@@ -393,7 +406,7 @@
     var d = P(cam, 0, 0, -1.5);
     h.push(doorMarkup(d[0], d[1], tall ? 26 : 36, tall ? 14.5 : 20, d[1]));
     var nb = P(cam, 0, 0.9, 10);
-    h.push(netMarkup(nb[0], nb[1], tall ? 11 : 13, live.estemes));
+    h.push(netMarkup(nb[0], nb[1], tall ? 10 : 11.5, live.estemes, P(cam, 4.6, 0, 10)[0] - P(cam, -4.6, 0, 10)[0]));
     h.push(ballMarkup());
 
     h.push('</svg>');
@@ -488,7 +501,7 @@
      cruzando la red, termina fuera de la pista en «El rival» y de ahí sale
      con un bote muy alto por arriba de la pantalla. Unos segundos después
      vuelve a caer. Se para si la pestaña no se ve. */
-  var RALLY = ['historial', 'analisis', 'liga', 'cronica', 'temporada', 'registro', 'rival'];
+  var RALLY = ['registro', 'liga', 'historial', 'temporada', 'analisis', 'cronica', 'rival'];
 
   function svgHeight() {
     var svg = document.querySelector('.court-host svg.court');
@@ -542,7 +555,9 @@
       var next = host.clientWidth >= 700 && global.innerWidth > global.innerHeight * 0.9 ? 'wide' : 'tall';
       if (next === mode && host.firstChild) return;
       mode = next;
-      paint(photoOk ? photoSvg(mode, live) : svg(mode, live));
+      var availH = global.innerHeight - 66;
+      var fit = host.clientWidth / Math.max(1, availH) > 0.6;
+      paint(photoOk ? photoSvg(mode, live, fit) : svg(mode, live));
       var img = host.querySelector('.court-photo img');
       if (img) img.addEventListener('error', function () {
         /* Sin la foto (sin red, archivo perdido) queda la pista dibujada. */
