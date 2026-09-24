@@ -1269,6 +1269,8 @@
 
   function init() {
     global.addEventListener('resize', function () { if ($title) fitTitle(); });
+    /* Cambia el tema: la pista pasa de día a noche sin moverte de sitio. */
+    global.addEventListener('padel-theme', function () { if (state.view === 'inicio') go('inicio', { keep: true }); });
     $view = document.getElementById('view');
     $title = document.getElementById('page-title');
     initCompetition();

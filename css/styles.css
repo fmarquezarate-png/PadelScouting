@@ -985,7 +985,8 @@ body{overscroll-behavior-y:contain}
 /* ============================================================
    Tema claro. Se activa con html[data-theme="light"] (lo pone el
    script del <head>: el del móvil, o el que fijes en Configuración).
-   La pista de inicio es una foto nocturna: se queda siempre oscura.
+   La pista de inicio cambia de foto (de día en claro); sus rótulos y el marcador
+   mantienen los colores oscuros porque van encima de la foto.
    ============================================================ */
 html[data-theme="light"]{
   --ink:#F3F1EA; --panel:#FFFFFF; --panel2:#E9E6DC; --line:#D5D0C2;
@@ -1012,3 +1013,7 @@ html[data-theme="light"] .scrim,html[data-theme="light"] .modal{background:rgba(
 .pz-close{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;width:40px;height:40px;border-radius:50%;
   border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.4);color:#fff;font-size:24px;line-height:1}
 .wz-n.opt{background:transparent;border:1px dashed var(--line);color:var(--mute)}
+/* Pista de día: viñeteado más suave y la frase legible sobre los árboles. */
+html[data-theme="light"] .home::after{background:radial-gradient(95% 85% at 50% 45%,transparent 65%,rgba(0,0,0,.22))}
+html[data-theme="light"] .home-quote{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 14px rgba(0,0,0,.55)}
+html[data-theme="light"] .court-photo{background:#dfe8ef}

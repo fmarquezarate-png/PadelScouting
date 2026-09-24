@@ -5,6 +5,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **La pista de día en el tema claro** (`assets/pista-web-dia.webp`, `assets/pista-movil-dia.webp`) y de
+  noche en el oscuro. Mismo encuadre que las de noche: los botones caen en el mismo sitio sin
+  recalibrar. Al cambiar el tema, la portada cambia de foto al momento.
+
 ### Fixed — alta de cuenta
 - **El enlace del correo de confirmación llevaba a una página rota.** Supabase tenía de fábrica la
   dirección `http://localhost:3000`. La app ahora pide volver a la propia web (`redirect_to`) y,

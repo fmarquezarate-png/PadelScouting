@@ -429,7 +429,7 @@
       [['auto', 'Como el móvil'], ['light', 'Claro'], ['dark', 'Oscuro']].map(function (o) {
         return '<button type="button" class="chip" data-theme-set="' + o[0] + '" aria-pressed="' + (th === o[0]) + '">' + o[1] + '</button>';
       }).join('') + '</div><p class="field-note">«Como el móvil» cambia solo cuando tu móvil pasa a modo claro u oscuro. ' +
-      'La pista de inicio se ve siempre de noche.</p></section>');
+      'En claro, la pista de inicio se ve de día; en oscuro, de noche.</p></section>');
 
     h.push('<section class="card"><h3>Competición</h3>' +
       '<p class="field-note">Estás viendo <b>' + esc((global.PadelApp.KIND[global.PadelApp.kindOfSlug(slug)] || '') + ' · ' +

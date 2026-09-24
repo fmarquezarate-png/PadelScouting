@@ -34,6 +34,13 @@ const PHOTO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcS
     access_token: 't', refresh_token: 'r', expires_at: Math.floor(Date.now() / 1000) + 3600, user: { email: 'fmarquezarate@gmail.com' } })));
   await page.goto(BASE); await page.waitForTimeout(1500);
   check('Tema: con el móvil en claro, la app sale clara', await page.evaluate(() => document.documentElement.dataset.theme) === 'light');
+  await page.waitForSelector('.court-photo img', { timeout: 5000 }).catch(() => {});
+  check('Tema claro: la pista de inicio es la foto de día', /-dia\.webp$/.test(await page.getAttribute('.court-photo img', 'src') || ''),
+    await page.getAttribute('.court-photo img', 'src'));
+  await page.evaluate(() => window.PadelTheme.set('dark')); await page.waitForTimeout(700);
+  check('Tema oscuro: la pista pasa a la de noche sin salir de la portada',
+    !/-dia/.test(await page.getAttribute('.court-photo img', 'src') || '') && await page.evaluate(() => window.PadelApp.state.view) === 'inicio');
+  await page.evaluate(() => window.PadelTheme.set('auto')); await page.waitForTimeout(500);
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   check('Tema claro: fondo claro', bg === 'rgb(243, 241, 234)', bg);
   await page.evaluate(() => window.PadelApp.go('config')); await page.waitForTimeout(600);

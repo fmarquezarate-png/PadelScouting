@@ -258,6 +258,12 @@
     return M.map(function (row, i) { return row[n] / row[i]; });
   }
 
+  /* Tema claro: la misma pista de día (mismo encuadre, mismos puntos de calibración). */
+  function photoSrc(ph) {
+    var light = document.documentElement.getAttribute('data-theme') === 'light';
+    return light ? ph.src.replace(/\.webp$/, '-dia.webp') : ph.src;
+  }
+
   function homography(pts) {
     var A = [], b = [];
     pts.forEach(function (q) {
@@ -280,7 +286,7 @@
     var cam = { photo: true, mode: mode, W: ph.W, H: ph.H, hp: homography(ph.pts),
       farZ: ph.farZ, farK: ph.farK, nearZ: ph.nearZ, nearK: ph.nearK, farSub: ph.farSub, safeX: ph.safeX };
     var h = ['<div class="court-photo ' + mode + (tall && fit ? ' fit' : '') + '" style="aspect-ratio:' + ph.W + ' / ' + ph.H + '">' +
-      '<img src="' + ph.src + '" alt="" decoding="async">' +
+      '<img src="' + photoSrc(ph) + '" alt="" decoding="async">' +
       '<svg class="court court-3d court-over ' + mode + '" viewBox="0 0 ' + ph.W + ' ' + ph.H + '"' +
       (slice ? ' preserveAspectRatio="xMidYMax slice"' : '') + ' role="group" ' +
       'aria-label="La pista: cada zona abre una parte de la app">' +
