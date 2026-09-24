@@ -60,6 +60,7 @@
     applyMe(state.model);
     state.calibration = L.calibrate(state.model);
     state.model.scale = state.calibration.scale;
+    if (global.PadelApp && global.PadelApp.paintPairBtn) global.PadelApp.paintPairBtn();
   }
 
   /* Dos parejas distintas:
@@ -108,6 +109,7 @@
     state.rivalId = null;
     if (global.PadelTemporada) global.PadelTemporada.resetUi();
     if (m) applyView(m);
+    if (global.PadelApp && global.PadelApp.paintPairBtn) global.PadelApp.paintPairBtn();
   }
 
   /* Cambiar de competición: otra temporada, otra foto, otro «nosotros». */

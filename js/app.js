@@ -1418,8 +1418,10 @@
     if (!b) return;
     var m = global.PadelLiga.state.model;
     var id = m && m.myTeamId, t = id && m.teams[id];
-    b.innerHTML = '<small>Pareja</small> ' + esc(t ? t.label : 'Elige una') + ' <span aria-hidden="true">▾</span>';
+    b.innerHTML = '<i class="pc-dot" aria-hidden="true"></i>' + esc(t ? t.label : 'Escoger pareja') + ' <span aria-hidden="true">▾</span>';
+    b.title = t ? 'Miras a ' + t.label + ' · cambiar' : 'Escoger pareja';
     b.classList.toggle('other', !!(m && id && id !== m.ownTeamId));
+    b.classList.toggle('mine', !!(m && id && id === m.ownTeamId));
     if (!b._bound) { b._bound = true; b.addEventListener('click', openPairPicker); }
   }
 
@@ -1498,7 +1500,7 @@
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { openPairPicker: openPairPicker, choosePair: choosePair, kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
+  global.PadelApp = { paintPairBtn: paintPairBtn, openPairPicker: openPairPicker, choosePair: choosePair, kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
                       toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
                       prefillRegistro: prefillRegistro,
                       switchTo: function (slug, announce) { switchTo(slug, announce); } };

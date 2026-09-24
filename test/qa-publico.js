@@ -27,12 +27,16 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Portada: sin pareja por defecto (ni Francisco ni Cristian)', !/Francisco|Cristian/.test(t));
   check('Portada: resumen de la liga', t.includes('parejas') && t.includes('grupos'));
   check('Portada: invita a elegir una pareja', await page.locator('[data-pair="pick"]').count() >= 1);
+  check('La píldora de pareja se ve ya en la pista', await page.isVisible('#pair-btn'));
+  await page.click('#pair-btn'); await page.waitForTimeout(300);
+  check('Desde la pista abre el selector', await page.locator('.pp-item').count() >= 70);
+  await page.click('[data-pp="close"]'); await page.waitForTimeout(200);
   check('Nadie marcado como «mío» en el modelo', await page.evaluate(() => {
     const m = window.PadelLiga.state.model; return m.myTeamId === null && m.ownTeamId === null; }));
 
   await go(page, 'temporada');
   check('Temporada sin pareja: pide elegir una', (await text(page)).includes('Elige una pareja'));
-  check('La barra enseña el botón de pareja', await page.isVisible('#pair-btn') && (await page.textContent('#pair-btn')).includes('Elige una'));
+  check('Arriba a la derecha: «Escoger pareja» en todas las pantallas', await page.isVisible('#pair-btn') && (await page.textContent('#pair-btn')).includes('Escoger pareja'));
   await go(page, 'liga');
   check('La liga se ve entera sin pareja', (await text(page)).length > 500);
   await go(page, 'rival');

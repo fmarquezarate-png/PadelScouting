@@ -949,3 +949,21 @@ body{overscroll-behavior-y:contain}
 .hp-btn{background:transparent;border:1px solid var(--line);color:var(--bone);border-radius:999px;padding:5px 11px;
   font:600 11px/1.2 var(--mono);letter-spacing:.06em;cursor:pointer}
 .hp-btn.main{background:var(--orange);border-color:var(--orange);color:#0E1109}
+
+/* Escoger pareja: píldora pequeña arriba a la derecha, bajo los iconos (todas las pantallas).
+   .topbar ya es sticky, así que sirve de referencia para el absolute. */
+.pair-chip{position:absolute;right:12px;bottom:2px;z-index:5;display:inline-flex;align-items:center;gap:5px;
+  max-width:min(190px,48vw);height:16px;padding:0 8px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);color:var(--bone);font:600 9.5px/1 var(--mono);letter-spacing:.06em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.pair-chip span{color:var(--mute)}
+.pair-chip .pc-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--mute)}
+.pair-chip.other{border-color:var(--orange)}
+.pair-chip.other .pc-dot{background:var(--orange)}
+.pair-chip.mine .pc-dot{background:var(--sage)}
+.pair-chip:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+@media(min-width:760px){.pair-chip{right:28px;bottom:3px;height:18px;font-size:10.5px;max-width:260px}}
+/* Los iconos de la derecha suben un poco para dejar sitio a la píldora de pareja. */
+.topbar .tb-actions{align-self:start}
+.pair-chip{max-width:min(170px,44vw)}
+@media(min-width:760px){.pair-chip{max-width:260px}}
