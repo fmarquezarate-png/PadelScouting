@@ -1273,6 +1273,23 @@
     $title = document.getElementById('page-title');
     initCompetition();
     if (global.PadelShell) global.PadelShell.init(go);
+    /* Vuelta desde el correo de confirmación: se entra solo y se dice claro. */
+    if (global.PadelAuth.consumeRedirect) {
+      global.PadelAuth.consumeRedirect().then(function (r) {
+        if (!r) return;
+        if (r.ok) {
+          toast('¡Cuenta confirmada! Ya estás dentro.');
+          global.PadelDB.fetchProfile().then(function (p) {
+            var m = global.PadelLiga.state.model;
+            if (m) global.PadelLiga.applyMe(m);
+            if (global.PadelShell) global.PadelShell.onProfile(p);
+            go(state.view);
+          }).catch(function () { if (global.PadelShell) global.PadelShell.paintAvatar(); });
+        } else {
+          showLinkProblem(r);
+        }
+      });
+    }
     /* Con sesión abierta, recuerda quién eres (vale para todas las competiciones). */
     if (global.PadelAuth.user && global.PadelAuth.user()) {
       global.PadelDB.fetchProfile().then(function (p) {
@@ -1283,6 +1300,29 @@
       }).catch(function () {});
     }
     go('inicio');
+  }
+
+  /* El enlace del correo falló (caducado o ya usado). La cuenta suele existir:
+     se explica y se ofrece entrar o pedir otro correo. */
+  function showLinkProblem(r) {
+    var expired = /expired|otp/i.test(r.code + ' ' + r.error);
+    var root = document.getElementById('modal-root');
+    root.innerHTML = '<div class="modal"><div class="modal-card"><h2>' + (expired ? 'El enlace ha caducado' : 'Ese enlace ya no vale') + '</h2>' +
+      '<p class="lede">Tranquilo: tu cuenta está creada. ' + (expired
+        ? 'Los enlaces de confirmación duran poco. Pide uno nuevo o, si ya confirmaste antes, entra directamente.'
+        : 'Seguramente ya lo usaste. Entra con tu email y contraseña.') + '</p>' +
+      '<div class="field"><label for="lp-email">Tu email</label><input type="email" id="lp-email" autocomplete="username"></div>' +
+      '<div class="btn-row"><button class="btn primary" data-lp="resend">Enviarme otro correo</button>' +
+      '<button class="btn ghost" data-lp="login">Entrar</button></div><p class="note" id="lp-msg"></p></div></div>';
+    document.body.classList.add('has-modal');
+    function close() { root.innerHTML = ''; document.body.classList.remove('has-modal'); }
+    root.querySelector('[data-lp="login"]').addEventListener('click', function () { close(); go('perfil'); });
+    root.querySelector('[data-lp="resend"]').addEventListener('click', function () {
+      var em = root.querySelector('#lp-email').value.trim(), msg = root.querySelector('#lp-msg');
+      if (!em) { msg.textContent = 'Escribe tu email.'; return; }
+      global.PadelAuth.resend(em).then(function () { msg.textContent = 'Hecho: revisa tu correo (y spam).'; })
+        .catch(function (e) { msg.textContent = e.message; });
+    });
   }
 
   /* Registro completo a partir de un partido de «Este mes»: rivales,

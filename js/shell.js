@@ -314,7 +314,7 @@
     if (!u) {
       h.push('<section class="card profile-card"><div class="pf-head">' +
         '<span class="avatar big guest"><span>?</span></span><div><h2>Entra en tu cuenta</h2>' +
-        '<p class="field-note">Con cuenta, la app sabe quién eres, guarda tus datos en la nube y te deja cargar la liga.</p></div></div>' +
+        '<p class="field-note">Con cuenta, la app sabe quién eres y guarda en la nube tu grupo del mes, tus partidos y tus notas.</p></div></div>' +
         PL().authForm() + '</section>');
       h.push('</div>');
       view.innerHTML = h.join('');

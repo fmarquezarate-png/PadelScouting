@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — alta de cuenta
+- **El enlace del correo de confirmación llevaba a una página rota.** Supabase tenía de fábrica la
+  dirección `http://localhost:3000`. La app ahora pide volver a la propia web (`redirect_to`) y,
+  al volver, entra sola y dice «¡Cuenta confirmada!». Si el enlace caducó o ya se usó, lo explica
+  («tu cuenta está creada») y deja pedir otro correo. Tras crear la cuenta, instrucciones claras
+  y botón «Enviarme otro correo».
+- Correo de confirmación en castellano y con la imagen del club: `docs/emails/` (se pega en Supabase).
+
 ### Security
 - **Solo el administrador escribe la liga.** Antes cualquier cuenta podía escribir directamente en
   partidos, parejas y temporadas. Ahora la base (RLS) solo deja escribir a quien esté en la tabla

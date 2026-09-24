@@ -32,6 +32,12 @@
     return (s.expires_at * 1000) - Date.now() < 60000;   // margen de un minuto
   }
 
+  /* Adónde vuelve el enlace del correo: a esta misma web (no a «localhost»). */
+  function homeUrl() {
+    var l = global.location;
+    return l.origin + l.pathname.replace(/index\.html$/, '');
+  }
+
   function authFetch(path, body) {
     return global.fetch(CFG.url + '/auth/v1/' + path, {
       method: 'POST',
@@ -70,11 +76,48 @@
   }
 
   function signUp(email, password) {
-    return authFetch('signup', { email: email, password: password })
+    return authFetch('signup?redirect_to=' + encodeURIComponent(homeUrl()), { email: email, password: password })
       .then(function (data) {
         /* Si el proyecto pide confirmar por email no llega token todavía. */
         if (data && data.access_token) writeSession(data);
         return data;
+      });
+  }
+
+  /* Volver a mandar el correo de confirmación (si caducó o no llegó). */
+  function resend(email) {
+    return authFetch('resend?redirect_to=' + encodeURIComponent(homeUrl()), { type: 'signup', email: email });
+  }
+
+  /* Vuelta desde el correo. Supabase deja la sesión (o el error) en el #
+     de la dirección: #access_token=…&refresh_token=…&type=signup
+     o #error=access_denied&error_code=otp_expired&error_description=…
+     Devuelve { ok, type } o { error, code } o null si no venía de un correo. */
+  function consumeRedirect() {
+    var h = String(global.location.hash || '').replace(/^#/, '');
+    var q = String(global.location.search || '').replace(/^\?/, '');
+    var all = h + '&' + q;
+    if (!/(access_token|error_code|error_description)=/.test(all)) return Promise.resolve(null);
+    var p = {};
+    all.split('&').forEach(function (kv) {
+      var i = kv.indexOf('=');
+      if (i > 0) p[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' '));
+    });
+    /* La dirección se limpia ya: que un recargar no repita nada. */
+    try { global.history.replaceState(null, '', global.location.pathname); } catch (e) {}
+    if (!p.access_token) {
+      return Promise.resolve({ error: p.error_description || p.error || 'El enlace no es válido.', code: p.error_code || p.error || '' });
+    }
+    var sess = { access_token: p.access_token, refresh_token: p.refresh_token, token_type: p.token_type || 'bearer',
+      expires_in: +p.expires_in || 3600,
+      expires_at: +p.expires_at || Math.floor(Date.now() / 1000) + (+p.expires_in || 3600) };
+    return global.fetch(CFG.url + '/auth/v1/user', {
+      headers: { 'apikey': CFG.key, 'Authorization': 'Bearer ' + p.access_token }
+    }).then(function (res) { return res.ok ? res.json() : null; }).catch(function () { return null; })
+      .then(function (u) {
+        sess.user = u || { email: '' };
+        writeSession(sess);
+        return { ok: true, type: p.type || 'signup', email: sess.user.email || '' };
       });
   }
 
@@ -110,7 +153,7 @@
   }
 
   global.PadelAuth = {
-    signIn: signIn, signUp: signUp, signOut: signOut,
+    signIn: signIn, signUp: signUp, signOut: signOut, resend: resend, consumeRedirect: consumeRedirect, homeUrl: homeUrl,
     token: token, user: user, session: readSession
   };
 })(window);

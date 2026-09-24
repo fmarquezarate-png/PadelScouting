@@ -396,6 +396,8 @@
       'sin que nadie pueda tocar los datos.</p>' +
       (a.error ? '<div class="notice bad">' + esc(a.error) + '</div>' : '') +
       (a.message ? '<div class="notice good">' + esc(a.message) + '</div>' : '') +
+      (a.pendingEmail ? '<p class="field-note">¿No te llega? <button class="linkish" data-action="auth-resend">' +
+        'Enviarme otro correo</button></p>' : '') +
       '<div class="field"><label for="au-email">Email</label>' +
       '<input type="email" id="au-email" autocomplete="username" value="' + esc(a.email) + '"></div>' +
       '<div class="field"><label for="au-pass">Contraseña</label>' +
@@ -432,6 +434,15 @@
       redraw();
     });
 
+    var rs = view.querySelector('[data-action="auth-resend"]');
+    if (rs) rs.addEventListener('click', function () {
+      var to = a.pendingEmail || a.email;
+      if (!to) { a.error = 'Escribe tu email arriba.'; redraw(); return; }
+      global.PadelAuth.resend(to).then(function () {
+        a.error = null; a.message = 'Te he enviado otro correo a ' + to + '.'; redraw();
+      }).catch(function (err) { a.error = err.message; redraw(); });
+    });
+
     var go = view.querySelector('[data-action="auth-go"]');
     if (go) go.addEventListener('click', function () {
       a.busy = true; a.error = null; a.message = null;
@@ -443,7 +454,9 @@
         a.busy = false;
         a.password = '';
         if (a.mode === 'up' && !(data && data.access_token)) {
-          a.message = 'Cuenta creada. Confirma el email y vuelve a entrar.';
+          a.message = '¡Cuenta creada! Te hemos enviado un correo a ' + a.email + '. Toca el botón «Confirmar mi cuenta» ' +
+            'y volverás aquí ya dentro. Si no lo ves en unos minutos, mira en spam o promociones.';
+          a.pendingEmail = a.email;
           a.mode = 'in';
           redraw(); return;
         }

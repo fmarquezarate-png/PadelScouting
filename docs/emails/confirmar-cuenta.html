@@ -1,0 +1,52 @@
+<!-- Supabase · Authentication → Emails → «Confirm signup»
+     Asunto: Confirma tu cuenta de Padel Scouting 🎾
+     Variables de Supabase: {{ .ConfirmationURL }} (el enlace) y {{ .Email }} (su correo). -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0E1109;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#161B12;border:1px solid #2C3423;border-radius:14px;">
+        <tr>
+          <td align="center" style="padding:32px 28px 8px;">
+            <img src="https://padel-scouting.vercel.app/assets/logo.png" width="72" height="72" alt="Club Tennis El Molí" style="display:block;border:0;border-radius:50%;">
+            <p style="margin:18px 0 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9AA48C;">Club Tennis El Molí · Padel Scouting</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 32px 0;">
+            <h1 style="margin:0 0 14px;font-size:26px;line-height:1.2;color:#EDEBE3;text-align:center;">¡Bienvenido a la pista!</h1>
+            <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#C9CDBF;">
+              Acabas de crear tu cuenta con <b style="color:#EDEBE3;">{{ .Email }}</b>.
+              Solo falta un toque para confirmarla:
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:10px 32px 22px;">
+            <a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#ED6C05;color:#0E1109;text-decoration:none;font-weight:bold;font-size:16px;padding:15px 30px;border-radius:999px;">Confirmar mi cuenta</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 8px;">
+            <p style="margin:0 0 10px;font-size:14px;line-height:1.6;color:#C9CDBF;">Al confirmarla vuelves a la app ya dentro, y podrás:</p>
+            <ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.7;color:#C9CDBF;">
+              <li>Ver tu temporada, tu escalera y la crónica de tu pareja.</li>
+              <li>Montar tu grupo del mes y apuntar resultados.</li>
+              <li>Estudiar a tus rivales antes de cada partido.</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 32px 28px;">
+            <p style="margin:0;padding:14px 16px;background:#1E2418;border-radius:10px;font-size:12.5px;line-height:1.6;color:#9AA48C;">
+              ¿El botón no funciona? Copia este enlace en el navegador:<br>
+              <a href="{{ .ConfirmationURL }}" style="color:#8FA678;word-break:break-all;">{{ .ConfirmationURL }}</a><br><br>
+              El enlace caduca en unas horas. Si caduca, entra en la app y pide otro correo.
+              Si no has sido tú, ignora este mensaje: sin confirmar, la cuenta no se usa.
+            </p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:16px 0 0;font-size:11px;color:#5C6650;">Padel Scouting · «El pádel conecta personas»</p>
+    </td>
+  </tr>
+</table>
