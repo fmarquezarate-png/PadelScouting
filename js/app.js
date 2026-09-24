@@ -599,8 +599,8 @@
      ============================================================ */
   function lastMatches(n) {
     var m = global.PadelLiga && global.PadelLiga.state.model;
-    if (!m || !m.myTeamId) return [];
-    var me = m.myTeamId, label = {};
+    if (!m || !m.ownTeamId) return [];
+    var me = m.ownTeamId, label = {};
     m.months.forEach(function (x) { label[x.n] = x.label; });
     var round = global.PadelEsteMes && global.PadelEsteMes.state.round;
     var fixtures = (round && round.fixtures) || [];
@@ -1163,6 +1163,11 @@
     global.scrollTo({ top: 0 });
     document.body.setAttribute('data-view', view);
     paintSeasonBar();
+    /* Mirando a otra pareja, «Nuestra temporada» pasa a ser «su» temporada. */
+    var mm = global.PadelLiga && global.PadelLiga.state.model;
+    if (view === 'temporada' && mm && mm.myTeamId && mm.myTeamId !== mm.ownTeamId) {
+      $title.textContent = 'Su temporada'; fitTitle();
+    }
     if (global.PadelShell) global.PadelShell.onNavigate(view);
     if (global.PadelTemporada) global.PadelTemporada.stopTimer();
 
@@ -1188,7 +1193,11 @@
       b._bound = true;
       b.addEventListener('click', function (ev) {
         ev.stopPropagation();
-        ls.rivalId = Number(b.getAttribute('data-rival'));
+        var rid = Number(b.getAttribute('data-rival'));
+        /* Desde «Este mes» se compara siempre desde tu pareja. */
+        var mm = ls.model;
+        if (state.view === 'estemes' && mm && mm.ownTeamId && mm.myTeamId !== mm.ownTeamId) global.PadelLiga.setViewPair('own');
+        ls.rivalId = rid;
         go('rival');
       });
     });
@@ -1400,6 +1409,78 @@
       sel._bound = true;
       sel.addEventListener('change', function () { switchTo(sel.value, true); });
     }
+    paintPairBtn();
+  }
+
+  /* ---------- la pareja que miras ---------- */
+  function paintPairBtn() {
+    var b = document.getElementById('pair-btn');
+    if (!b) return;
+    var m = global.PadelLiga.state.model;
+    var id = m && m.myTeamId, t = id && m.teams[id];
+    b.innerHTML = '<small>Pareja</small> ' + esc(t ? t.label : 'Elige una') + ' <span aria-hidden="true">▾</span>';
+    b.classList.toggle('other', !!(m && id && id !== m.ownTeamId));
+    if (!b._bound) { b._bound = true; b.addEventListener('click', openPairPicker); }
+  }
+
+  var pp = { q: '' };
+  function openPairPicker() {
+    var m = global.PadelLiga.state.model;
+    if (!m) return;
+    pp.q = '';
+    paintPairPicker();
+  }
+  function closePairPicker() {
+    document.getElementById('modal-root').innerHTML = '';
+    document.body.classList.remove('has-modal');
+  }
+  function paintPairPicker() {
+    var m = global.PadelLiga.state.model, root = document.getElementById('modal-root');
+    var lad = m.ladder[m.lastMonth] || {};
+    var q = norm(pp.q);
+    var ids = m.order.filter(function (id) {
+      return m.matches.some(function (x) { return x.home === id || x.away === id; }) &&
+        (!q || norm(m.teams[id].label + ' ' + m.teams[id].playerA + ' ' + m.teams[id].playerB).indexOf(q) >= 0);
+    }).sort(function (a, b) {
+      var la = lad[a] ? lad[a].place : 999, lb = lad[b] ? lad[b].place : 999;
+      return la - lb;
+    });
+    var h = ['<div class="modal"><div class="modal-card pp-card"><h2>¿Qué pareja miras?</h2>',
+      '<p class="lede">Su temporada, su escalera, su crónica y sus rivales. Lo tuyo (Este mes, tus notas) sigue siendo tuyo.</p>',
+      '<div class="btn-row">' + (m.ownTeamId ? '<button class="btn primary" data-pp="own">Mi pareja</button>' : '') +
+      '<button class="btn ghost" data-pp="none">Vista general</button><button class="btn ghost" data-pp="close">Cerrar</button></div>',
+      '<div class="field"><input type="search" id="pp-q" placeholder="Buscar pareja o jugador" value="' + esc(pp.q) + '" autocomplete="off"></div>',
+      '<div class="pp-list">'];
+    ids.slice(0, 120).forEach(function (id) {
+      var t = m.teams[id], l = lad[id];
+      h.push('<button class="pp-item' + (id === m.myTeamId ? ' on' : '') + '" data-pp-id="' + id + '"><b>' + esc(t.label) + '</b>' +
+        '<small>' + (l ? '#' + l.place + ' · Grupo ' + l.group : '') + (id === m.ownTeamId ? ' · la tuya' : '') + '</small></button>');
+    });
+    if (!ids.length) h.push('<p class="note">No sale ninguna pareja así.</p>');
+    h.push('</div></div></div>');
+    root.innerHTML = h.join('');
+    document.body.classList.add('has-modal');
+    var inp = document.getElementById('pp-q');
+    inp.addEventListener('input', function () {
+      pp.q = inp.value; var pos = inp.selectionStart; paintPairPicker();
+      var again = document.getElementById('pp-q'); again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {}
+    });
+    root.querySelectorAll('[data-pp]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var a = b.getAttribute('data-pp');
+        closePairPicker();
+        if (a === 'own') choosePair('own'); else if (a === 'none') choosePair(null);
+      });
+    });
+    root.querySelectorAll('[data-pp-id]').forEach(function (b) {
+      b.addEventListener('click', function () { closePairPicker(); choosePair(Number(b.getAttribute('data-pp-id'))); });
+    });
+  }
+  function choosePair(id) {
+    global.PadelLiga.setViewPair(id);
+    var m = global.PadelLiga.state.model, t = m.myTeamId && m.teams[m.myTeamId];
+    toast(t ? 'Miras a ' + t.label : 'Vista general de la liga');
+    go(state.view);
   }
 
   var refreshSeasons = function () { return Promise.resolve(); };
@@ -1417,7 +1498,7 @@
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
+  global.PadelApp = { openPairPicker: openPairPicker, choosePair: choosePair, kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
                       toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
                       prefillRegistro: prefillRegistro,
                       switchTo: function (slug, announce) { switchTo(slug, announce); } };

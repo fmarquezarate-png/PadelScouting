@@ -30,6 +30,7 @@ mx.matches.forEach(m => {
 (async () => {
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
   const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
+  await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
@@ -154,7 +155,7 @@ mx.matches.forEach(m => {
   check('Masculino: su crónica', (await text()).includes('Tres actos'));
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check('Cada competición con su copia en el móvil',
-    keys.includes('padel-scouting.liga.v2') && keys.includes('padel-scouting.liga.v2:2026-s1-mixta'), keys.join(','));
+    keys.includes('padel-scouting.liga.v3') && keys.includes('padel-scouting.liga.v3:2026-s1-mixta'), keys.join(','));
 
   // --- quién soy: avatar → entrar → bienvenida de 3 datos ---
   check('Sin sesión el avatar es un interrogante', (await page.textContent('#avatar-btn')).trim() === '?');

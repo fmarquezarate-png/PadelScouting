@@ -22,6 +22,7 @@ node test/qa-estemes.js    # Este mes: ronda, fechas, avisos, resultados, regist
 node test/qa-semestres.js  # Competición arriba, semestre dentro, «todo el recorrido»
 node test/qa-club.js       # Nivel del club: lector del histórico, importar, igual en masc y mixto
 node test/qa-cronica.js    # Crónica automática con los datos reales del mixto y masculino S1
+node test/qa-publico.js    # Visitante sin pareja por defecto; elegir cualquier pareja; volver a la tuya
 ```
 
 Cada suite termina imprimiendo cuántas comprobaciones pasan y cuáles fallan, y sale con

@@ -62,19 +62,52 @@
     state.model.scale = state.calibration.scale;
   }
 
-  /* «Nuestra» pareja es la que lleva a tu jugador en esta temporada.
-     Sin perfil guardado se usa la marca de la base (Francisco). */
+  /* Dos parejas distintas:
+     · ownTeamId: la TUYA, solo si te has identificado en tu perfil. Sin perfil
+       no hay ninguna: quien entra con el link ve la liga, no a Francisco.
+     · myTeamId: la que estás MIRANDO. Por defecto la tuya; puedes elegir
+       cualquiera y todas las pantallas de análisis la usan. */
   function applyMe(m) {
     var me = global.PadelDB.myPlayer();
-    if (!me || !me.label) return;
     var found = null;
-    m.order.forEach(function (id) {
-      var t = m.teams[id];
-      if (!found && (t.playerA === me.label || t.playerB === me.label)) found = id;
-    });
-    Object.keys(m.teams).forEach(function (id) { m.teams[id].isMine = false; });
-    m.myTeamId = found;
-    if (found) m.teams[found].isMine = true;
+    if (me && me.label) {
+      m.order.forEach(function (id) {
+        var t = m.teams[id];
+        if (!found && (t.playerA === me.label || t.playerB === me.label)) found = id;
+      });
+    }
+    m.ownTeamId = found;
+    applyView(m);
+  }
+
+  var VIEW_KEY = 'padel-scouting.viewpair.v1:';
+  function viewKind(m) { return (m && m.season && m.season.kind) || 'masculina'; }
+  function storedView(kind) {
+    try { var v = global.localStorage.getItem(VIEW_KEY + kind); return v == null ? null : v; } catch (e) { return null; }
+  }
+  /* La pareja que miras vive en la temporada: si no juega en esta, vuelves a la tuya. */
+  function inSeason(m, id) {
+    return !!(id && m.teams[id] && m.matches.some(function (x) { return x.home === id || x.away === id; }));
+  }
+  function applyView(m) {
+    var v = storedView(viewKind(m)), id = null;
+    if (v === 'none') id = null;
+    else if (v && inSeason(m, Number(v))) id = Number(v);
+    else id = m.ownTeamId || null;
+    Object.keys(m.teams).forEach(function (k) { m.teams[k].isMine = false; });
+    m.myTeamId = id;
+    if (id) m.teams[id].isMine = true;
+  }
+  /* id: número = esa pareja · null = vista general · 'own' = la tuya. */
+  function setViewPair(id) {
+    var m = state.model, kind = viewKind(m);
+    try {
+      if (id === 'own') global.localStorage.removeItem(VIEW_KEY + kind);
+      else global.localStorage.setItem(VIEW_KEY + kind, id == null ? 'none' : String(id));
+    } catch (e) {}
+    state.rivalId = null;
+    if (global.PadelTemporada) global.PadelTemporada.resetUi();
+    if (m) applyView(m);
   }
 
   /* Cambiar de competición: otra temporada, otra foto, otro «nosotros». */
@@ -268,7 +301,7 @@
     if (me && me.label && !st.editing) {
       h.push('<p class="me-line">En la liga eres <b>' + esc(me.label) + '</b> · ' +
         '<button class="linkish" data-action="me-edit">cambiar</button></p>');
-      if (state.model && !state.model.myTeamId) {
+      if (state.model && !state.model.ownTeamId) {
         h.push('<p class="field-note">En esta competición no apareces todavía.</p>');
       }
       h.push('</div>');
@@ -417,7 +450,7 @@
       global.PadelAuth.signOut().then(function () {
         global.PadelDB.rememberMe(null);
         if (state.model) {
-          /* Sin sesión vuelve la marca de la base. */
+          /* Sin sesión no hay «tu» pareja. */
           var snap = null; try { snap = global.PadelDB.readCache().snapshot; } catch (e) {}
           if (snap) setModel(snap);
         }
@@ -614,6 +647,11 @@
     }
     var m = state.model;
     var h = [];
+    if (!m.myTeamId) {
+      view.innerHTML = '<div class="notice">El rival se mira desde una pareja: elige primero cuál ' +
+        '(arriba, «Pareja»). Si juegas en la liga, dinos quién eres en <button class="linkish" data-goto="perfil">Mi perfil</button>.</div>';
+      bind(); return;
+    }
 
     h.push('<p class="lede">Elige la pareja que te toca. Verás cómo va, cómo le ha ido ' +
       '<b>contra nosotros</b> y qué dice el motor que puede pasar.</p>');
@@ -865,7 +903,7 @@
   }
 
   global.PadelLiga = {
-    state: state, switchSeason: switchSeason, applyMe: applyMe, rebuild: rebuild,
+    state: state, switchSeason: switchSeason, applyMe: applyMe, rebuild: rebuild, setViewPair: setViewPair,
     esc: esc, pct: pct, stat: stat,
     loaderCard: loaderCard, bindLoader: bindLoader, authForm: authForm, bindAuth: bindAuth,
     knownPlayerNames: knownPlayerNames, meBlock: meBlock, bindMe: bindMe,

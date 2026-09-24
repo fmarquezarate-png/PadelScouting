@@ -285,6 +285,13 @@
     var me = m.myTeamId ? m.teams[m.myTeamId] : null;
     var names = { me: club ? club.meName : (me ? me.playerA : 'Tú'), partner: club ? club.partnerName : (me ? me.playerB : 'Pareja') };
     var h = ['<div class="lg cronica">'];
+    if (!m.myTeamId) {
+      view.innerHTML = '<div class="lg"><div class="notice">La crónica cuenta la temporada de una pareja. Elige cuál. ' +
+        '<div class="btn-row" style="margin-top:10px"><button class="btn primary" data-pair="pick">Elegir una pareja</button></div></div></div>';
+      view.querySelector('[data-pair]').addEventListener('click', function () { global.PadelApp.openPairPicker(); });
+      bind(); return;
+    }
+    var own = m.myTeamId === m.ownTeamId;
     if (!rows.length) {
       h.push('<div class="stale">Todavía no hay partidos vuestros en <b>' + esc(season.name || 'esta temporada') +
         '</b>. La crónica se escribe sola en cuanto se carguen.</div></div>');
@@ -292,7 +299,7 @@
     }
     var c = global.PadelCronica.build(rows, club);
     var n2 = function (v) { return v.toFixed(2).replace('.', ','); };
-    h.push('<div class="stale">Escrita sola con vuestros <b>' + (c.summary.n + c.summary.wo) + ' partidos</b> de ' +
+    h.push('<div class="stale">Escrita sola con ' + (own ? 'vuestros' : 'sus') + ' <b>' + (c.summary.n + c.summary.wo) + ' partidos</b> de ' +
       esc(global.PadelApp ? global.PadelApp.seasonName(season.slug) : season.name || '') +
       '. Se rehace cada vez que se carga un mes nuevo; los golpes de cada uno los escribes tú.</div>');
 
@@ -314,12 +321,13 @@
     h.push('<section class="blk">' + PT.sectionHead(c.duel ? '11' : '10', 'Lo que dicen los números', 'Rachas, remontadas y los partidos que marcaron la temporada.'));
     h.push('<div class="tiles">' + c.highlights.map(function (x) { return PT.tile(esc(x.v), x.k, x.sub); }).join('') + '</div></section>');
 
-    /* Los golpes: manual. */
+    /* Los golpes: manual, y solo de tu pareja. */
     var slug = season.slug || '';
     var f = firmas(slug);
     var num = c.duel ? '12' : '11';
-    h.push('<section class="blk">' + PT.sectionHead(num, 'Izquierda y derecha', 'Esto no sale de los números: lo escribes tú.'));
-    if (cronUi.editing) {
+    if (own) h.push('<section class="blk">' + PT.sectionHead(num, 'Izquierda y derecha', 'Esto no sale de los números: lo escribes tú.'));
+    if (!own) { /* nada: los golpes de otra pareja no los escribes tú */ }
+    else if (cronUi.editing) {
       h.push('<div class="sigs">' + ['me', 'partner'].map(function (k) {
         return '<div class="sig"><div class="field"><label>Lado de ' + esc(names[k]) + '</label><input type="text" data-fm-side="' + k +
           '" value="' + esc(f[k].side || '') + '" placeholder="Revés · Izquierda"></div>' +
@@ -342,7 +350,7 @@
       h.push('<div class="btn-row" style="margin-top:12px"><button class="btn ghost small" data-fm="edit">' +
         (empty ? 'Escribir los golpes' : 'Editar') + '</button></div>');
     }
-    h.push('</section>');
+    if (own) h.push('</section>');
 
     if (c.levels) {
       var L1 = c.levels.me, L2 = c.levels.partner;
@@ -416,11 +424,18 @@
       '<p class="home-quote">«El pádel<br>conecta<br>personas»</p>' +
       '<div class="scoreboard">' +
       '<div class="eyebrow">' + esc((m.season && m.season.name) || 'Liga') + '</div>' +
-      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : whoAmI()) +
+      '<h2 class="home-names">' + esc(me ? heroName(me.playerA) : 'La liga') +
       (me ? '<em>' + esc(heroName(me.playerB)) + '</em>' : '') + '</h2>');
     if (!me) {
-      h.push('<p class="home-line">No apareces en <b>' + esc((m.season && m.season.name) || 'esta competición') +
-        '</b>. Cambia de competición arriba, o dinos quién eres en <b>Mi perfil</b>.</p>');
+      var prof = global.PadelDB.myPlayer();
+      if (prof && prof.label) h.push('<p class="home-line">No apareces en <b>' + esc((m.season && m.season.name) || 'esta competición') +
+        '</b> como <b>' + esc(prof.label) + '</b>. Mientras, puedes mirar cualquier pareja.</p>');
+      h.push(generalBoard(m));
+    }
+    else if (m.myTeamId !== m.ownTeamId) {
+      h.push('<div class="home-pair"><span>Mirando a esta pareja</span>' +
+        (m.ownTeamId ? '<button class="hp-btn" data-pair="own">Volver a la mía</button>' : '') +
+        '<button class="hp-btn" data-pair="pick">Elegir otra</button></div>');
     }
     if (a) {
       var climb = a.posIni - a.posFin;
@@ -442,9 +457,33 @@
     h.push('</section>');
 
     view.innerHTML = h.join('');
+    view.querySelectorAll('[data-pair]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (b.getAttribute('data-pair') === 'own') global.PadelApp.choosePair('own');
+        else global.PadelApp.openPairPicker();
+      });
+    });
     animateRank();
     global.PadelCourt.mount(document.getElementById('courtHost'), live, go);
     bind();
+  }
+
+  /* Portada sin pareja: la liga en cuatro datos y la puerta para elegir una. */
+  function generalBoard(m) {
+    var lad = m.ladder[m.lastMonth] || {};
+    var ids = Object.keys(lad).map(Number);
+    var last = (m.months.filter(function (x) { return x.n === m.lastMonth; })[0] || {}).label || '';
+    var top = ids.filter(function (id) { return lad[id].place === 1; })[0];
+    var groups = {};
+    ids.forEach(function (id) { groups[lad[id].group] = true; });
+    var played = m.matches.filter(function (x) { return x.month === m.lastMonth; }).length;
+    var h = ['<div class="home-chips">' +
+      '<span class="hc">' + ids.length + ' parejas</span>' +
+      '<span class="hc">' + Object.keys(groups).length + ' grupos</span>' +
+      '<span class="hc">' + esc(last) + ' · ' + played + ' partidos</span></div>'];
+    if (top) h.push('<p class="home-line">Arriba del todo: <b>' + esc(m.teams[top].label) + '</b>.</p>');
+    h.push('<div class="home-pair"><button class="hp-btn main" data-pair="pick">Elegir una pareja</button></div>');
+    return h.join('');
   }
 
   function whoAmI() {

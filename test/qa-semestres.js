@@ -38,7 +38,7 @@ const SNAPS = { '2026-s1': A, '2026-s2': B, '2026-s1-mixta': X };
   await page.keyboard.press('Escape');
 
   await page.evaluate(() => window.PadelApp.go('inicio')); await page.waitForTimeout(300);
-  check('En la pista no sale el semestre', !(await page.isVisible('#season-bar')));
+  check('En la pista no sale el semestre (no quita sitio a la pista)', !(await page.isVisible('#season-bar')));
   await page.evaluate(() => window.PadelApp.go('temporada')); await page.waitForTimeout(800);
   check('En Nuestra temporada sale el semestre', await page.isVisible('#season-bar'));
   const opts = await page.$$eval('#season-sel option', e => e.map(x => x.textContent));

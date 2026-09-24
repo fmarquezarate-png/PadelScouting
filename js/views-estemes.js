@@ -78,7 +78,7 @@
   /* Si el último mes de la liga es el mes en curso, el grupo sale de la liga
      (exacto). Si no, se prevé con las reglas de subida y bajada. */
   function proposal(m) {
-    var me = m && m.myTeamId;
+    var me = m && m.ownTeamId;
     if (!me) return null;
     var last = m.lastMonth;
     var ml = m.months.filter(function (x) { return x.n === last; })[0];
@@ -95,7 +95,7 @@
 
   function needsNewRound() {
     var m = model();
-    if (!user() || !m || !m.myTeamId || !state.known) return false;
+    if (!user() || !m || !m.ownTeamId || !state.known) return false;
     /* Solo se pregunta en la temporada más reciente de la competición. */
     var latest = latestSlugOfKind(kindOf(m));
     if (latest && latest !== DB().currentSeason()) return false;
@@ -202,7 +202,7 @@
   }
 
   function paint(view, bind) {
-    var m = model(), me = m.myTeamId, r = state.round;
+    var m = model(), me = m.ownTeamId, r = state.round;
     var h = ['<div class="lg estemes">'];
     if (!user()) {
       h.push('<section class="blk"><p class="lede">«Este mes» guarda tu grupo, las fechas de tus partidos y tus ' +
@@ -508,7 +508,7 @@
 
   function openRoundModal(auto) {
     var m = model();
-    if (!m || !m.myTeamId) return;
+    if (!m || !m.ownTeamId) return;
     var pr = proposal(m);
     var keep = !!(auto && state.round);
     rm = { auto: !!auto, keep: keep, label: pr.label, source: pr.source, leagueMonth: pr.leagueMonth,
@@ -517,7 +517,7 @@
   }
 
   function paintRoundModal() {
-    var m = model(), me = m.myTeamId, want = kindOf(m) === 'mixta' ? 2 : 3;
+    var m = model(), me = m.ownTeamId, want = kindOf(m) === 'mixta' ? 2 : 3;
     var h = ['<div class="modal-card em-modal" role="dialog" aria-modal="true" aria-labelledby="rm-t">'];
     h.push('<div class="eyebrow">' + esc(m.season ? m.season.name : '') + '</div>');
     h.push('<h2 id="rm-t">Tus rivales de ' + esc(rm.label) + '</h2>');
@@ -578,7 +578,7 @@
     rm.busy = true; rm.error = null; paintRoundModal();
     var payload = {
       season: DB().currentSeason(), label: rm.label, monthStart: firstOfMonth(),
-      leagueMonth: rm.leagueMonth, group: rm.group, myTeamId: m.myTeamId,
+      leagueMonth: rm.leagueMonth, group: rm.group, myTeamId: m.ownTeamId,
       source: rm.edited ? 'manual' : rm.source,
       rivals: rm.rivals.map(function (id) { return { teamId: id, label: m.teams[id].label }; })
     };

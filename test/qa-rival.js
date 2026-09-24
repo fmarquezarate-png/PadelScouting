@@ -12,6 +12,8 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
 (async () => {
   const browser = await chromium.launch({ executablePath: EXE });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  /* Entras como Francisco (lo que hace Mi perfil). Sin esto la app no enseña ninguna pareja. */
+  await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });

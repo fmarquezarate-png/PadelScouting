@@ -208,8 +208,14 @@
   function paintTemporada(view, bind) {
     var m = PL.state.model;
     var rows = mine(m);
+    if (!m.myTeamId) {
+      view.innerHTML = '<div class="notice">Elige una pareja para ver su temporada: su escalera, sus partidos y sus rivales. ' +
+        '<div class="btn-row" style="margin-top:10px"><button class="btn primary" data-pair-pick>Elegir una pareja</button></div></div>';
+      view.querySelector('[data-pair-pick]').addEventListener('click', function () { global.PadelApp.openPairPicker(); });
+      return;
+    }
     if (!rows.length) {
-      view.innerHTML = '<div class="notice">Todavía no hay partidos tuyos en esta temporada.</div>';
+      view.innerHTML = '<div class="notice">Todavía no hay partidos de esta pareja en esta temporada.</div>';
       return;
     }
     var a = agg(rows);
@@ -847,6 +853,8 @@
 
   function club() {
     var m = PL.state.model, src = ui.clubSrc || {};
+    /* El nivel del club es de tu cuenta: solo se enseña mirando tu pareja. */
+    if (!m || !m.myTeamId || m.myTeamId !== m.ownTeamId) src = {};
     var range = global.PadelClub.seasonRange(m);
     var kind = (m && m.season && m.season.kind) || 'masculina';
     var me = src.me || {}, pa = src['partner:' + kind] || {};

@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — la app ya no es «de Francisco» por defecto
+- **Quien entra con el link sin ser jugador ve la liga**, no a una pareja: la portada enseña un
+  resumen (parejas, grupos, mes en juego, quién va arriba) y el botón «Elegir una pareja».
+- **Tu pareja solo aparece si te identificas** en Mi perfil (antes salía la marca de la base).
+- **Elegir cualquier pareja**: botón «Pareja ▾» en Temporada, La liga, Crónica y El rival. Se ve
+  su temporada, su escalera, su crónica automática y sus rivales («Su temporada» en el título).
+  Identificado, tienes «Mi pareja» y «Volver a la mía». Se recuerda por competición.
+- Lo personal sigue siendo tuyo: Este mes, Registrar, Historial, Análisis, el nivel del club y los
+  golpes escritos a mano solo salen con tu pareja y tu cuenta.
+
 ### Changed — calendario de la liga
 - **La temporada la decide el mes en que se jugó**: S1 = febrero→julio (la ronda de julio se
   juega en julio y agosto); S2 = septiembre→diciembre (la de diciembre, en diciembre y enero).
