@@ -116,6 +116,18 @@
   /* ============================================================
      Cargar un mes de liga
      ============================================================ */
+  /* Meses pegados con su mes jugado (lo que elijas manda sobre lo propuesto). */
+  function calMonths() {
+    var l = state.loader, CAL = global.PadelCalendario;
+    if (!l.parsed) return [];
+    l.played = l.played || {};
+    return l.parsed.months.map(function (M) {
+      var def = M.label ? CAL.playedIdx(M.label, l.kind) : -1;
+      var v = l.played[M.n];
+      return { n: M.n, label: M.label, played: v == null ? def : v };
+    });
+  }
+
   function loaderCard() {
     var l = state.loader;
     var u = global.PadelAuth.user();
@@ -147,20 +159,9 @@
           (l.kind === k[0] ? 'true' : 'false') + '">' + k[1] + '</button>';
       }).join('') + '</div></div>');
 
-    h.push('<div class="row two">' +
-      '<div class="field"><label for="ld-slug">Identificador</label>' +
-      '<input type="text" id="ld-slug" placeholder="' + suggestSlug(l.kind) + '" value="' + esc(l.slug) + '">' +
-      '<p class="field-note">Uno distinto por competición' + seasonsNote() +
-      '. Cargar dos veces el mismo no duplica nada.</p></div>' +
-      '<div class="field"><label for="ld-first">Primer mes</label>' +
-      '<select id="ld-first"><option value="">—</option>' +
-      MESES.map(function (m, i) {
-        return '<option value="' + i + '"' + (l.firstMonth === i ? ' selected' : '') + '>' + m + '</option>';
-      }).join('') + '</select></div></div>');
-
-    h.push('<div class="field"><label for="ld-name">Nombre</label>' +
-      '<input type="text" id="ld-name" placeholder="Temporada 2026 · segundo semestre" value="' +
-      esc(l.name) + '"></div>');
+    h.push('<p class="field-note">La temporada la decide el mes en que se jugó: <b>S1</b> febrero→julio ' +
+      '(julio hasta agosto) y <b>S2</b> septiembre→diciembre (diciembre hasta enero). ' +
+      'Cargar dos veces lo mismo no duplica nada.</p>');
 
     h.push('<div class="field"><label for="ld-text">Clasificación</label>' +
       '<textarea id="ld-text" rows="6" placeholder="Pega aquí la clasificación completa, con los MES y los Grupo">' +
@@ -185,6 +186,20 @@
       if (p.warnings.length) {
         h.push('<div class="notice warn">' + p.warnings.slice(0, 4).map(esc).join('<br>') + '</div>');
       }
+
+      /* Calendario: mes de la web → mes en que se jugó → temporada. */
+      var CAL = global.PadelCalendario, rowsCal = calMonths();
+      h.push('<div class="card cal-card"><b>¿Cuándo se jugó cada mes?</b>' +
+        '<p class="field-note">' + (CAL.defaultShift(l.kind) ? 'En el mixto la web nombra cada ronda con un mes de ' +
+          'adelanto («Julio» se jugó en septiembre): ya lo tengo en cuenta. ' : '') + 'Cámbialo si no cuadra.</p>' +
+        '<table class="table cal-t"><thead><tr><th>En la web</th><th>Se jugó en</th><th>Temporada</th></tr></thead><tbody>' +
+        rowsCal.map(function (M) {
+          var sem = CAL.semesterOf(M.played), yr = CAL.seasonYear(M.played);
+          return '<tr><td>' + esc(M.label || ('Mes ' + M.n)) + '</td><td><select data-played="' + M.n + '">' +
+            '<option value="">—</option>' + CAL.MESES.map(function (mm, i) {
+              return '<option value="' + i + '"' + (M.played === i ? ' selected' : '') + '>' + mm + '</option>';
+            }).join('') + '</select></td><td>' + (M.played >= 0 ? esc(CAL.slugFor(yr, sem, l.kind)) : '<i>elige el mes</i>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>');
 
       /* Nombres que se van a unir, dentro del texto y contra la base. */
       /* Siempre «corto → largo», una línea por nombre corto. */
@@ -221,8 +236,7 @@
       }
     }
 
-    if (l.result) {
-      var r = l.result;
+    (l.results || []).forEach(function (r) {
       var viewing = global.PadelDB.currentSeason() === r.season;
       h.push('<div class="notice good"><b>Guardado en la base: ' + esc(r.season) + ' (' + esc(r.kind) + ').</b><ul>' +
         '<li>' + r.monthsUpserted + ' meses · ' + r.groupsAdded + ' grupos nuevos</li>' +
@@ -233,7 +247,7 @@
         'eso confirma que ya estaba todo dentro.</p>' +
         (viewing ? '' : '<div class="btn-row"><button class="btn primary" data-action="view-season" data-slug="' +
           esc(r.season) + '">Verla ahora</button></div>') + '</div>');
-    }
+    });
 
     h.push('<div class="btn-row">' +
       '<button class="btn" data-action="parse"' + (l.busy ? ' disabled' : '') + '>' +
@@ -418,11 +432,12 @@
 
     bindMe(view, redraw);
 
-    var vs = view.querySelector('[data-action="view-season"]');
-    if (vs) vs.addEventListener('click', function () {
-      var slug = vs.getAttribute('data-slug');
-      switchSeason(slug, function () {
-        global.PadelApp.refreshSeasons().then(function () { global.PadelApp.go('temporada'); });
+    view.querySelectorAll('[data-action="view-season"]').forEach(function (vs) {
+      vs.addEventListener('click', function () {
+        var slug = vs.getAttribute('data-slug');
+        switchSeason(slug, function () {
+          global.PadelApp.refreshSeasons().then(function () { global.PadelApp.go('temporada'); });
+        });
       });
     });
 
@@ -445,9 +460,17 @@
       redraw();
     });
 
+    view.querySelectorAll('[data-played]').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        l.played = l.played || {};
+        l.played[sel.getAttribute('data-played')] = sel.value === '' ? -1 : Number(sel.value);
+        redraw();
+      });
+    });
+
     var parseBtn = view.querySelector('[data-action="parse"]');
     if (parseBtn) parseBtn.addEventListener('click', function () {
-      l.error = null; l.result = null; l.parsed = null;
+      l.error = null; l.results = null; l.parsed = null; l.played = {};
       if (!l.text.trim()) { l.error = 'Pega primero la clasificación.'; redraw(); return; }
       try {
         var parsed = global.LigaParser.parse(l.text);
@@ -465,34 +488,54 @@
     var saveBtn = view.querySelector('[data-action="save-league"]');
     if (saveBtn) saveBtn.addEventListener('click', function () {
       if (!l.parsed) return;
-      if (!l.slug.trim()) { l.error = 'Ponle un identificador a la temporada.'; redraw(); return; }
-      l.slug = normSlug(l.slug);
-      var cur = (state.seasons || []).filter(function (x) { return x.slug === l.slug; })[0] ||
-        (state.model && state.model.season && state.model.season.slug === l.slug ? state.model.season : null);
-      if (cur && (cur.kind || 'masculina') !== l.kind) {
-        l.error = 'El identificador «' + l.slug + '» ya es de la competición ' + (cur.kind || 'masculina') +
-          '. Usa otro, por ejemplo «' + suggestSlug(l.kind) + '».';
-        redraw(); return;
+      var CAL = global.PadelCalendario, cal = calMonths();
+      if (cal.some(function (M) { return M.played == null || M.played < 0; })) {
+        l.error = 'Dime en qué mes se jugó cada ronda (tabla de arriba).'; redraw(); return;
+      }
+      var groups = CAL.plan(cal, l.kind);
+      /* Un identificador no puede ser de dos competiciones. */
+      for (var gi = 0; gi < groups.length; gi++) {
+        var cur = (state.seasons || []).filter(function (x) { return x.slug === groups[gi].slug; })[0];
+        if (cur && (cur.kind || 'masculina') !== l.kind) {
+          l.error = '«' + groups[gi].slug + '» ya es de la competición ' + cur.kind + '.'; redraw(); return;
+        }
       }
       l.busy = true; l.error = null; redraw();
 
-      var labels = {};
-      l.parsed.months.forEach(function (M, i) {
-        labels[M.n] = M.label ? M.label
-          : (l.firstMonth == null ? ('Mes ' + M.n) : MESES[(l.firstMonth + i) % 12]);
-      });
       var payload = global.LigaParser.toPayload(l.parsed, {
-        slug: l.slug.trim(), name: l.name.trim() || l.slug.trim(),
-        kind: l.kind, monthLabels: labels, source: 'paste'
+        slug: 'x', name: 'x', kind: l.kind, source: 'paste'
       }, l.text);
+      var playedOf = {};
+      cal.forEach(function (M) { playedOf[M.n] = CAL.MESES[M.played]; });
+      /* Un mes sin nombre en la web toma el del mes en que se jugó. */
+      payload.months = payload.months.map(function (m) {
+        var generic = /^\s*mes\s+\d+\s*$/i.test(m[1] || '');
+        return [m[0], generic ? playedOf[m[0]] : m[1], playedOf[m[0]]];
+      });
 
-      global.PadelDB.callAuthed('ingest_league', { payload: payload }).then(function (res) {
-        l.busy = false; l.result = res; l.parsed = null; l.text = '';
+      /* Un envío por temporada, uno detrás de otro. */
+      var results = [];
+      var chain = Promise.resolve();
+      groups.forEach(function (G) {
+        var ns = {};
+        G.months.forEach(function (M) { ns[M.n] = true; });
+        var pick = function (arr) { return arr.filter(function (r) { return ns[r[0]]; }); };
+        var sub = Object.assign({}, payload, {
+          season: { slug: G.slug, name: G.name, kind: l.kind, startsOn: G.year + (G.sem === 1 ? '-02-01' : '-09-01') },
+          months: pick(payload.months), groups: pick(payload.groups),
+          standings: pick(payload.standings), matches: pick(payload.matches)
+        });
+        chain = chain.then(function () {
+          return global.PadelDB.callAuthed('ingest_league', { payload: sub }).then(function (res) { results.push(res); });
+        });
+      });
+      chain.then(function () {
+        l.busy = false; l.results = results; l.parsed = null; l.text = '';
         global.PadelDB.clearCache();
         if (global.PadelApp && global.PadelApp.refreshSeasons) global.PadelApp.refreshSeasons();
         module_reload(redraw);
       }).catch(function (err) {
-        l.busy = false; l.error = err.message; redraw();
+        l.busy = false; l.results = results.length ? results : null; l.error = err.message; redraw();
       });
     });
   }

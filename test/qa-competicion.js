@@ -226,14 +226,15 @@ mx.matches.forEach(m => {
   await go('config'); await openLoader();
   check('Se puede cargar femenina', await page.locator('[data-chips="kind"] .chip[data-value="femenina"]').count() === 1);
   await page.click('[data-chips="kind"] .chip[data-value="femenina"]'); await page.waitForTimeout(250);
-  check('Propone identificador para la femenina', (await page.inputValue('#ld-slug')) === '2026-s1-femenina');
   await page.fill('#ld-text', RAW_MIX); await page.click('[data-action="parse"]'); await page.waitForTimeout(600);
-  await page.fill('#ld-name', 'Femenina prueba');
-  await page.click('[data-action="save-league"]'); await page.waitForTimeout(1200);
+  const calF = await page.$$eval('.cal-t tbody tr td:last-child', e => e.map(x => x.textContent));
+  check('Femenina: temporada por calendario (enero es del S2 anterior)',
+    calF.join(',') === '2025-s2-femenina,2026-s1-femenina,2026-s1-femenina', calF.join(','));
+  await page.click('[data-action="save-league"]'); await page.waitForTimeout(1500);
   const saved = await text();
   check('Tras guardar dice dónde y cuánto', saved.includes('Guardado en la base: 2026-s1-femenina') && saved.includes('17 partidos nuevos'));
-  check('Ofrece verla', await page.locator('[data-action="view-season"]').count() === 1);
-  await page.click('[data-action="view-season"]');
+  check('Ofrece verla', await page.locator('[data-action="view-season"][data-slug="2026-s1-femenina"]').count() === 1);
+  await page.click('[data-action="view-season"][data-slug="2026-s1-femenina"]');
   await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Femenina' &&
     document.getElementById('page-title').textContent === 'Nuestra temporada', null, { timeout: 8000 }).catch(() => {});
   check('«Verla ahora» cambia a esa competición', (await page.textContent('#comp-label')) === 'Femenina'

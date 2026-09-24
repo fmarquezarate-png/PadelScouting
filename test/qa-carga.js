@@ -14,6 +14,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
 
+  let ingests = [];
   let ingest = null, ingestAuth = null, ingestApiKey = null, authCalls = 0, badLogin = true;
   await page.route('**/rest/v1/rpc/get_league_snapshot', r =>
     r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
@@ -27,7 +28,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
       user: { email: 'fmarquezarate@gmail.com' } }) });
   });
   await page.route('**/rest/v1/rpc/ingest_league', async r => {
-    ingest = JSON.parse(r.request().postData()).payload;
+    ingest = JSON.parse(r.request().postData()).payload; ingests.push(ingest);
     ingestAuth = r.request().headers()['authorization'];
     ingestApiKey = r.request().headers()['apikey'];
     const auth = ingestAuth;
@@ -83,25 +84,17 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   check('Confirma que no hay descuadres', prev.includes('sin descuadres'));
   check('Ahora sí ofrece guardar', await page.locator('[data-action="save-league"]').count() === 1);
 
-  // --- guardar sin identificador ---
+  // --- meses sin nombre: hay que decir cuándo se jugó ---
+  check('Enseña la tabla «¿Cuándo se jugó cada mes?»', await page.locator('[data-played]').count() === 6);
   await page.click('[data-action="save-league"]'); await page.waitForTimeout(400);
-  check('Exige identificador de temporada', (await page.textContent('#view')).includes('identificador'));
-  check('No llama a la base sin identificador', ingest === null);
+  check('Sin mes jugado no guarda', (await page.textContent('#view')).includes('en qué mes se jugó') && ingest === null);
 
   // --- guardar de verdad, como mixta ---
   await page.click('[data-chips="kind"] .chip[data-value="mixta"]'); await page.waitForTimeout(300);
-  check('Propone un identificador propio para el mixto',
-    (await page.inputValue('#ld-slug')) === '2026-s1-mixta', await page.inputValue('#ld-slug'));
-  await page.fill('#ld-text', RAW); await page.click('[data-action="parse"]'); await page.waitForTimeout(800);
-  await page.fill('#ld-slug', '2026-S1');
-  await page.click('[data-action="save-league"]'); await page.waitForTimeout(400);
-  check('No deja meter el mixto en la temporada masculina',
-    (await page.textContent('#view')).includes('ya es de la competición masculina') && ingest === null,
-    ((await page.textContent('#view')).match(/notice bad|[^.]*competición[^.]*/) || [''])[0] + ' ingest=' + (ingest && ingest.season.slug));
-  await page.fill('#ld-text', RAW); await page.click('[data-action="parse"]'); await page.waitForTimeout(800);
-  await page.fill('#ld-slug', '2026-s1-mixto');
-  await page.fill('#ld-name', 'Mixto 2026 · primer semestre');
-  await page.selectOption('#ld-first', '1');
+  for (let i = 0; i < 6; i++) await page.selectOption('[data-played="' + (i + 1) + '"]', String(i + 1));
+  await page.waitForTimeout(300);
+  const cal = await page.$$eval('.cal-t tbody tr td:last-child', e => e.map(x => x.textContent));
+  check('Febrero→julio van al S1 del mixto', cal.length === 6 && cal.every(t => /^20\d\d-s1-mixta$/.test(t)), cal.join(','));
   await page.click('[data-action="save-league"]'); await page.waitForTimeout(1200);
 
   check('Envía el paquete a la base', ingest !== null);
@@ -110,8 +103,9 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
       ingestAuth === 'Bearer tok-123' && ingestApiKey && ingestApiKey !== 'Bearer tok-123',
       'authorization=' + ingestAuth);
     check('Marca la competición elegida', ingest.season.kind === 'mixta', ingest.season.kind);
-    check('Usa el identificador escrito', ingest.season.slug === '2026-s1-mixto', ingest.season.slug);
-    check('Nombra los meses desde el primero elegido', ingest.months[0][1] === 'Febrero',
+    check('Temporada decidida por el calendario', /^20\d\d-s1-mixta$/.test(ingest.season.slug) &&
+      /primer semestre/.test(ingest.season.name), ingest.season.slug + ' · ' + ingest.season.name);
+    check('Nombra los meses con el mes jugado', ingest.months[0][1] === 'Febrero' && ingest.months[0][2] === 'Febrero',
       ingest.months.map(m => m[1]).join(','));
     check('Manda 561 partidos', ingest.matches.length === 561, 'n=' + ingest.matches.length);
     check('Manda 435 posiciones', ingest.standings.length === 435, 'n=' + ingest.standings.length);
@@ -147,20 +141,24 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
     new Set(mergeLines.map(t => t.split(' → ')[0])).size === mergeLines.length, mergeLines.join(' | '));
   check('Mixto: explica la regla de las 10 letras', mx.includes('10 letras'));
 
-  await page.fill('#ld-slug', 'mixto-qa');
-  await page.fill('#ld-name', 'Mixto QA');
-  await page.click('[data-chips="kind"] .chip[data-value="mixta"]'); await page.waitForTimeout(300);
-  await page.fill('#ld-text', MIXTO);
-  await page.click('[data-action="parse"]'); await page.waitForTimeout(700);
-  await page.fill('#ld-slug', 'mixto-qa');
-  await page.click('[data-action="save-league"]'); await page.waitForTimeout(1000);
-  if (ingest) {
-    check('Mixto: manda 3 meses con su nombre',
-      ingest.months.length === 3 && ingest.months[0][1] === 'Enero' && ingest.months[2][1] === 'Julio',
-      JSON.stringify(ingest.months));
-    const g = ingest.groups.map(x => x.join('-')).join(',');
+  const calMx = await page.$$eval('.cal-t tbody tr', e => e.map(x => x.querySelector('td').textContent + '>' +
+    x.querySelector('select').selectedOptions[0].textContent + '>' + x.lastElementChild.textContent));
+  check('Mixto: la web va un mes adelantada («Julio» se jugó en septiembre)',
+    /Enero>Febrero>20\d\d-s1-mixta/.test(calMx[0]) && /Julio>Septiembre>20\d\d-s2-mixta/.test(calMx[2]), calMx.join(' | '));
+  ingests = []; ingest = null;
+  await page.click('[data-action="save-league"]'); await page.waitForTimeout(1500);
+  if (ingests.length) {
+    check('Mixto: se reparte en dos temporadas (S1 y S2)', ingests.length === 2 &&
+      /-s1-mixta$/.test(ingests[0].season.slug) && /-s2-mixta$/.test(ingests[1].season.slug),
+      ingests.map(x => x.season.slug).join(','));
+    check('Mixto: al S1 enero y febrero de la web; al S2 julio',
+      ingests[0].months.map(m => m[1] + '/' + m[2]).join(',') === 'Enero/Febrero,Febrero/Marzo' &&
+      ingests[1].months.map(m => m[1] + '/' + m[2]).join(',') === 'Julio/Septiembre',
+      JSON.stringify(ingests.map(x => x.months)));
+    const g = ingests[0].groups.concat(ingests[1].groups).map(x => x.join('-')).join(',');
     check('Mixto: los grupos van separados por mes',
       g === '1-1,1-2,1-8,2-1,2-9,7-1,7-4,7-7', g);
+    ingest = ingests[1];
     check('Mixto: unifica a Carla en una sola persona',
       ingest.teams.filter(t => /^Carla/.test(t[1])).every(t => t[1] === 'Carla Cayero'),
       ingest.teams.filter(t => /Carla/.test(t[0])).map(t => t[1]).join('|'));

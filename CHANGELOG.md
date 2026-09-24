@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — calendario de la liga
+- **La temporada la decide el mes en que se jugó**: S1 = febrero→julio (la ronda de julio se
+  juega en julio y agosto); S2 = septiembre→diciembre (la de diciembre, en diciembre y enero).
+  El cargador enseña «¿Cuándo se jugó cada mes?», propone la temporada y, si pegas meses de los
+  dos semestres, guarda cada uno en la suya. En el mixto la web nombra cada ronda con un mes de
+  adelanto y sin ronda de agosto («Julio» se jugó en septiembre): ya lo tiene en cuenta.
+- La base lo vigila también: `ingest_league` rechaza meter un mes del S2 en un S1 y al revés
+  (`month_index`, `semester_of_month`) y guarda el mes jugado (`played_label`).
+- **Datos**: el septiembre del mixto estaba dentro del S1; pasa a `2026-s2-mixta` con sus grupos,
+  sus 11 partidos y tu grupo de Este mes. El S1 mixto queda febrero→julio-agosto (220 partidos).
+- El Master (torneo aparte, fuera del ranking) no entra en la liga. Su carga, pendiente de ver el formato.
+
 ### Added — segundo bloque de peticiones
 - **Este mes · «Cómo va el grupo»**: la tabla del grupo con PJ, G, P, sets y puntos de la liga
   (4 · 2 · 1 · 0), marcando «Provisional» lo que has apuntado tú y la liga aún no publicó.
