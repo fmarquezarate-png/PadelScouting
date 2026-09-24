@@ -63,8 +63,11 @@
     try { return JSON.parse(lsGet(CFG.meKey)); } catch (e) { return null; }
   }
   function rememberMe(p) {
-    if (p && (p.label || p.category)) lsSet(CFG.meKey, JSON.stringify(p)); else lsDel(CFG.meKey);
+    if (p && (p.label || p.category || p.isAdmin)) lsSet(CFG.meKey, JSON.stringify(p)); else lsDel(CFG.meKey);
   }
+  /* Administrador = lo dice la base (tabla admins). Aquí solo sirve para enseñar
+     u ocultar el cargador: la base rechaza igualmente a quien no lo sea. */
+  function isAdmin() { var p = myPlayer(); return !!(p && p.isAdmin); }
   function fetchProfile() {
     return callAuthed('get_my_profile').then(function (p) { rememberMe(p); return p; });
   }
@@ -191,7 +194,7 @@
     load: load, CFG: CFG, readCache: readCache,
     callAuthed: callAuthed, clearCache: clearCache,
     currentSeason: currentSeason, setSeason: setSeason, hasChosenSeason: hasChosenSeason, listSeasons: listSeasons,
-    myPlayer: myPlayer, rememberMe: rememberMe, fetchProfile: fetchProfile, saveProfile: saveProfile,
+    myPlayer: myPlayer, rememberMe: rememberMe, isAdmin: isAdmin, fetchProfile: fetchProfile, saveProfile: saveProfile,
     updateProfile: updateProfile, listPlayers: listPlayers
   };
 })(window);

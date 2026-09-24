@@ -967,3 +967,4 @@ body{overscroll-behavior-y:contain}
 .topbar .tb-actions{align-self:start}
 .pair-chip{max-width:min(170px,44vw)}
 @media(min-width:760px){.pair-chip{max-width:260px}}
+.reg-opt.locked{opacity:.55}

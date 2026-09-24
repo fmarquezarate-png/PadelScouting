@@ -187,6 +187,14 @@
     h.push('<div class="btn-row" style="margin-bottom:16px">' +
       '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div>');
 
+    if (!global.PadelDB.isAdmin()) {
+      h.push('<div class="notice"><b>Las cargas masivas solo las hace el administrador.</b> ' +
+        'Así nadie puede romper la liga pegando cualquier cosa. Tus partidos y tus notas los apuntas en ' +
+        '<button class="linkish" data-goto="registro">Registrar</button>.</div>');
+      h.push('</div></div>');
+      return h.join('');
+    }
+
     h.push('<div class="field"><span class="field-label">Competición</span>' +
       '<div class="chips tight" data-chips="kind">' +
       [['masculina', 'Masculina'], ['mixta', 'Mixta'], ['femenina', 'Femenina']].map(function (k) {
@@ -464,6 +472,12 @@
 
   function bindLoaderBody(view, redraw) {
     var l = state.loader;
+
+    /* Con sesión pero sin saber aún si eres admin: se pregunta una vez a la base. */
+    if (global.PadelAuth.user() && !global.PadelDB.myPlayer() && !state.adminAsked) {
+      state.adminAsked = true;
+      global.PadelDB.fetchProfile().then(function () { redraw(); }).catch(function () {});
+    }
 
     bindMe(view, redraw);
 

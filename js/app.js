@@ -631,8 +631,9 @@
     var h = ['<div class="reg-choose">',
       '<p class="lede">¿Cómo quieres cargar?</p>',
       '<div class="reg-opts">',
-      '<button class="reg-opt" data-reg="masiva"><b>Carga masiva</b><span>Pega la clasificación del mes de la web de la liga ' +
-        'y se cargan todos los resultados de golpe.</span></button>',
+      '<button class="reg-opt' + (global.PadelDB.isAdmin() ? '' : ' locked') + '" data-reg="masiva"><b>Carga masiva</b><span>' +
+        (global.PadelDB.isAdmin() ? 'Pega la clasificación del mes de la web de la liga y se cargan todos los resultados de golpe.'
+          : 'Solo el administrador: carga la clasificación entera de la liga.') + '</span></button>',
       '<button class="reg-opt" data-reg="detallada"><b>Carga detallada</b><span>El scouting de un partido tuyo: rivales, ' +
         'sets, cómo jugaron y qué funcionó.</span></button>',
       '</div>',
@@ -649,7 +650,10 @@
     h.push('<button class="btn ghost block" data-reg="blank" style="margin-top:10px">Otro partido (en blanco)</button></section></div>');
     $view.innerHTML = h.join('');
 
-    $view.querySelector('[data-reg="masiva"]').addEventListener('click', function () { go('config'); });
+    $view.querySelector('[data-reg="masiva"]').addEventListener('click', function () {
+      if (!global.PadelDB.isAdmin()) { toast('La carga masiva es solo del administrador'); return; }
+      go('config');
+    });
     $view.querySelector('[data-reg="detallada"]').addEventListener('click', function () {
       $view.querySelector('#reg-last').hidden = false;
       $view.querySelector('#reg-last').scrollIntoView({ behavior: 'smooth', block: 'start' });

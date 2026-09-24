@@ -51,13 +51,13 @@ mx.matches.forEach(m => {
     body: JSON.stringify({ access_token: 'tok', refresh_token: 'ref', expires_at: Math.floor(Date.now() / 1000) + 3600,
       user: { email: 'fmarquezarate@gmail.com' } }) }));
   await page.route('**/rest/v1/rpc/get_my_profile', r =>
-    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile) }));
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile && Object.assign({ isAdmin: true }, profile)) }));
   let patches = [];
   await page.route('**/rest/v1/rpc/update_my_profile', r => {
     const patch = JSON.parse(r.request().postData()).patch;
     patches.push(patch);
     profile = Object.assign({}, profile || {}, patch);
-    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(profile) });
+    r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(Object.assign({ isAdmin: true }, profile)) });
   });
   const kindsOf = {};
   JSON.parse(MASC).teams.forEach(t => [t[2], t[3]].forEach(n => { (kindsOf[n] = kindsOf[n] || new Set()).add('masculina'); }));

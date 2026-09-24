@@ -27,6 +27,9 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
       expires_at: Math.floor(Date.now() / 1000) + 3600,
       user: { email: 'fmarquezarate@gmail.com' } }) });
   });
+  let admin = false;
+  await page.route('**/rest/v1/rpc/get_my_profile', r => r.fulfill({ status: 200, contentType: 'application/json',
+    body: JSON.stringify({ label: 'Francisco', category: 'masculina', playsMixed: true, defaultKind: 'masculina', isAdmin: admin }) }));
   await page.route('**/rest/v1/rpc/ingest_league', async r => {
     ingest = JSON.parse(r.request().postData()).payload; ingests.push(ingest);
     ingestAuth = r.request().headers()['authorization'];
@@ -59,7 +62,12 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
   badLogin = false;
   await page.fill('#au-pass', 'buena'); await page.click('[data-action="auth-go"]');
   await page.waitForTimeout(500);
-  check('Con sesión aparece el formulario de carga', await page.locator('#ld-text').count() === 1);
+  check('Cuenta normal: NO aparece el cargador', await page.locator('#ld-text').count() === 0);
+  check('Cuenta normal: explica que es solo del administrador', (await page.textContent('#view')).includes('solo las hace el administrador'));
+  admin = true;
+  await page.evaluate(() => window.PadelDB.fetchProfile().then(() => window.PadelApp.go('config'))); await page.waitForTimeout(700);
+  if (await page.locator('[data-action="open-loader"]').count()) { await page.click('[data-action="open-loader"]'); await page.waitForTimeout(300); }
+  check('Administrador: aparece el formulario de carga', await page.locator('#ld-text').count() === 1);
   check('Muestra con qué cuenta estás', (await page.textContent('#view')).includes('fmarquezarate@gmail.com'));
 
   // --- analizar sin texto ---
