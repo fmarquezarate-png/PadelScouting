@@ -96,6 +96,9 @@
   function needsNewRound() {
     var m = model();
     if (!user() || !m || !m.myTeamId || !state.known) return false;
+    /* Solo se pregunta en la temporada más reciente de la competición. */
+    var latest = latestSlugOfKind(kindOf(m));
+    if (latest && latest !== DB().currentSeason()) return false;
     if (!state.round) return true;
     return monthKeyOf(state.round.monthStart) < thisMonthKey();
   }
@@ -162,8 +165,24 @@
   /* ============================================================
      PANTALLA
      ============================================================ */
+  /* La temporada más reciente de una competición (2026-s2 va después de 2026-s1). */
+  function latestSlugOfKind(kind) {
+    var list = (PL().state.seasons || []).filter(function (x) { return x.kind === kind; })
+      .map(function (x) { return x.slug; }).sort();
+    return list.length ? list[list.length - 1] : null;
+  }
+
   function render(view, bind) {
     PT().stopTimer();
+    /* «Este mes» vive en la temporada del grupo en curso (o en la más reciente
+       de la competición): si estás mirando otro semestre, se cambia solo. */
+    var m0 = model(), cur = DB().currentSeason();
+    var target = (state.round && state.round.season) || (m0 && latestSlugOfKind(kindOf(m0)));
+    if (user() && target && target !== cur && global.PadelApp.switchTo) {
+      view.innerHTML = PL().loadingHtml('Abriendo la temporada en curso…');
+      global.PadelApp.switchTo(target, false);
+      return;
+    }
     PT().withModel(view, function () {
       if (state.slug !== DB().currentSeason() && user()) {
         view.innerHTML = PL().loadingHtml('Cargando tu grupo…');

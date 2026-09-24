@@ -610,7 +610,7 @@
     var mine = m.ladder[last] && m.ladder[last][m.myTeamId];
     return '<p class="field-note" style="margin-bottom:10px">' + rows.length +
       ' parejas · ordenadas por puesto</p>' +
-      rows.slice(0, 40).map(function (r) {
+      rows.map(function (r) {
         var rel = (mine && r.place != null)
           ? (r.place < mine.place ? 'arriba' : (r.place > mine.place ? 'abajo' : 'igual'))
           : '';

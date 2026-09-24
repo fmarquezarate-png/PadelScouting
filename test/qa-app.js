@@ -74,6 +74,16 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Marca dónde estás', (await page.getAttribute('[data-drawer-go="liga"]', 'aria-current')) === 'page');
   await page.keyboard.press('Escape'); await page.waitForTimeout(350);
   check('Escape cierra el panel', await page.locator('#drawer').isHidden());
+  {
+    const dk = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+    await dk.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
+    await dk.goto(BASE); await dk.waitForTimeout(800);
+    await dk.click('#menu-btn'); await dk.waitForTimeout(400);
+    const dw = await dk.evaluate(() => [document.getElementById('drawer').getBoundingClientRect().width,
+      parseFloat(getComputedStyle(document.querySelector('.dr-item')).fontSize)]);
+    check('Ordenador: el menú ☰ es más grande (ancho y letra)', dw[0] >= 420 && dw[1] >= 18, JSON.stringify(dw));
+    await dk.close();
+  }
   await page.click('#menu-btn'); await page.waitForTimeout(350);
   await page.click('#scrim', { position: { x: 10, y: 400 } }); await page.waitForTimeout(350);
   check('Tocar fuera cierra el panel', await page.locator('#drawer').isHidden());

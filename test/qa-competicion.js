@@ -201,6 +201,26 @@ mx.matches.forEach(m => {
   await go('inicio');
   check('Vuelves a ser Francisco', (await text()).includes('Cristian'));
 
+  // --- el registro de scouting no se mezcla entre competiciones ---
+  await page.evaluate(() => {
+    const base = { status: 'normal', sets: [{ own: 6, opponent: 3 }, { own: 6, opponent: 4 }], readSet: 1, readGame: 3,
+      patterns: [], worked: [], notWorked: [], physicalState: 'normal', mentalState: 'normal', partnerNotes: '' };
+    window.PadelStorage.save(Object.assign({ id: 'm-masc', date: '2026-09-01', kind: 'masculina',
+      rivals: [{ name: 'Yago', archetype: 'A' }, { name: 'Edgar', archetype: 'B' }] }, base));
+    window.PadelStorage.save(Object.assign({ id: 'm-mix', date: '2026-09-02', kind: 'mixta',
+      rivals: [{ name: 'Sonia', archetype: 'A' }, { name: 'Jordi', archetype: 'B' }] }, base));
+    window.PadelStorage.save(Object.assign({ id: 'm-viejo', date: '2026-08-01',
+      rivals: [{ name: 'Ana Clerch', archetype: 'A' }, { name: 'Xyz', archetype: 'B' }] }, base));
+  });
+  const idsMasc = await page.evaluate(() => window.PadelApp.records().map(r => r.id).sort().join(','));
+  check('Masculino: solo sus registros (el antiguo con nombres del mixto no entra)', idsMasc === 'm-masc', idsMasc);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1-mixta"]');
+  await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Mixta', null, { timeout: 8000 }).catch(() => {});
+  await page.waitForTimeout(400);
+  const idsMix = await page.evaluate(() => window.PadelApp.records().map(r => r.id).sort().join(','));
+  check('Mixto: solo los suyos, y el antiguo se asigna por los nombres de los rivales', idsMix === 'm-mix,m-viejo', idsMix);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
+
   // --- cargar otra competición y verla ---
   await go('config'); await openLoader();
   check('Se puede cargar femenina', await page.locator('[data-chips="kind"] .chip[data-value="femenina"]').count() === 1);

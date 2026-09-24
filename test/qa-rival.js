@@ -32,6 +32,9 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Avisa del sesgo de orden de la tabla', (await page.textContent('#view')).includes('listado primero'));
 
   await go('rival');
+  check('El rival lista todas las parejas (no solo 40)', await page.locator('.rival-line').count() === 80,
+    'n=' + await page.locator('.rival-line').count());
+
   check('El rival arranca con el listado', await page.locator('.rival-line').count() > 0);
   check('No se ofrece a sí mismo como rival', !(await page.textContent('#view')).includes('Francisco /Cristian C'));
   await page.fill('#rival-search', 'ferran'); await page.waitForTimeout(400);

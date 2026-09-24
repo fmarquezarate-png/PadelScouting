@@ -82,6 +82,33 @@
   /* ============================================================
      formulario: estado inicial
      ============================================================ */
+  /* ============================================================
+     registros de la competición que estás mirando
+     Cada registro guarda su competición al guardarse. Los antiguos, que no
+     la tienen, se asignan por los nombres de los rivales: si coinciden con
+     jugadores de esta competición, son de aquí.
+     ============================================================ */
+  function norm(x) {
+    return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  function currentKind() {
+    var m = global.PadelLiga && global.PadelLiga.state.model;
+    return (m && m.season && m.season.kind) || 'masculina';
+  }
+  function belongsHere(rec) {
+    var kind = currentKind();
+    if (rec.kind) return rec.kind === kind;
+    var m = global.PadelLiga && global.PadelLiga.state.model;
+    if (!m) return true;
+    var names = [];
+    Object.keys(m.teams).forEach(function (id) { names.push(norm(m.teams[id].playerA), norm(m.teams[id].playerB)); });
+    return (rec.rivals || []).some(function (r) {
+      var n = norm(r.name);
+      return n.length >= 3 && names.some(function (p) { return p && (p.indexOf(n) === 0 || n.indexOf(p) === 0); });
+    });
+  }
+  function records() { return S.all().filter(belongsHere); }
+
   function blankForm() {
     return {
       id: null,
@@ -510,6 +537,10 @@
       toast('Faltan datos para guardar', true);
       return;
     }
+    /* Cada registro sabe de qué competición es (masculino y mixto no se mezclan). */
+    var mdl = global.PadelLiga && global.PadelLiga.state.model;
+    match.kind = currentKind();
+    if (mdl && mdl.season) match.season = mdl.season.slug;
     S.save(match);
     /* Si venía de «Este mes», el registro queda enganchado a ese partido. */
     var fixtureId = state.form.fixtureId;
@@ -618,7 +649,7 @@
      VISTA · HISTORIAL
      ============================================================ */
   function renderHistorial() {
-    var all = A.decorateAll(S.all()).reverse();
+    var all = A.decorateAll(records()).reverse();
     if (!all.length) {
       $view.innerHTML = emptyState('—', 'Todavía no hay partidos registrados.',
         'Registrar partido', 'registro') + dataCard();
@@ -855,7 +886,7 @@
      VISTA · ANÁLISIS
      ============================================================ */
   function renderAnalisis() {
-    var sum = A.summary(S.all());
+    var sum = A.summary(records());
     if (!sum.total) {
       $view.innerHTML = emptyState('—',
         'Necesitamos más partidos para empezar a detectar patrones.',
@@ -986,7 +1017,7 @@
      VISTA · BRIEFING
      ============================================================ */
   function briefingHtml() {
-    var matches = S.all();
+    var matches = records();
     var brief = B.build(state.briefArchetype, matches);
     var h = [];
 
@@ -1270,7 +1301,7 @@
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
+  global.PadelApp = { records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
                       toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
                       prefillRegistro: prefillRegistro,
                       switchTo: function (slug, announce) { switchTo(slug, announce); } };

@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Recargar un mes ya cargado no duplica partidos.** El orden de las parejas en la tabla cambia
+  con los puestos, así que un partido podía llegar «al revés» y guardarse dos veces. Ahora la base
+  lo reconoce en los dos sentidos (índice `matches_pair_unique`) y, si la liga corrige un resultado,
+  lo actualiza (`matchesUpdated`).
+- **Grupo del mes duplicado al cargar el S2.** El grupo iba con la temporada y al abrir el S2 pedía
+  otro vacío. Ahora va con la competición: uno en curso para masculino y otro para mixto.
+  Recuperados en el grupo del S2 los resultados y fechas apuntados en el del S1.
+- **El rival** enseñaba solo 40 parejas: ahora todas.
+- **Masculino y mixto no se mezclan en tu registro de scouting**: cada registro guarda su
+  competición; los antiguos se asignan por los nombres de los rivales.
+- Móvil: sin zoom automático al tocar un campo (letra de 16 px); tras hacer zoom con dos dedos,
+  la pantalla vuelve sola a su tamaño; en la app instalada, tirar hacia abajo desde arriba recarga.
+- Ordenador: el menú ☰ es más grande.
+
 ### Changed — orden del menú y la pista sin solapes
 - **Orden lógico**, igual en la pista y en el menú ☰: al fondo, la liga (La liga · Temporada ·
   Crónica); en la red, **Este mes**; en vuestro lado, el scouting en el orden en que se usa

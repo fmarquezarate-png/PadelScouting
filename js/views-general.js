@@ -326,7 +326,7 @@
     var rows = PT.mine(m);
     var a = rows.length ? PT.agg(rows) : null;
     var me = m.myTeamId ? m.teams[m.myTeamId] : null;
-    var notes = (global.PadelStorage && global.PadelStorage.all().length) || 0;
+    var notes = (global.PadelApp && global.PadelApp.records ? global.PadelApp.records().length : 0);
     /* Misma lectura que en Temporada y en Rival: la más reciente primero. */
     var form = rows.slice(-5).reverse().map(function (r) { return r.win; });
     var total = m.ladder[m.lastMonth] ? Object.keys(m.ladder[m.lastMonth]).length : m.order.length;
