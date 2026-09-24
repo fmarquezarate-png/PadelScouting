@@ -86,8 +86,8 @@ mx.matches.forEach(m => {
   check('Sin tocar nada, la masculina', asked[0] === '2026-s1', asked.join(','));
   await page.click('#comp-btn'); await page.waitForTimeout(200);
   check('El menú lista las competiciones cargadas', await page.locator('.comp-item').count() === 2);
-  check('Marca en la que estás', (await page.getAttribute('.comp-item[data-slug="2026-s1"]', 'aria-checked')) === 'true');
-  check('Dice cuántos partidos tiene cada una', (await page.textContent('#comp-menu')).includes('17 partidos'));
+  check('Marca en la que estás', (await page.getAttribute('.comp-item[data-kind="masculina"]', 'aria-checked')) === 'true');
+  check('Dice cuántas temporadas tiene cada una', (await page.textContent('#comp-menu')).includes('1 temporada'));
   await page.keyboard.press('Escape'); await page.waitForTimeout(150);
   check('Escape cierra el menú', await page.locator('#comp-menu').isHidden());
   await page.click('#comp-btn'); await page.waitForTimeout(150);
@@ -95,7 +95,7 @@ mx.matches.forEach(m => {
   check('Tocar fuera cierra el menú', await page.locator('#comp-menu').isHidden());
 
   // --- a la mixta ---
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1-mixta"]');
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="mixta"]');
   await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Mixta' &&
     !document.body.classList.contains('switching'), null, { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(300);
@@ -145,7 +145,7 @@ mx.matches.forEach(m => {
   check('Recuerda la competición al volver', (await page.textContent('#comp-label')) === 'Mixta');
 
   // --- vuelta al masculino: todo igual que antes ---
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="masculina"]'); await page.waitForTimeout(900);
   await go('temporada');
   check('Masculino: 12–5 intacto', (await text()).includes('12–5'));
   check('Masculino: vuelve el nivel del club', await page.locator('[data-metric="club"]').count() === 1);
@@ -177,9 +177,9 @@ mx.matches.forEach(m => {
   check('El avatar pasa a tu inicial', (await page.textContent('#avatar-btn')).trim() === 'Y');
   await go('inicio');
   check('Portada: ahora es la pareja de Yago', (await text()).includes('Yago') && !(await text()).includes('Cristian'));
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1-mixta"]'); await page.waitForTimeout(900);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="mixta"]'); await page.waitForTimeout(900);
   check('Si no juegas esa competición, lo dice', (await text()).includes('No apareces'));
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="masculina"]'); await page.waitForTimeout(900);
 
   // --- editar datos: ahora Francisco, que juega mixto y quiere verlo al abrir ---
   await go('perfil');
@@ -197,7 +197,7 @@ mx.matches.forEach(m => {
   check('Te lleva a tu competición por defecto', (await page.textContent('#comp-label')) === 'Mixta');
   await go('inicio');
   check('Y reconoce tu pareja del mixto', (await text()).includes('Ana Clerch'));
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="masculina"]'); await page.waitForTimeout(900);
   await go('inicio');
   check('Vuelves a ser Francisco', (await text()).includes('Cristian'));
 
@@ -214,12 +214,12 @@ mx.matches.forEach(m => {
   });
   const idsMasc = await page.evaluate(() => window.PadelApp.records().map(r => r.id).sort().join(','));
   check('Masculino: solo sus registros (el antiguo con nombres del mixto no entra)', idsMasc === 'm-masc', idsMasc);
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1-mixta"]');
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="mixta"]');
   await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Mixta', null, { timeout: 8000 }).catch(() => {});
   await page.waitForTimeout(400);
   const idsMix = await page.evaluate(() => window.PadelApp.records().map(r => r.id).sort().join(','));
   check('Mixto: solo los suyos, y el antiguo se asigna por los nombres de los rivales', idsMix === 'm-mix,m-viejo', idsMix);
-  await page.click('#comp-btn'); await page.click('.comp-item[data-slug="2026-s1"]'); await page.waitForTimeout(900);
+  await page.click('#comp-btn'); await page.click('.comp-item[data-kind="masculina"]'); await page.waitForTimeout(900);
 
   // --- cargar otra competición y verla ---
   await go('config'); await openLoader();

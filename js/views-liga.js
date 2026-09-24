@@ -506,8 +506,10 @@
   }
 
   function currentSeasonSlug() {
-    var m = state.model;
-    return ((m && m.season && m.season.slug) || '2026-s1').replace(/-(mixta|femenina|mixto)$/, '');
+    var m = state.model, slug = (m && m.season && m.season.slug) || '2026-s1';
+    /* En «todo el recorrido» se sugiere la temporada más reciente. */
+    if (/^all:/.test(slug) && global.PadelApp) slug = global.PadelApp.latestSlugOfKind(slug.slice(4));
+    return slug.replace(/-(mixta|femenina|mixto)$/, '');
   }
 
   /* Minúsculas y guiones: «2026-S1 Mixta» y «2026-s1-mixta» son lo mismo. */

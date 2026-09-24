@@ -107,7 +107,24 @@
     return (Date.now() - t) / 60000;
   }
 
+  function isAll(slug) { return /^all:/.test(slug || ''); }
+
   function fetchSnapshot() {
+    var slug = currentSeason();
+    if (!isAll(slug)) return fetchOne(slug);
+    /* «Todo el recorrido»: todas las temporadas de la competición, en orden. */
+    var kind = slug.slice(4);
+    return listSeasons().then(function (list) {
+      var slugs = list.filter(function (x) { return x.kind === kind; })
+        .map(function (x) { return x.slug; }).sort();
+      if (!slugs.length) throw new Error('No hay temporadas de ' + kind);
+      return Promise.all(slugs.map(fetchOne)).then(function (snaps) {
+        return global.Liga.mergeSnapshots(snaps, kind);
+      });
+    });
+  }
+
+  function fetchOne(slug) {
     return global.fetch(CFG.url + '/rest/v1/rpc/get_league_snapshot', {
       method: 'POST',
       headers: {
@@ -115,7 +132,7 @@
         'Authorization': 'Bearer ' + CFG.key,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ season_slug: currentSeason() })
+      body: JSON.stringify({ season_slug: slug })
     }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.json();

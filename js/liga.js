@@ -524,6 +524,40 @@
     };
   }
 
+  /* «Todo el recorrido»: encadena los semestres de una competición en una sola
+     temporada. Los meses se numeran seguidos y el rating sigue de uno a otro. */
+  function shortSeason(slug, name) {
+    var m = /^(\d{4})-s(\d)/.exec(slug || '');
+    return m ? 'S' + m[2] + ' ' + m[1].slice(2) : (name || slug || '');
+  }
+
+  function mergeSnapshots(snaps, kind) {
+    var out = { season: { slug: 'all:' + kind, name: 'Todo el recorrido', kind: kind, parts: [] },
+      months: [], teams: [], standings: [], matches: [], archetypes: {} };
+    var seenTeam = {}, seenLabel = {}, next = 0;
+    snaps.forEach(function (s) {
+      var tag = shortSeason(s.season && s.season.slug, s.season && s.season.name);
+      /* Cada semestre numera a su manera (S1 desde 1, S2 por calendario): se renumera seguido. */
+      var map = {}, first = next + 1;
+      (s.months || []).slice().sort(function (a, b) { return a[0] - b[0]; }).forEach(function (x) {
+        map[x[0]] = ++next;
+        var label = x[1];
+        if (seenLabel[label]) label = label + ' · ' + tag;
+        seenLabel[label] = true;
+        out.months.push([next, label].concat(x.slice(2)));
+      });
+      (s.teams || []).forEach(function (t) {
+        if (seenTeam[t[0]]) { if (t[4]) seenTeam[t[0]][4] = true; return; }
+        var c = t.slice(); seenTeam[t[0]] = c; out.teams.push(c);
+      });
+      (s.standings || []).forEach(function (x) { if (map[x[0]]) out.standings.push([map[x[0]]].concat(x.slice(1))); });
+      (s.matches || []).forEach(function (x) { if (map[x[0]]) out.matches.push([map[x[0]]].concat(x.slice(1))); });
+      Object.keys(s.archetypes || {}).forEach(function (k) { out.archetypes[k] = s.archetypes[k]; });
+      out.season.parts.push({ slug: s.season && s.season.slug, tag: tag, map: map, from: first, to: next });
+    });
+    return out;
+  }
+
   /* ============================================================
      Capa 5: calibración contra los partidos ya jugados
      ============================================================ */
@@ -649,6 +683,7 @@
     tieBreakProbability: tieBreakProbability,
     tally: tally,
     movesFor: movesFor, predictGroups: predictGroups, suggestRivals: suggestRivals,
-    pointsFor: pointsFor, groupOutlook: groupOutlook, groupTable: groupTable, nextMonthOutlook: nextMonthOutlook
+    pointsFor: pointsFor, groupOutlook: groupOutlook, groupTable: groupTable, nextMonthOutlook: nextMonthOutlook,
+    mergeSnapshots: mergeSnapshots, shortSeason: shortSeason
   };
 });

@@ -144,20 +144,30 @@
   }
 
   /* ---------- resultados provisionales para el motor ---------- */
+  /* El mes de la ronda dentro de lo que se está mirando: el mismo en su
+     temporada, renumerado en «todo el recorrido», nada en otra temporada. */
+  function monthIn(snapshot, r) {
+    var ss = snapshot.season || {};
+    if (!r.season || !ss.slug || ss.slug === r.season) return r.leagueMonth;
+    var part = (ss.parts || []).filter(function (p) { return p.slug === r.season; })[0];
+    return part ? (part.map[r.leagueMonth] || null) : null;
+  }
+
   function provisionalMatches(snapshot) {
     var r = state.round;
     if (!r || r.leagueMonth == null || !r.myTeamId || !r.group) return [];
-    if (!(snapshot.months || []).some(function (x) { return x[0] === r.leagueMonth; })) return [];
+    var month = monthIn(snapshot, r);
+    if (month == null || !(snapshot.months || []).some(function (x) { return x[0] === month; })) return [];
     var official = {};
     (snapshot.matches || []).forEach(function (x) {
-      if (x[0] === r.leagueMonth) official[Math.min(x[2], x[3]) + '-' + Math.max(x[2], x[3])] = true;
+      if (x[0] === month) official[Math.min(x[2], x[3]) + '-' + Math.max(x[2], x[3])] = true;
     });
     var me = r.myTeamId, out = [];
     (r.fixtures || []).forEach(function (f) {
       if (!f.rivalTeamId || official[Math.min(me, f.rivalTeamId) + '-' + Math.max(me, f.rivalTeamId)]) return;
-      if (f.status === 'jugado' && f.sets && f.sets.length) out.push([r.leagueMonth, r.group, me, f.rivalTeamId, f.sets, null, 1]);
-      else if (f.status === 'wo_favor') out.push([r.leagueMonth, r.group, me, f.rivalTeamId, null, 'home', 1]);
-      else if (f.status === 'wo_contra') out.push([r.leagueMonth, r.group, me, f.rivalTeamId, null, 'away', 1]);
+      if (f.status === 'jugado' && f.sets && f.sets.length) out.push([month, r.group, me, f.rivalTeamId, f.sets, null, 1]);
+      else if (f.status === 'wo_favor') out.push([month, r.group, me, f.rivalTeamId, null, 'home', 1]);
+      else if (f.status === 'wo_contra') out.push([month, r.group, me, f.rivalTeamId, null, 'away', 1]);
     });
     return out;
   }

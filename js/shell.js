@@ -257,10 +257,9 @@
         if (m) PL().applyMe(m);
         /* Te lleva a tu competición por defecto. */
         global.PadelApp.refreshSeasons().then(function () {
-          var list = PL().state.seasons || [];
-          var cur = list.filter(function (x) { return x.slug === DB().currentSeason(); })[0];
-          var pick = list.filter(function (x) { return x.kind === kind; })[0];
-          if (pick && (!cur || cur.kind !== kind)) global.PadelApp.switchTo(pick.slug, false);
+          var A = global.PadelApp, list = PL().state.seasons || [];
+          var has = list.some(function (x) { return x.kind === kind; });
+          if (has && A.kindOfSlug(DB().currentSeason()) !== kind) A.switchTo(A.latestSlugOfKind(kind), false);
           else go(global.PadelApp.state.view);
         });
         global.PadelApp.toast(editing ? 'Datos guardados.' : '¡Bienvenido, ' + (p && p.label ? p.label.split(' ')[0] : '') + '!');
@@ -382,8 +381,8 @@
     var h = ['<div class="page-narrow">'];
 
     h.push('<section class="card"><h3>Competición</h3>' +
-      '<p class="field-note">Estás viendo <b>' + esc((list.filter(function (x) { return x.slug === slug; })[0] || {}).name || slug) +
-      '</b>. La cambias con el botón de arriba, junto al título.</p>');
+      '<p class="field-note">Estás viendo <b>' + esc((global.PadelApp.KIND[global.PadelApp.kindOfSlug(slug)] || '') + ' · ' +
+      global.PadelApp.seasonName(slug)) + '</b>. La competición se cambia arriba, junto al título; el semestre, dentro de cada página.</p>');
     if (u) {
       var kinds = [];
       list.forEach(function (x) { if (kinds.indexOf(x.kind) < 0) kinds.push(x.kind); });

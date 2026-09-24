@@ -256,8 +256,7 @@
     h.push('<div class="legend"><span><i style="background:var(--sage-dk)"></i>Victoria</span>' +
       '<span><i style="background:var(--brick)"></i>Derrota</span>' +
       '<span><i style="background:rgba(237,108,5,.30)"></i>El mes clutch</span>' +
-      (isS1() ? '<span><i style="background:transparent;border:2px solid var(--sage-dk)"></i>Mixto (solo en el nivel del club)</span>' : '') +
-      '</div></section>');
+      '</div><div class="club-row" id="clubRow"></div></section>');
 
     /* 03 · Mes a mes */
     h.push('<section class="blk">' + sectionHead('03', 'Mes a mes',
@@ -372,13 +371,15 @@
   function renderMetrics(rows) {
     var box = document.getElementById('metrics');
     if (!box) return;
-    if (!isS1() && ui.metric === 'club') ui.metric = 'pos';
-    box.innerHTML = METRICS.filter(function (mt) { return !mt.club || isS1(); }).map(function (mt) {
-      var disabled = mt.club && !(ui.club && ui.club.fran);
+    var cd = club();
+    if (!cd.fran.length && ui.metric === 'club') ui.metric = 'pos';
+    box.innerHTML = METRICS.map(function (mt) {
+      var disabled = mt.club && !cd.fran.length;
       return '<button data-metric="' + mt.id + '" class="' + (ui.metric === mt.id ? 'on' : '') + '"' +
-        (disabled ? ' disabled title="Solo hay histórico del club del primer semestre"' : '') + '>' +
+        (disabled ? ' disabled title="Importa tu histórico de juego del club para verlo"' : '') + '>' +
         mt.label + '</button>';
     }).join('');
+    paintClubRow(cd);
   }
 
   function clutchMonth(rows) {
@@ -401,10 +402,8 @@
   function series(rows) {
     var mt = cur();
     if (mt.club) {
-      if (!ui.club || !ui.club.fran) return [];
-      return ui.club.fran.map(function (c, i) {
-        return { x: i, v: c.nivel, win: c.win, lab: c.fecha, mixto: c.mixto,
-                 sub: (c.mixto ? 'Mixto · ' : 'Liga · ') + (c.win ? 'Ganado' : 'Perdido'), mesnom: '' };
+      return club().fran.map(function (c, i) {
+        return { x: i, v: c.nivel, win: c.win, lab: c.fecha, sub: c.win ? 'Ganado' : 'Perdido', mesnom: '' };
       });
     }
     return rows.map(function (r, i) {
@@ -414,10 +413,11 @@
   }
 
   function seriesCris() {
-    if (!cur().club || !ui.club || !ui.club.cris) return null;
+    var cd = club();
+    if (!cur().club || !cd.cris.length) return null;
     var byDate = {};
-    ui.club.cris.forEach(function (c) { byDate[c.fecha] = c; });
-    return ui.club.fran.map(function (c, i) {
+    cd.cris.forEach(function (c) { byDate[c.fecha] = c; });
+    return cd.fran.map(function (c, i) {
       var x = byDate[c.fecha];
       return x ? { x: i, v: x.nivel } : null;
     });
@@ -521,13 +521,13 @@
         var lp = pts[pts.length - 1];
         var ct = mk('text', { x: X(lp.i) + 9, y: Y(lp.v) + 4, fill: '#ED6C05', 'font-family': 'IBM Plex Mono',
           'font-size': LO.fL, 'font-weight': '600' });
-        ct.textContent = 'Cristian';
+        ct.textContent = club().partnerName;
         svg.appendChild(ct);
       }
       var lf = vis[vis.length - 1];
       var ft = mk('text', { x: X(vis.length - 1) + 9, y: Y(lf.v) - 8, fill: '#8FA678',
         'font-family': 'IBM Plex Mono', 'font-size': LO.fL, 'font-weight': '600' });
-      ft.textContent = 'Francisco';
+      ft.textContent = club().meName;
       svg.appendChild(ft);
     }
 
@@ -537,8 +537,7 @@
       gEl.style.cursor = 'pointer';
       gEl.appendChild(mk('circle', { cx: cx, cy: cy, r: 15, fill: 'transparent' }));
       gEl.appendChild(mk('circle', { cx: cx, cy: cy, r: last ? LO.rl : LO.r,
-        fill: p.mixto ? '#0E1109' : (p.win ? '#687F4E' : '#B4491F'),
-        stroke: p.mixto ? (p.win ? '#687F4E' : '#B4491F') : '#0E1109', 'stroke-width': p.mixto ? 2.4 : 2 }));
+        fill: p.win ? '#687F4E' : '#B4491F', stroke: '#0E1109', 'stroke-width': 2 }));
       var show = function () {
         tip.style.opacity = 1;
         tip.innerHTML = '<div class="t-h">' + esc(p.lab) + (p.mesnom ? ' · ' + esc(p.mesnom) : '') + '</div>' +
@@ -816,12 +815,163 @@
 
   /* El histórico de nivel del club viene de otra fuente (no de la liga).
      Solo existe el del primer semestre: se carga del archivo rescatado. */
+  /* Histórico de nivel del club: de tu cuenta si lo has importado; si no,
+     el que venía con la app (solo Francisco y Cristian, 1.er semestre).
+     El nivel del club es uno solo: la misma línea en masculino y en mixto. */
   function loadClub(done) {
-    if (ui.club || ui.clubLoading) { done(); return; }
+    if ((ui.club && ui.clubSrc) || ui.clubLoading) { done(); return; }
     ui.clubLoading = true;
-    global.fetch('legacy/club-nivel.json').then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) { ui.club = data || {}; ui.clubLoading = false; renderMetricsIfPresent(); done(); })
-      .catch(function () { ui.club = {}; ui.clubLoading = false; done(); });
+    var legacy = global.fetch('legacy/club-nivel.json').then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; });
+    var remote = global.PadelAuth && global.PadelAuth.user()
+      ? global.PadelDB.callAuthed('get_my_club_levels').catch(function () { return null; }) : Promise.resolve(null);
+    Promise.all([legacy, remote]).then(function (r) {
+      ui.club = r[0] || {};
+      /* Lo importado manda; lo que falte (p. ej. tu pareja) sale del histórico de la app. */
+      ui.clubSrc = Object.assign(legacySrc(ui.club), r[1] || {});
+      ui.clubLoading = false; renderMetricsIfPresent(); done();
+    });
+  }
+
+  function legacySrc(c) {
+    function rows(list) {
+      return (list || []).map(function (x, i) {
+        var d = x.fecha.split('/');
+        return ['2026-' + d[1] + '-' + d[0] + 'T12:00:' + String(i % 60).padStart(2, '0') + 'Z', !!x.win, x.nivel];
+      });
+    }
+    return { me: { rows: rows(c.fran), name: null }, 'partner:masculina': { rows: rows(c.cris), name: 'Cristian' } };
+  }
+
+  function reloadClub(done) { ui.clubSrc = null; ui.club = null; loadClub(done || function () {}); }
+
+  function club() {
+    var m = PL.state.model, src = ui.clubSrc || {};
+    var range = global.PadelClub.seasonRange(m);
+    var kind = (m && m.season && m.season.kind) || 'masculina';
+    var me = src.me || {}, pa = src['partner:' + kind] || {};
+    /* Quién eres dentro de tu pareja: por el nombre de tu perfil. */
+    var myT = m && m.myTeamId && m.teams[m.myTeamId];
+    var prof = (global.PadelDB.myPlayer() || {}).label || '';
+    var first = prof.split(/\s+/)[0].toLowerCase();
+    var swap = myT && first && String(myT.playerB || '').toLowerCase().indexOf(first) === 0;
+    var meN = myT ? (swap ? myT.playerB : myT.playerA) : prof;
+    var paN = myT ? (swap ? myT.playerA : myT.playerB) : '';
+    return {
+      fran: global.PadelClub.toSeries(me.rows, range),
+      cris: global.PadelClub.toSeries(pa.rows, range),
+      meName: me.name || (meN || 'Tú').trim(),
+      partnerName: pa.name || (paN || 'Pareja').trim(),
+      ranking: me.ranking, partnerRanking: pa.ranking, kind: kind
+    };
+  }
+
+  function paintClubRow(cd) {
+    var row = document.getElementById('clubRow');
+    if (!row) return;
+    var bits = [];
+    if (cd.ranking) bits.push('Ranking del club: <b>' + cd.ranking + '</b>');
+    if (cd.partnerRanking) bits.push(esc(cd.partnerName) + ': <b>' + cd.partnerRanking + '</b>');
+    row.innerHTML = (bits.length ? '<span class="club-rk">' + bits.join(' · ') + '</span>' : '') +
+      '<button class="btn ghost small" data-action="club-import">Importar histórico de juego</button>';
+    row.querySelector('[data-action="club-import"]').addEventListener('click', openClubImport);
+  }
+
+  /* ---------- importar el histórico (tuyo o de tu pareja) ---------- */
+  var ci = null;
+  function openClubImport() {
+    var cd = club();
+    ci = { who: 'me', text: '', name: '', parsed: null, busy: false, error: null, result: null, kind: cd.kind, cd: cd };
+    paintClubImport();
+  }
+  function closeClubImport() {
+    document.getElementById('modal-root').innerHTML = '';
+    document.body.classList.remove('has-modal');
+    ci = null;
+  }
+  function paintClubImport() {
+    var root = document.getElementById('modal-root');
+    var u = global.PadelAuth && global.PadelAuth.user();
+    var KIND = (global.PadelApp && global.PadelApp.KIND) || {};
+    var h = ['<div class="modal"><div class="modal-card"><h2 id="ci-t">Importar histórico de juego</h2>'];
+    if (!u) {
+      h.push('<p class="lede">Se guarda en tu cuenta: entra primero.</p><div class="btn-row">' +
+        '<button class="btn primary" data-ci="login">Entrar</button><button class="btn ghost" data-ci="close">Cerrar</button></div>');
+    } else if (ci.result) {
+      h.push('<p class="lede">Hecho: <b>' + ci.result.added + '</b> partidos nuevos' +
+        (ci.result.updated ? ', ' + ci.result.updated + ' corregidos' : '') + '. Total guardado: <b>' + ci.result.total + '</b>.</p>' +
+        '<div class="btn-row"><button class="btn primary" data-ci="close">Ver la escalera</button>' +
+        '<button class="btn ghost" data-ci="again">Importar otro</button></div>');
+    } else {
+      h.push('<p class="lede">En la web del club, abre «Histórico del nivel de juego», selecciona toda la tabla ' +
+        '(con el «Ranking» de arriba) y pégala aquí. Lo que ya estaba no se duplica.</p>');
+      h.push('<span class="field-label">¿De quién es?</span><div class="chips tight">' +
+        '<button class="chip" aria-pressed="' + (ci.who === 'me') + '" data-ci-who="me">Mío</button>' +
+        '<button class="chip" aria-pressed="' + (ci.who !== 'me') + '" data-ci-who="partner">De mi pareja de ' +
+        esc((KIND[ci.kind] || ci.kind).toLowerCase()) + '</button></div>');
+      if (ci.who !== 'me') {
+        h.push('<div class="field"><label for="ci-name">Nombre de tu pareja</label><input id="ci-name" type="text" value="' +
+          esc(ci.name || ci.cd.partnerName) + '"></div>');
+      }
+      h.push('<div class="field"><label for="ci-text">Histórico</label><textarea id="ci-text" rows="8" ' +
+        'placeholder="Ranking: 280&#10;12/03/2026 21:03:58  Ganado    0,18">' + esc(ci.text) + '</textarea></div>');
+      var p = ci.parsed;
+      if (p) {
+        h.push('<p class="note">' + (p.rows.length ? '<b>' + p.rows.length + '</b> partidos' +
+          (p.rows.length ? ' (del ' + p.rows[0].at.slice(8, 10) + '/' + p.rows[0].at.slice(5, 7) + '/' + p.rows[0].at.slice(0, 4) +
+            ' al ' + p.rows[p.rows.length - 1].at.slice(8, 10) + '/' + p.rows[p.rows.length - 1].at.slice(5, 7) + '/' +
+            p.rows[p.rows.length - 1].at.slice(0, 4) + ')' : '') +
+          (p.ranking ? ' · ranking <b>' + p.ranking + '</b>' : '') +
+          (p.dropped ? ' · ' + p.dropped + ' «restaurar por corrección» fuera' : '') +
+          (p.duplicates ? ' · ' + p.duplicates + ' repetidas fuera' : '')
+          : 'No encuentro filas con fecha, resultado y nivel.') + '</p>');
+      }
+      if (ci.error) h.push('<div class="notice bad">' + esc(ci.error) + '</div>');
+      h.push('<div class="btn-row"><button class="btn primary" data-ci="save"' + (p && p.rows.length && !ci.busy ? '' : ' disabled') + '>' +
+        (ci.busy ? 'Guardando…' : 'Guardar') + '</button><button class="btn ghost" data-ci="close">Cancelar</button></div>');
+    }
+    h.push('</div></div>');
+    root.innerHTML = h.join('');
+    document.body.classList.add('has-modal');
+
+    root.querySelectorAll('[data-ci="close"]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var changed = ci && ci.result;
+        closeClubImport();
+        if (changed) reloadClub(function () { ui.metric = 'club'; renderMetricsIfPresent(); var m = PL.state.model; if (m) drawChart(mine(m)); });
+      });
+    });
+    var lg = root.querySelector('[data-ci="login"]');
+    if (lg) lg.addEventListener('click', function () { closeClubImport(); global.PadelApp.go('perfil'); });
+    var ag = root.querySelector('[data-ci="again"]');
+    if (ag) ag.addEventListener('click', function () { ci.result = null; ci.text = ''; ci.parsed = null; paintClubImport(); });
+    root.querySelectorAll('[data-ci-who]').forEach(function (b) {
+      b.addEventListener('click', function () { ci.who = b.getAttribute('data-ci-who'); paintClubImport(); });
+    });
+    var nm = root.querySelector('#ci-name');
+    if (nm) nm.addEventListener('input', function () { ci.name = nm.value; });
+    var ta = root.querySelector('#ci-text');
+    if (ta) ta.addEventListener('input', function () {
+      ci.text = ta.value; ci.parsed = ta.value.trim() ? global.PadelClub.parse(ta.value) : null;
+      var pos = ta.selectionStart; paintClubImport();
+      var t2 = document.getElementById('ci-text'); t2.focus(); t2.selectionStart = t2.selectionEnd = pos;
+    });
+    var sv = root.querySelector('[data-ci="save"]');
+    if (sv) sv.addEventListener('click', function () {
+      if (!ci.parsed || !ci.parsed.rows.length) return;
+      ci.busy = true; ci.error = null; paintClubImport();
+      var who = ci.who === 'me' ? 'me' : 'partner:' + ci.kind;
+      global.PadelDB.callAuthed('import_club_levels', {
+        p_who: who, p_ranking: ci.parsed.ranking, p_name: ci.who === 'me' ? null : (ci.name || ci.cd.partnerName),
+        p_rows: ci.parsed.rows.map(function (r) { return [r.at, r.won, r.level]; })
+      }).then(function (res) {
+        if (!ci) return;
+        ci.busy = false; ci.result = res; paintClubImport();
+      }).catch(function (err) {
+        if (!ci) return;
+        ci.busy = false; ci.error = 'No se pudo guardar: ' + err.message; paintClubImport();
+      });
+    });
   }
 
   function renderMetricsIfPresent() {
@@ -831,7 +981,7 @@
 
   global.PadelTemporada = {
     ui: ui, mine: mine, mineWO: mineWO, agg: agg, tile: tile, sectionHead: sectionHead,
-    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, isS1: isS1,
+    withModel: withModel, stopTimer: stopTimer, loadClub: loadClub, resetUi: resetUi, isS1: isS1, club: club,
     renderTemporada: renderTemporada
   };
 })(window);
