@@ -19,7 +19,8 @@
     historial: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v3.9h3.9M12 8v4.3l3 1.9"/>',
     analisis: '<path d="M5.5 19.5v-6M10 19.5v-11M14.5 19.5v-8M19 19.5v-14M3.5 19.5h17"/>',
     config: '<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6"/>',
-    perfil: '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/>'
+    perfil: '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6"/>',
+    estemes: '<rect x="4.5" y="5.5" width="15" height="14" rx="1.5"/><path d="M4.5 9.5h15M8.5 3.5v4M15.5 3.5v4M9 14.5l2 2 4-4"/>'
   };
 
   function icon(name, extra) {
@@ -202,6 +203,19 @@
       '<g id="ball" class="ball" opacity="0"><image href="assets/pelota.webp" x="-0.5" y="-0.5" width="1" height="1"/></g>';
   }
 
+
+  /* «Este mes» en la red: lo que separa tu campo del rival es el partido que toca. */
+  function netMarkup(x, y, fs, label) {
+    var text = String(label || 'Tu grupo del mes').toUpperCase();
+    var w = Math.max(text.length, 10) * fs * 0.64 + fs * 2.2, hgt = fs * 3;
+    return '<g class="zone net-btn" data-zone="estemes" data-view="estemes" tabindex="0" role="button" ' +
+      'aria-label="Este mes · ' + esc(label || '') + '">' +
+      '<rect class="zone-hit nb-bg" x="' + f(x - w / 2) + '" y="' + f(y - hgt / 2) + '" width="' + f(w) + '" height="' + f(hgt) +
+      '" rx="' + f(hgt / 2) + '"/>' +
+      '<text class="nb-k" x="' + f(x) + '" y="' + f(y - fs * 0.25) + '" font-size="' + f(fs * 0.72) + '">ESTE MES</text>' +
+      '<text class="nb-t" x="' + f(x) + '" y="' + f(y + fs * 0.95) + '" font-size="' + f(fs) + '">' + esc(text) + '</text></g>';
+  }
+
   /* ---------- la pista en foto ----------
      Cuatro puntos de la foto con posición conocida en la pista real (las
      esquinas del fondo y los extremos de la línea de saque cercana) bastan
@@ -209,13 +223,13 @@
   var PHOTOS = {
     wide: { src: 'assets/pista-web.webp', W: 1672, H: 941, k: 1.6,
       pts: [[[-5, 20], [568, 247]], [[5, 20], [1102, 247]], [[-5, 3.05], [230, 585]], [[5, 3.05], [1441, 585]]],
-      door: [835, 728], label: 824,
+      door: [835, 728], label: 824, net: [835, 352],
       /* La mitad del fondo es muy estrecha en esta foto: botones algo menores y
          más cerca de la red, para no tapar el escudo del club. */
       farZ: 14, farK: 0.75 },
     tall: { src: 'assets/pista-movil.webp', W: 941, H: 1672, k: 2.35,
       pts: [[[-5, 20], [227, 447]], [[5, 20], [714, 447]], [[-5, 3.05], [-68, 1144]], [[5, 3.05], [1013, 1144]]],
-      door: [477, 1362], label: 1462,
+      door: [477, 1362], label: 1462, net: [470, 712],
       /* En el móvil la foto se recorta un poco por los lados para llenar la pantalla. */
       safeX: [85, 856] }
   };
@@ -264,6 +278,7 @@
       '<stop offset="1" stop-color="#ED6C05" stop-opacity="0"/></radialGradient></defs>'];
     ZONES.forEach(function (zn) { h.push(zoneMarkup(cam, zn, live, tall, k)); });
     h.push(doorMarkup(ph.door[0], ph.door[1], (tall ? 26 : 36) * k, (tall ? 14.5 : 20) * k, ph.label));
+    h.push(netMarkup(ph.net[0], ph.net[1], (tall ? 11 : 12.5) * k, live.estemes));
     h.push(ballMarkup());
     h.push('</svg></div>');
     return { html: h.join(''), cam: cam };
@@ -377,6 +392,8 @@
     /* la puerta: el rival te espera fuera de la pista */
     var d = P(cam, 0, 0, -1.5);
     h.push(doorMarkup(d[0], d[1], tall ? 26 : 36, tall ? 14.5 : 20, d[1]));
+    var nb = P(cam, 0, 0.9, 10);
+    h.push(netMarkup(nb[0], nb[1], tall ? 11 : 13, live.estemes));
     h.push(ballMarkup());
 
     h.push('</svg>');

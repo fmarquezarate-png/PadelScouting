@@ -5,6 +5,25 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Este mes
+- **Este mes**: tu grupo en curso, con un botón iluminado en la red de la pista (enseña el
+  próximo partido: «sáb 27 · 19:00 · Sonia/Annabelle») y en el menú ☰. Por rival: probabilidad de
+  ganar, marcador más probable, puesto, si viene subiendo o bajando, historial directo, fecha y
+  hora editables, «Comparar →» y «Al calendario» (.ics con aviso 2 h antes). Arriba, tu
+  probabilidad de **subir, mantenerte o bajar** simulando el grupo entero con los puntos de la liga.
+- **Nueva ronda**: al abrir la app en un mes nuevo, pregunta tus rivales ya propuestos. Si la
+  liga ya publicó el grupo del mes, sale exacto de la liga; si no, se prevé con las reglas del
+  histórico (masculino: 1.º sube 2, 2.º sube 1, 3.º baja 1, 4.º baja 2; mixto: 1.º sube 1, 2.º se
+  queda, 3.º baja 1; aciertan el grupo el 97 % de las veces). «Sigue la misma ronda» para el verano.
+- **Resultado al abrir**: 2 h después de la hora del partido pregunta «¿Cómo fue contra…?»:
+  resultado básico (sets, con el super tie-break solo si hace falta), registro completo (el
+  formulario ya relleno y enganchado al partido), WO a favor o en contra, o «aún no se jugó».
+- **Resultados provisionales**: lo que apuntas cuenta ya en tus números, marcado como provisional;
+  cuando pegas la clasificación oficial, manda la de la liga.
+- **Registro de scouting en tu cuenta**: se sincroniza entre dispositivos (el más reciente gana)
+  y la primera vez sube lo que ya había en el navegador.
+- Base: tablas `rounds`, `fixtures`, `scouting_records` (cada cuenta solo ve lo suyo).
+
 ### Fixed
 - **Mixto: cada ronda con el mes en que se jugó.** La web de la liga nombra las rondas un mes
   antes (su «Enero» se jugó en febrero; su «Junio», en julio-agosto; su «Julio», en septiembre).

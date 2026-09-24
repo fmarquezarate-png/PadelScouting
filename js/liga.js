@@ -81,6 +81,7 @@
       return {
         idx: i, month: m[0], group: m[1], home: m[2], away: m[3],
         sets: sets, walkover: wo,
+        provisional: !!m[6],      /* resultado apuntado por ti, aún no publicado por la liga */
         superTieBreak: !!(sets && sets.length === 3),
         setsHome: t ? t.setsFor : (wo === 'home' ? 1 : 0),
         setsAway: t ? t.setsAgainst : (wo === 'away' ? 1 : 0),
@@ -308,6 +309,127 @@
   }
 
   /* ============================================================
+     Capa 4b: el grupo del mes (subidas, bajadas y simulación)
+     ============================================================ */
+
+  /* Cuántos grupos se mueve cada puesto, sacado del histórico de 2026:
+     masculino (grupos de 4) 1.º sube 2, 2.º sube 1, 3.º baja 1, 4.º baja 2
+     (~92 % de los casos); mixto (grupos de 3) 1.º sube 1, 2.º se queda,
+     3.º baja 1 (~88 %). Negativo = sube (grupo de número menor). */
+  var MOVES = {
+    masculina: { 3: [-1, 0, 1], 4: [-2, -1, 1, 2], 5: [-2, -1, 0, 0, 1] },
+    mixta: { 2: [-1, 1], 3: [-1, 0, 1], 4: [-1, 0, 0, 1] }
+  };
+
+  function movesFor(kind, size) {
+    var t = MOVES[kind === 'mixta' ? 'mixta' : 'masculina'];
+    if (t[size]) return t[size];
+    var out = [];
+    for (var i = 0; i < size; i++) out.push(i < size / 2 - 0.5 ? -1 : (i > size / 2 - 0.5 ? 1 : 0));
+    return out;
+  }
+
+  /* Grupo previsto del mes siguiente para cada pareja, con las reglas de arriba. */
+  function predictGroups(model, kind, month) {
+    var m = month == null ? model.lastMonth : month;
+    var lad = model.ladder[m] || {};
+    var size = {}, maxG = 1;
+    Object.keys(lad).forEach(function (id) {
+      var g = lad[id].group;
+      size[g] = (size[g] || 0) + 1;
+      if (g > maxG) maxG = g;
+    });
+    var out = {};
+    Object.keys(lad).forEach(function (id) {
+      var l = lad[id], mv = movesFor(kind, size[l.group])[l.inGroup - 1] || 0;
+      out[id] = Math.max(1, Math.min(maxG, l.group + mv));
+    });
+    return out;
+  }
+
+  /* Tus rivales previstos: quienes caen en tu mismo grupo previsto. Si
+     sobran o faltan, se ordena por cercanía en la escalera actual. */
+  function suggestRivals(model, myId, kind) {
+    var pred = predictGroups(model, kind);
+    var mine = pred[myId];
+    if (mine == null) return { group: null, rivals: [] };
+    var lad = model.ladder[model.lastMonth] || {};
+    var want = kind === 'mixta' ? 2 : 3;
+    var myPlace = lad[myId] ? lad[myId].place : 0;
+    var cand = Object.keys(pred).map(Number).filter(function (id) { return id !== myId; })
+      .map(function (id) {
+        return { id: id, exact: pred[id] === mine, dist: Math.abs(pred[id] - mine) * 100 +
+          Math.abs((lad[id] ? lad[id].place : 999) - myPlace) };
+      }).sort(function (a, b) { return a.dist - b.dist; });
+    var exact = cand.filter(function (c) { return c.exact; });
+    var list = (exact.length >= want ? exact : cand).slice(0, want);
+    return { group: mine, rivals: list.map(function (c) { return c.id; }), exactCount: exact.length };
+  }
+
+  /* Puntos de la liga: victoria 4; derrota en super tie-break 2; en dos
+     sets 1; WO perdido 0 (sale de las columnas de la clasificación). */
+  function pointsFor(setsWon, setsLost, wo) {
+    if (wo) return setsWon > setsLost ? 4 : 0;
+    if (setsWon > setsLost) return 4;
+    return setsWon === 1 ? 2 : 1;
+  }
+
+  /* Simula el grupo entero: los partidos ya jugados cuentan tal cual y el
+     resto se juega con el motor. Devuelve en qué puesto acabas y, con las
+     reglas de la competición, si subes, te mantienes o bajas. */
+  function groupOutlook(model, members, known, kind, options) {
+    var opts = options || {};
+    var n = opts.simulations || 3000;
+    var me = members[0];
+    var pairs = [];
+    for (var i = 0; i < members.length; i++) {
+      for (var j = i + 1; j < members.length; j++) {
+        var a = members[i], b = members[j];
+        var k = (known || []).filter(function (x) {
+          return (x.a === a && x.b === b) || (x.a === b && x.b === a);
+        })[0];
+        var res = null;
+        if (k) res = k.a === a ? k : { a: a, b: b, sa: k.sb, sb: k.sa, wo: k.wo };
+        var dist = null;
+        if (!res) {
+          var pr = project(model, a, b, { simulations: 1500, scale: model.scale });
+          dist = pr ? pr.setOutcomes.map(function (o) { return o.p; }) : [0.25, 0.25, 0.25, 0.25];
+        }
+        pairs.push({ a: a, b: b, res: res, dist: dist });
+      }
+    }
+    var rnd = seeded(members.reduce(function (s, x) { return s * 31 + x; }, 7) % 2147483647);
+    var place = members.map(function () { return 0; });
+    for (var it = 0; it < n; it++) {
+      var pts = {};
+      members.forEach(function (x) { pts[x] = rnd() * 0.01; });   /* desempate al azar */
+      pairs.forEach(function (p) {
+        var sa, sb, wo = false;
+        if (p.res) { sa = p.res.sa; sb = p.res.sb; wo = !!p.res.wo; }
+        else {
+          var r = rnd(), acc = 0, pick = 3;
+          for (var q = 0; q < 4; q++) { acc += p.dist[q]; if (r < acc) { pick = q; break; } }
+          sa = [2, 2, 1, 0][pick]; sb = [0, 1, 2, 2][pick];
+        }
+        pts[p.a] += pointsFor(sa, sb, wo);
+        pts[p.b] += pointsFor(sb, sa, wo);
+      });
+      var rank = members.slice().sort(function (x, y) { return pts[y] - pts[x]; });
+      place[rank.indexOf(me)]++;
+    }
+    var mv = movesFor(kind, members.length);
+    var up = 0, stay = 0, down = 0;
+    place.forEach(function (c, i) {
+      if (mv[i] < 0) up += c; else if (mv[i] > 0) down += c; else stay += c;
+    });
+    return {
+      places: place.map(function (c) { return c / n; }),
+      up: up / n, stay: stay / n, down: down / n,
+      moves: mv, remaining: pairs.filter(function (p) { return !p.res; }).length
+    };
+  }
+
+  /* ============================================================
      Capa 5: calibración contra los partidos ya jugados
      ============================================================ */
 
@@ -430,6 +552,8 @@
     matchFromGame: matchFromGame,
     setProbability: setProbability,
     tieBreakProbability: tieBreakProbability,
-    tally: tally
+    tally: tally,
+    movesFor: movesFor, predictGroups: predictGroups, suggestRivals: suggestRivals,
+    pointsFor: pointsFor, groupOutlook: groupOutlook
   };
 });

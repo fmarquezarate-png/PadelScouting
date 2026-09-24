@@ -337,7 +337,8 @@
       registro: 'En 2 min',
       historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Tus partidos',
       analisis: 'Y briefing',
-      cronica: PT.isS1() ? '1er semestre' : 'Por escribir'
+      cronica: PT.isS1() ? '1er semestre' : 'Por escribir',
+      estemes: global.PadelEsteMes ? global.PadelEsteMes.netLabel() : ''
     };
 
     /* Marcador: quiénes sois, dónde estáis y cómo venís. */

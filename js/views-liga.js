@@ -50,6 +50,12 @@
   }
 
   function setModel(snapshot) {
+    state.snapshot = snapshot;
+    /* Tus resultados de «Este mes», provisionales hasta que la liga los publique. */
+    var extra = global.PadelEsteMes ? global.PadelEsteMes.provisionalMatches(snapshot) : [];
+    if (extra.length) {
+      snapshot = Object.assign({}, snapshot, { matches: snapshot.matches.concat(extra) });
+    }
     state.model = L.build(snapshot);
     applyMe(state.model);
     state.calibration = L.calibrate(state.model);
@@ -808,8 +814,13 @@
     return w + '–' + l;
   }
 
+  /* Vuelve a calcular con la última foto (p. ej. tras apuntar un resultado). */
+  function rebuild() {
+    if (state.snapshot) setModel(state.snapshot);
+  }
+
   global.PadelLiga = {
-    state: state, switchSeason: switchSeason, applyMe: applyMe,
+    state: state, switchSeason: switchSeason, applyMe: applyMe, rebuild: rebuild,
     esc: esc, pct: pct, stat: stat,
     loaderCard: loaderCard, bindLoader: bindLoader, authForm: authForm, bindAuth: bindAuth,
     knownPlayerNames: knownPlayerNames, meBlock: meBlock, bindMe: bindMe,

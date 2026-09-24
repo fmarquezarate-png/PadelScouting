@@ -72,6 +72,13 @@
     });
   }
 
+  /* Quien quiera enterarse de los cambios (la sincronización con la cuenta). */
+  var listeners = [];
+  function onChange(fn) { listeners.push(fn); }
+  function notify(kind, data) {
+    listeners.forEach(function (fn) { try { fn(kind, data); } catch (e) {} });
+  }
+
   function all() { return sorted(load()); }
 
   function get(id) {
@@ -96,12 +103,14 @@
       list.push(match);
     }
     persist(list);
+    notify('save', match);
     return match;
   }
 
   function remove(id) {
     var list = load().filter(function (m) { return m.id !== id; });
     persist(list);
+    notify('remove', id);
   }
 
   /* ---------- nombres de rivales para autocompletar ----------
@@ -261,16 +270,22 @@
   }
 
   /* Reemplaza los datos actuales. Solo se llama tras confirmación. */
-  function replaceAll(matches) {
+  function replaceAll(matches, quiet) {
+    var before = load().map(function (m) { return m.id; });
     var clean = matches.filter(isPlausibleMatch).map(function (m) {
       if (!m.id) m.id = newId();
       return m;
     });
     persist(clean);
+    if (!quiet) notify('replace', { list: clean, before: before });
     return clean.length;
   }
 
-  function clear() { persist([]); }
+  function clear() {
+    var before = load().map(function (m) { return m.id; });
+    persist([]);
+    notify('replace', { list: [], before: before });
+  }
 
   global.PadelStorage = {
     newId: newId,
@@ -288,6 +303,7 @@
     download: download,
     inspectBackup: inspectBackup,
     replaceAll: replaceAll,
-    clear: clear
+    clear: clear,
+    onChange: onChange
   };
 })(window);

@@ -22,7 +22,8 @@
     analisis:  { title: 'Análisis' },
     cronica:   { title: 'Crónica' },
     config:    { title: 'Configuración' },
-    perfil:    { title: 'Mi perfil' }
+    perfil:    { title: 'Mi perfil' },
+    estemes:   { title: 'Este mes' }
   };
 
   var state = {
@@ -510,6 +511,9 @@
       return;
     }
     S.save(match);
+    /* Si venía de «Este mes», el registro queda enganchado a ese partido. */
+    var fixtureId = state.form.fixtureId;
+    if (fixtureId && global.PadelEsteMes) global.PadelEsteMes.linkRecord(fixtureId, match);
     state.savedId = match.id;
     state.form = blankForm();
     renderRegistro();
@@ -1060,6 +1064,7 @@
     else if (view === 'cronica') global.PadelGeneral.renderCronica($view, bindLiga);
     else if (view === 'rival') global.PadelLiga.renderRival($view, bindLiga);
     else if (view === 'config') global.PadelShell.renderConfig($view, bindLiga);
+    else if (view === 'estemes') global.PadelEsteMes.render($view, bindLiga);
     else if (view === 'perfil') global.PadelShell.renderPerfil($view, bindLiga);
     else if (view === 'registro') renderRegistro();
     else if (view === 'historial') renderHistorial();
@@ -1137,6 +1142,29 @@
     go('inicio');
   }
 
+  /* Registro completo a partir de un partido de «Este mes»: rivales,
+     fecha y sets ya puestos; al guardar se engancha al partido. */
+  function prefillRegistro(fx, sets) {
+    var f = blankForm();
+    var names = String(fx.rivalLabel || '').split('/').map(function (x) { return x.trim(); });
+    f.rivals = [0, 1].map(function (i) { return { name: names[i] || '', archetype: 'por-definir' }; });
+    if (fx.scheduledAt) {
+      var d = new Date(fx.scheduledAt);
+      f.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    if (sets && sets.length) {
+      f.sets = [0, 1, 2].map(function (i) {
+        return sets[i] ? { own: sets[i][0], opponent: sets[i][1] } : { own: null, opponent: null };
+      });
+      var won = sets.filter(function (x) { return x[0] > x[1]; }).length;
+      f.result = won >= 2 ? 'win' : 'loss';
+    }
+    f.fixtureId = fx.id;
+    state.form = f;
+    state.savedId = null;
+    go('registro');
+  }
+
   /* ============================================================
      competición: un interruptor arriba para toda la app
      ============================================================ */
@@ -1201,6 +1229,7 @@
       global.PadelLiga.switchSeason(slug, function () {
         document.body.classList.remove('switching');
         paintButton();
+        if (global.PadelEsteMes) global.PadelEsteMes.load(function () { global.PadelEsteMes.checkPrompts(); });
         var s = (global.PadelLiga.state.seasons || []).filter(function (x) { return x.slug === slug; })[0];
         if (announce) toast('Ahora ves: ' + (s ? (KIND[s.kind] || s.kind) + ' · ' + s.name : slug));
         go(state.view);
@@ -1243,5 +1272,6 @@
 
   global.PadelApp = { refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
                       toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
+                      prefillRegistro: prefillRegistro,
                       switchTo: function (slug, announce) { switchTo(slug, announce); } };
 })(window);

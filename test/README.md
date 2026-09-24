@@ -1,6 +1,6 @@
 # Pruebas
 
-Cinco suites (256 comprobaciones) contra un navegador real (Chromium vía Playwright). No hay que tocar Supabase:
+Seis suites (305 comprobaciones) contra un navegador real (Chromium vía Playwright). No hay que tocar Supabase:
 la llamada a la base se intercepta con `fixtures/league-snapshot.json`, que es
 **byte a byte lo que devuelve la base de datos** (comprobado por md5 de cada array).
 
@@ -18,6 +18,7 @@ node test/qa-rival.js      # Rival, motor y caché
 node test/qa-carga.js      # Sesión y carga de una clasificación
 node test/qa-scouting.js   # Registro, historial, análisis, backup
 node test/qa-competicion.js # Cambio de competición y «quién soy»
+node test/qa-estemes.js    # Este mes: ronda, fechas, avisos, resultados, registro en la cuenta
 ```
 
 Cada suite termina imprimiendo cuántas comprobaciones pasan y cuáles fallan, y sale con

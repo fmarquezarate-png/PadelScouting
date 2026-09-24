@@ -17,6 +17,7 @@ móvil, sentado en el banquillo, y que con el tiempo esos registros se convierta
 | Pantalla | Para qué |
 |---|---|
 | **Barra de arriba** | Título con la competición debajo (tócala para cambiar), ⚙ Configuración, 🏠 Inicio, ☰ Menú y tu perfil. |
+| **Este mes** | Tu grupo en curso: fechas, comparativa con cada rival, probabilidad de subir o bajar, y el resultado al terminar. |
 | **La pista** | Inicio. Pista azul en perspectiva que es el menú: tocas una zona y la bola vuela hasta ella. Marcador con puesto, forma y balance. |
 | **Nuestra temporada** | Números, escalera animada (5 métricas), mes a mes, acantilado, todos los partidos, rivales y techo. |
 | **La liga** | Clasificación general ordenable, explorador de cualquier pareja y carga de datos. |
@@ -103,7 +104,9 @@ PadelScouting/
 │   ├── views-liga.js   pantalla Rival y carga de datos
 │   ├── views-temporada.js  Nuestra temporada (secciones 01–06)
 │   ├── views-general.js    La pista (inicio), La liga y Crónica
-│   ├── court.js        la pista en perspectiva (cámara 3D) e iconos
+│   ├── court.js        la pista (foto o dibujo), la pelota y los iconos
+│   ├── views-estemes.js  Este mes: ronda en curso, avisos al abrir, resultados
+│   ├── sync.js         el registro de scouting sincronizado con la cuenta
 │   ├── shell.js        barra de arriba, panel ☰, Mi perfil, Configuración, bienvenida
 │   ├── data.js         catálogos (arquetipos, patrones, funcionó, no funcionó, estados)
 │   ├── storage.js      leer/guardar/editar/borrar · export · import · validación

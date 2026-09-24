@@ -42,14 +42,14 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('Portada: grupo y balance', t.includes('G13') && t.includes('12–5'));
   check('Portada: cuenta cuánto habéis subido', t.includes('17 puestos'));
   check('Portada: solo la pista, sin tarjetas repetidas', await page.locator('.home-card').count() === 0);
-  check('La pista tiene 7 zonas', await page.locator('.court .zone').count() === 7,
+  check('La pista tiene 7 zonas y «Este mes» en la red', await page.locator('.court .zone').count() === 8,
     await page.locator('.court .zone').count());
   check('La pista es la foto realista', await page.evaluate(() => {
     const img = document.querySelector('.court-photo img'); return !!(img && img.complete && img.naturalWidth > 0);
   }));
   check('El rival espera en la puerta', await page.locator('.court .zone.door[data-view="rival"]').count() === 1);
   check('Las zonas son accesibles con teclado',
-    await page.locator('.court .zone[tabindex="0"][role="button"]').count() === 7);
+    await page.locator('.court .zone[tabindex="0"][role="button"]').count() === 8);
   const labels = await page.$$eval('.court .zt', els => els.map(e => e.getBoundingClientRect()));
   let overlap = 0;
   for (let i = 0; i < labels.length; i++) for (let j = i + 1; j < labels.length; j++) {
@@ -70,7 +70,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await page.click('#menu-btn'); await page.waitForTimeout(350);
   check('☰ abre el panel', await page.locator('#drawer').isVisible() &&
     (await page.getAttribute('#menu-btn', 'aria-expanded')) === 'true');
-  check('El panel tiene todas las secciones', await page.locator('[data-drawer-go]').count() === 10);
+  check('El panel tiene todas las secciones', await page.locator('[data-drawer-go]').count() === 11);
   check('Marca dónde estás', (await page.getAttribute('[data-drawer-go="liga"]', 'aria-current')) === 'page');
   await page.keyboard.press('Escape'); await page.waitForTimeout(350);
   check('Escape cierra el panel', await page.locator('#drawer').isHidden());
@@ -250,7 +250,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
     await nf.route('**/assets/pista-*.webp', r => r.abort());
     await nf.goto(BASE); await nf.waitForTimeout(1200);
     check('Sin la foto queda la pista dibujada', await nf.locator('.court-3d .c-surf').count() === 1 &&
-      await nf.locator('.court .zone').count() === 7);
+      await nf.locator('.court .zone').count() === 8);
     await nf.close();
   }
 

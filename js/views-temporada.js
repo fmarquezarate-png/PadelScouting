@@ -61,7 +61,7 @@
       return {
         mes: x.month, mesnom: label[x.month] || ('Mes ' + x.month),
         rivalId: rival, rival: m.teams[rival] ? m.teams[rival].label : '?',
-        sets: sets, win: t.setsFor > t.setsAgainst,
+        sets: sets, win: t.setsFor > t.setsAgainst, prov: !!x.provisional,
         gf: t.gamesFor, ga: t.gamesAgainst, stb: x.superTieBreak,
         ganoS1: sets[0][0] > sets[0][1],
         pre: home ? x.preHome : x.preAway, post: home ? x.postHome : x.postAway,
@@ -667,7 +667,8 @@
         '<td><span class="res ' + (r.win ? 'w' : 'l') + '">' + (r.win ? 'V' : 'D') + '</span></td>' +
         '<td><button class="linkish" data-rival="' + r.rivalId + '">' + esc(r.rival) + '</button>' +
         (r.stb ? ' <span class="tag tb">TB</span>' : '') +
-        ((!r.ganoS1 && r.win) ? ' <span class="tag">Remontada</span>' : '') + '</td>' +
+        ((!r.ganoS1 && r.win) ? ' <span class="tag">Remontada</span>' : '') +
+        (r.prov ? ' <span class="tag prov">Provisional</span>' : '') + '</td>' +
         '<td class="sc"><b>' + r.sets.map(function (s) { return s[0] + '–' + s[1]; }).join('</b> · <b>') + '</b></td>' +
         '<td class="sc hide-sm">' + (r.lad ? '#' + r.lad + ' de ' + r.ladTot : '—') + '</td>' +
         '<td class="sc"><b>' + Math.round(r.post) + '</b> <span style="color:' +

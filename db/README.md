@@ -95,3 +95,13 @@ tiene ese mes (migraciones `ingest_league_months_by_name` e `ingest_league_group
 `masculina`, `mixta`, `femenina`.
 
 El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/liga-parser.js`.
+
+## Este mes (por cuenta, con RLS)
+
+- `rounds`: la ronda en curso de cada temporada (etiqueta, mes de inicio, grupo, tu pareja, origen
+  `liga` / `prevision` / `manual`). `start_round(payload)` cierra la anterior y crea la nueva con sus
+  rivales; `keep_round(id)` la deja un mes más («sigue la misma ronda»).
+- `fixtures`: cada partido de la ronda (rival, fecha y hora, estado, sets desde nuestro lado,
+  registro enganchado). `update_fixture(id, patch)` cambia solo lo que viene.
+- `scouting_records`: el registro de scouting de cada cuenta. `list_my_records()` y
+  `push_my_records(items)` (el más reciente gana; los borrados viajan como `deleted`).

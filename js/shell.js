@@ -13,7 +13,7 @@
 
   var SECTIONS = [
     { group: 'La liga', items: [
-      ['inicio', 'La pista', 'inicio'], ['temporada', 'Nuestra temporada', 'temporada'],
+      ['inicio', 'La pista', 'inicio'], ['estemes', 'Este mes', 'estemes'], ['temporada', 'Nuestra temporada', 'temporada'],
       ['rival', 'El rival', 'rival'], ['liga', 'La liga', 'liga'], ['cronica', 'Crónica', 'cronica']] },
     { group: 'Tu scouting', items: [
       ['registro', 'Registrar partido', 'registro'], ['historial', 'Historial', 'historial'],
@@ -123,6 +123,8 @@
   var welcomeSkipped = false;
   function onProfile(p) {
     paintAvatar();
+    if (user() && global.PadelEsteMes) global.PadelEsteMes.boot();
+    if (user() && global.PadelSync) global.PadelSync.syncAll();
     if (user() && needsWelcome(p) && !welcomeSkipped) openWelcome(p || {});
   }
 
