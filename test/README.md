@@ -19,6 +19,9 @@ node test/qa-carga.js      # Sesión y carga de una clasificación
 node test/qa-scouting.js   # Registro, historial, análisis, backup
 node test/qa-competicion.js # Cambio de competición y «quién soy»
 node test/qa-estemes.js    # Este mes: ronda, fechas, avisos, resultados, registro en la cuenta
+node test/qa-semestres.js  # Competición arriba, semestre dentro, «todo el recorrido»
+node test/qa-club.js       # Nivel del club: lector del histórico, importar, igual en masc y mixto
+node test/qa-cronica.js    # Crónica automática con los datos reales del mixto y masculino S1
 ```
 
 Cada suite termina imprimiendo cuántas comprobaciones pasan y cuáles fallan, y sale con

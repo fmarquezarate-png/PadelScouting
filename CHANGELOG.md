@@ -5,6 +5,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added — segundo bloque de peticiones
+- **Este mes · «Cómo va el grupo»**: la tabla del grupo con PJ, G, P, sets y puntos de la liga
+  (4 · 2 · 1 · 0), marcando «Provisional» lo que has apuntado tú y la liga aún no publicó.
+- **Este mes · «Cómo se cocina el próximo mes»**: se juega 1.200 veces lo que falta del mes en
+  **todos** los grupos (lo jugado cuenta tal cual), se aplican las subidas y bajadas, y sale en qué
+  grupo caes y la probabilidad de que te toque cada pareja. Necesita la clasificación del mes pegada.
+- **Registrar pregunta cómo cargar**: *Carga masiva* (pegar la clasificación, lleva a Configuración)
+  o *Carga detallada* (tus últimos 5 partidos: eliges uno y sale rellenado; o uno en blanco).
+- **Competición arriba, semestre dentro**: arriba solo Masculina / Mixta (cambiar lleva a la
+  temporada más reciente). En Nuestra temporada, La liga, Crónica y El rival hay un desplegable
+  **S1 26 · S2 26 · Todo el recorrido** (los semestres encadenados, meses seguidos y nivel continuo).
+- **Nivel del club igual en masculino y mixto**, sin distinguir liga, filtrado a las fechas de cada
+  temporada. Botón **«Importar histórico de juego»** en la escalera: pegas la tabla de la web del
+  club (tuya o de tu pareja de esa competición), descarta «Restaurar por corrección» y repetidas,
+  guarda el Ranking y no duplica lo ya guardado. Tablas `club_levels` y `club_rankings` (privadas).
+- **Crónica automática** para cualquier temporada (`js/cronica.js`): actos según el carácter de
+  cada mes, el duelo contra el rival repetido, rachas, remontadas, super tie-breaks, mejor y peor
+  mes, rival más duro, la victoria que más vale y los niveles del club. Los golpes de cada uno
+  («Izquierda y derecha») los escribes tú y se guardan en el dispositivo. Probada con el mixto S1;
+  con el masculino S1 saca los mismos tres actos que la escrita a mano.
+
 ### Fixed
 - **Recargar un mes ya cargado no duplica partidos.** El orden de las parejas en la tabla cambia
   con los puestos, así que un partido podía llegar «al revés» y guardarse dos veces. Ahora la base

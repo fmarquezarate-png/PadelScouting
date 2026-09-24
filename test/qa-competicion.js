@@ -106,7 +106,7 @@ mx.matches.forEach(m => {
   const home = await text();
   check('Portada: tu pareja del mixto', home.includes('Ana Clerch') && !home.includes('Cristian'), (home.match(/FRANCISCO.{0,40}|Francisco.{0,40}/) || [''])[0]);
   check('Portada: el nombre de la temporada mixta', home.includes('Mixto 2026'));
-  check('Portada: la crónica del mixto está por escribir', /por escribir/i.test(home));
+  check('Portada: la crónica del mixto ya no está «por escribir»', !/por escribir/i.test(home));
 
   await go('temporada');
   const tm = await text();
@@ -120,8 +120,8 @@ mx.matches.forEach(m => {
   await page.click('[data-f="tb"]'); await page.waitForTimeout(200);
   check('Temporada: el filtro de super tie-break no mete el WO', await page.locator('#rows tr.wo-row').count() === 0);
   await page.click('[data-f="all"]'); await page.waitForTimeout(200);
-  check('Temporada: sin nivel del club (solo existe el del masculino)',
-    await page.locator('[data-metric="club"]').count() === 0);
+  check('Temporada: el nivel del club también en mixto (es el mismo)',
+    await page.locator('[data-metric="club"]').count() === 1);
   check('Temporada: sin la leyenda del club', !tm.includes('solo en el nivel del club'));
   check('Temporada: dibuja la escalera', await page.locator('#chart circle, #chart path').count() > 0);
 
@@ -139,7 +139,8 @@ mx.matches.forEach(m => {
   } else check('Rival: hay parejas para elegir', false);
 
   await go('cronica');
-  check('Crónica: no inventa la del mixto', (await text()).includes('todavía no está escrita'));
+  check('Crónica: la del mixto se escribe sola con sus partidos', (await text()).includes('Escrita sola') &&
+    !(await text()).includes('Cristian'));
 
   await page.reload(); await page.waitForTimeout(900);
   check('Recuerda la competición al volver', (await page.textContent('#comp-label')) === 'Mixta');

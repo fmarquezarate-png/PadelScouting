@@ -135,8 +135,8 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await page.click('#metrics [data-metric="club"]'); await page.waitForTimeout(400);
   const chartTxt = await page.textContent('#chart');
   check('02 · nivel del club: Francisco y Cristian', chartTxt.includes('Francisco') && chartTxt.includes('Cristian'));
-  check('02 · los partidos de mixto van huecos',
-    await page.locator('#chart circle[fill="#0E1109"]').count() >= 7,
+  check('02 · nivel del club sin distinguir la liga (ningún punto hueco)',
+    await page.locator('#chart circle[fill="#0E1109"]').count() === 0,
     await page.locator('#chart circle[fill="#0E1109"]').count());
 
   /* ---------------- 03 MES A MES + ACANTILADO ---------------- */
@@ -220,7 +220,9 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('10 · el duelo 10–9', t.includes('Ernesto') && t.includes('10–9'));
   check('11 · firmas de los dos', t.includes('Bajada de pared') && t.includes('Víbora'));
   check('12 · los dos niveles del club', t.includes('2,51') && t.includes('1,54'));
-  check('Crónica avisa de que es del primer semestre', t.includes('primer semestre'));
+  check('Crónica: dice que se escribe sola', t.includes('Escrita sola'));
+  check('Crónica: actos como la escrita a mano (Al filo · Abril clutch · sin tercer set)',
+    t.includes('Al filo') && t.includes('Vivir en el tie-break') && t.includes('Dejar de sufrir'));
 
   /* ---------------- CARGA ---------------- */
   await go('config');

@@ -105,3 +105,13 @@ El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/lig
   registro enganchado). `update_fixture(id, patch)` cambia solo lo que viene.
 - `scouting_records`: el registro de scouting de cada cuenta. `list_my_records()` y
   `push_my_records(items)` (el más reciente gana; los borrados viajan como `deleted`).
+
+## Nivel del club (por cuenta, con RLS)
+
+- `club_levels (user_id, who, played_at, won, level)`: cada fila del «Histórico del nivel de
+  juego» del club. `who` = `me` o `partner:<competición>` (tu pareja de masculino no es la de mixto).
+- `club_rankings (user_id, who, ranking, name)`: el «Ranking: N» y el nombre de la pareja.
+- RPC `get_my_club_levels()` → `{ me: {ranking, name, rows: [[fecha, ganado, nivel]]}, 'partner:masculina': … }`.
+- RPC `import_club_levels(p_who, p_ranking, p_name, p_rows)`: upsert por fecha y hora; devuelve
+  `{added, updated, total}`. Las filas «Restaurar por corrección» se quitan antes, en `js/club.js`.
+- La fecha y hora de la web se guardan tal cual (como UTC) para que no se muevan.

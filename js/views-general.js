@@ -231,85 +231,154 @@
        memoria, la crónica se pinta al instante y no queda tapada. */
     view.innerHTML = PL.loadingHtml('Cargando la crónica…');
     PL.ensureLoaded(function () {
-      if (!PT.isS1()) { paintCronicaPendiente(view, bind); return; }
+      if (!PL.state.model) { paintCronicaPendiente(view, bind); return; }
       PT.loadClub(function () { paintCronica(view, bind); });
     });
   }
 
-  /* Cada competición tiene su propia crónica, escrita con sus datos reales.
-     Hasta que exista, se dice claro en vez de inventarla. */
   function paintCronicaPendiente(view, bind) {
-    var m = PL.state.model;
-    var s = (m && m.season) || {};
-    view.innerHTML = '<div class="lg"><div class="stale">La crónica de <b>' + esc(s.name || 'esta temporada') +
-      '</b> (' + esc(s.kind || '') + ') todavía no está escrita.</div>' +
-      '<section class="blk"><p class="lede">Una crónica se escribe a mano con los partidos ya cargados: ' +
-      'los actos de la temporada, los duelos que la marcaron y lo que dicen los números de la pareja. ' +
-      'Los números de <b>Nuestra temporada</b>, <b>La liga</b> y <b>El rival</b> ya funcionan con esta ' +
-      'competición.</p><div class="btn-row">' +
-      '<button class="btn primary" data-goto="temporada">Ver nuestra temporada</button>' +
-      '<button class="btn ghost" data-goto="liga">Ver la liga</button></div></section></div>';
+    view.innerHTML = '<div class="lg"><div class="notice bad"><b>No he podido cargar la liga.</b> ' +
+      'Comprueba la conexión y vuelve a entrar.</div></div>';
     bind();
   }
 
+  /* ---------- la parte personal: los golpes de cada uno ----------
+     No sale de los datos: la escribes tú. Se guarda en este dispositivo,
+     una por temporada. La del primer semestre masculino trae la que ya
+     estaba escrita. */
+  var FIRMAS_KEY = 'padel-scouting.firmas.v1:';
+  var FIRMAS_S1 = {
+    me: { side: 'Revés · Izquierda', shots: [
+      ['Pegada', 'El golpe fuerte estaba desde el primer día. Es lo que abre el punto y obliga al rival a jugar incómodo.'],
+      ['Bajada de pared', 'Apareció en abril y se convirtió en el sello. Coincide con el mes de las cuatro remontadas.']] },
+    partner: { side: 'Drive · Derecha', shots: [
+      ['Víbora', 'Letal desde el primer partido. Cierra los puntos que la pegada abre.'],
+      ['Saque', 'Seguro desde el arranque. La base de empezar los puntos con la red ganada.']] }
+  };
+  function firmas(slug) {
+    try {
+      var raw = global.localStorage.getItem(FIRMAS_KEY + slug);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return slug === '2026-s1' ? FIRMAS_S1 : { me: { side: '', shots: [] }, partner: { side: '', shots: [] } };
+  }
+  function saveFirmas(slug, f) {
+    try { global.localStorage.setItem(FIRMAS_KEY + slug, JSON.stringify(f)); } catch (e) {}
+  }
+  function shotsToText(list) {
+    return (list || []).map(function (x) { return x[0] + ': ' + x[1]; }).join('\n');
+  }
+  function textToShots(t) {
+    return String(t || '').split(/\n+/).map(function (l) {
+      var i = l.indexOf(':');
+      return i < 0 ? [l.trim(), ''] : [l.slice(0, i).trim(), l.slice(i + 1).trim()];
+    }).filter(function (x) { return x[0]; });
+  }
+
+  var cronUi = { editing: false };
+
   function paintCronica(view, bind) {
-    var c = ui.club || {};
-    var h = ['<div class="lg">'];
-    h.push('<div class="stale">Escrito a mano para el <b>primer semestre de 2026</b>. ' +
-      'Los números de las otras pantallas se recalculan solos; este relato no.</div>');
+    var m = PL.state.model;
+    var season = m.season || {};
+    var rows = PT.mine(m).concat(PT.mineWO(m)).sort(function (a, b) { return a.mes - b.mes; });
+    var club = PT.club ? PT.club() : null;
+    var me = m.myTeamId ? m.teams[m.myTeamId] : null;
+    var names = { me: club ? club.meName : (me ? me.playerA : 'Tú'), partner: club ? club.partnerName : (me ? me.playerB : 'Pareja') };
+    var h = ['<div class="lg cronica">'];
+    if (!rows.length) {
+      h.push('<div class="stale">Todavía no hay partidos vuestros en <b>' + esc(season.name || 'esta temporada') +
+        '</b>. La crónica se escribe sola en cuanto se carguen.</div></div>');
+      view.innerHTML = h.join(''); bind(); return;
+    }
+    var c = global.PadelCronica.build(rows, club);
+    var n2 = function (v) { return v.toFixed(2).replace('.', ','); };
+    h.push('<div class="stale">Escrita sola con vuestros <b>' + (c.summary.n + c.summary.wo) + ' partidos</b> de ' +
+      esc(global.PadelApp ? global.PadelApp.seasonName(season.slug) : season.name || '') +
+      '. Se rehace cada vez que se carga un mes nuevo; los golpes de cada uno los escribes tú.</div>');
 
-    h.push('<section class="blk">' + PT.sectionHead('09', 'Tres actos', 'El semestre no fue una línea recta. Fueron tres equipos distintos.'));
-    h.push('<div class="acts">' +
-      '<div class="act a1"><div class="ph">Acto I · Marzo</div><h3>Competir</h3><div class="dates">Grupo 17 · 2–2</div>' +
-      '<p>El debut. Mitad de los juegos ganados, mitad perdidos. La mitad de los partidos se decidían en el último ' +
-      'punto y no caían del lado correcto.</p></div>' +
-      '<div class="act a2"><div class="ph">Acto II · Abril</div><h3>El mes clutch</h3><div class="dates">Grupo 17 · 4–0</div>' +
-      '<p>Cuatro partidos, cuatro victorias, y <b>los cuatro decididos en super tie-break</b>. En tres de ellos ' +
-      'perdisteis el primer set. Ganasteis el grupo entero remontando.</p></div>' +
-      '<div class="act a3"><div class="ph">Acto III · Mayo → julio</div><h3>Dejar de sufrir</h3>' +
-      '<div class="dates">Grupos 15, 14, 13 · 6–3</div><p>Nueve partidos, <b>ninguno llegó a un tercer set</b>. ' +
-      'O 2–0 a favor o 2–0 en contra. El porcentaje de juegos sube cada mes.</p></div></div></section>');
+    h.push('<section class="blk">' + PT.sectionHead('09', c.acts.length > 1 ? (c.acts.length === 2 ? 'Dos actos' : 'Tres actos') : 'El relato',
+      c.acts.length > 1 ? 'La temporada no fue una línea recta: cada tramo tuvo su carácter.' : 'Un solo tramo, de principio a fin.'));
+    h.push('<div class="acts">' + c.acts.map(function (a, i) {
+      return '<div class="act a' + (i + 1) + '"><div class="ph">' + esc(a.ph) + '</div><h3>' + esc(a.title) + '</h3>' +
+        '<div class="dates">' + esc(a.dates) + '</div><p>' + a.text + '</p></div>';
+    }).join('') + '</div></section>');
 
-    h.push('<section class="blk">' + PT.sectionHead('10', 'Ernesto & Jordi',
-      'Dos partidos contra el mismo equipo, separados por dos meses.'));
-    h.push('<div class="duel"><div class="duel-card hot"><div class="when">Abril · Grupo 17 · con público</div>' +
-      '<div class="big o">6–1 · 4–6 · 10–9</div><p>Un punto. <b>Un solo punto</b> separó el 4–0 del mes de un 3–1. ' +
-      'Ese super tie-break es la bisagra del semestre: sin él no hay primer puesto ni ascenso.</p></div>' +
-      '<div class="duel-card"><div class="when">Junio · Grupo 14 · la revancha</div><div class="big">6–2 · 6–2</div>' +
-      '<p>Cuatro juegos concedidos en todo el partido. El mismo rival que había empujado hasta el 10–9 ' +
-      '<b>no llegó al tercer set</b>.</p></div></div>' +
-      '<p class="sdek" style="margin-top:18px">Y no eran un equipo débil: acabaron <b>primeros de su grupo en mayo</b>, ' +
-      'justo entre los dos partidos.</p></section>');
+    if (c.duel) {
+      h.push('<section class="blk">' + PT.sectionHead('10', c.duel.rival, esc(c.duel.dek)));
+      h.push('<div class="duel">' + c.duel.cards.map(function (d) {
+        return '<div class="duel-card' + (d.hot ? ' hot' : '') + '"><div class="when">' + esc(d.when) + '</div>' +
+          '<div class="big' + (d.hot ? ' o' : '') + '">' + esc(d.score) + '</div><p>' + esc(d.text) + '</p></div>';
+      }).join('') + '</div>' + (c.duel.foot ? '<p class="sdek" style="margin-top:18px">' + esc(c.duel.foot) + '</p>' : '') + '</section>');
+    }
 
-    h.push('<section class="blk">' + PT.sectionHead('11', 'Izquierda y derecha', 'Dos lados de la pista, dos maneras de resolver un punto.'));
-    h.push('<div class="sigs"><div class="sig"><div class="side">Revés · Izquierda</div><h3>Francisco</h3>' +
-      '<div class="shot"><div class="nm">Pegada</div><div class="ds">El golpe fuerte estaba desde el primer día. ' +
-      'Es lo que abre el punto y obliga al rival a jugar incómodo.</div></div>' +
-      '<div class="shot"><div class="nm">Bajada de pared</div><div class="ds">Apareció en abril y se convirtió en el ' +
-      'sello. Coincide con el mes de las cuatro remontadas.</div></div></div>' +
-      '<div class="sig"><div class="side">Drive · Derecha</div><h3>Cristian</h3>' +
-      '<div class="shot"><div class="nm">Víbora</div><div class="ds">Letal desde el primer partido. Cierra los puntos ' +
-      'que la pegada abre.</div></div><div class="shot"><div class="nm">Saque</div><div class="ds">Seguro desde el ' +
-      'arranque. La base de empezar los puntos con la red ganada.</div></div></div></div></section>');
+    h.push('<section class="blk">' + PT.sectionHead(c.duel ? '11' : '10', 'Lo que dicen los números', 'Rachas, remontadas y los partidos que marcaron la temporada.'));
+    h.push('<div class="tiles">' + c.highlights.map(function (x) { return PT.tile(esc(x.v), x.k, x.sub); }).join('') + '</div></section>');
 
-    if (c.fran && c.cris) {
-      var fEnd = c.fran[c.fran.length - 1].nivel, cEnd = c.cris[c.cris.length - 1].nivel;
-      var n2 = function (v) { return v.toFixed(2).replace('.', ','); };
-      var mix = c.fran.filter(function (x) { return x.mixto; }).length;
-      h.push('<section class="blk">' + PT.sectionHead('12', 'Los dos niveles del club',
-        'El club puntúa a cada jugador por separado. Los dos empezasteis en <b>0,18</b> el 12 de marzo.'));
-      h.push('<div class="tiles">' +
-        PT.tile(n2(fEnd), 'Francisco · nivel final') + PT.tile(n2(cEnd), 'Cristian · nivel final') +
-        PT.tile(n2(cEnd), 'Ganado por los dos en liga') +
-        PT.tile('+' + n2(c.mixto || (fEnd - cEnd)), 'Aportado por el mixto', mix + ' partidos') + '</div>');
-      h.push('<div class="close"><p>En los <b>17 partidos de liga</b> ganasteis exactamente lo mismo. La brecha de ' +
-        '<b>' + n2(fEnd - cEnd) + '</b> coincide punto por punto con lo que le aportaron a Francisco sus <b>' + mix +
-        ' partidos de mixto</b>, los que Cristian no juega. No hay diferencia de rendimiento: hay ' + mix +
-        ' partidos de más.</p><p>Se ve mejor en <button class="linkish" data-goto="temporada">la escalera</button>, ' +
-        'con la métrica «Nivel del club».</p></div></section>');
+    /* Los golpes: manual. */
+    var slug = season.slug || '';
+    var f = firmas(slug);
+    var num = c.duel ? '12' : '11';
+    h.push('<section class="blk">' + PT.sectionHead(num, 'Izquierda y derecha', 'Esto no sale de los números: lo escribes tú.'));
+    if (cronUi.editing) {
+      h.push('<div class="sigs">' + ['me', 'partner'].map(function (k) {
+        return '<div class="sig"><div class="field"><label>Lado de ' + esc(names[k]) + '</label><input type="text" data-fm-side="' + k +
+          '" value="' + esc(f[k].side || '') + '" placeholder="Revés · Izquierda"></div>' +
+          '<div class="field"><label>Golpes (uno por línea, «Golpe: lo que aporta»)</label><textarea rows="5" data-fm-shots="' + k + '">' +
+          esc(shotsToText(f[k].shots)) + '</textarea></div></div>';
+      }).join('') + '</div><div class="btn-row"><button class="btn primary" data-fm="save">Guardar</button>' +
+        '<button class="btn ghost" data-fm="cancel">Cancelar</button></div>');
+    } else {
+      var empty = !f.me.shots.length && !f.partner.shots.length;
+      if (empty) {
+        h.push('<p class="note">Aún no has escrito los golpes de esta temporada: qué aporta cada uno, qué apareció y cuándo.</p>');
+      } else {
+        h.push('<div class="sigs">' + ['me', 'partner'].map(function (k) {
+          return '<div class="sig"><div class="side">' + esc(f[k].side || '') + '</div><h3>' + esc(names[k]) + '</h3>' +
+            f[k].shots.map(function (x) {
+              return '<div class="shot"><div class="nm">' + esc(x[0]) + '</div><div class="ds">' + esc(x[1]) + '</div></div>';
+            }).join('') + '</div>';
+        }).join('') + '</div>');
+      }
+      h.push('<div class="btn-row" style="margin-top:12px"><button class="btn ghost small" data-fm="edit">' +
+        (empty ? 'Escribir los golpes' : 'Editar') + '</button></div>');
+    }
+    h.push('</section>');
+
+    if (c.levels) {
+      var L1 = c.levels.me, L2 = c.levels.partner;
+      h.push('<section class="blk">' + PT.sectionHead(String(+num + 1), 'Los niveles del club',
+        'El club puntúa a cada jugador por separado, con todos sus partidos.'));
+      h.push('<div class="tiles">' + PT.tile(n2(L1.to), L1.name + ' · nivel final', 'Desde ' + n2(L1.from) + ' · ' + L1.n + ' partidos') +
+        (L2 ? PT.tile(n2(L2.to), L2.name + ' · nivel final', 'Desde ' + n2(L2.from) + ' · ' + L2.n + ' partidos') : '') +
+        PT.tile((L1.to - L1.from >= 0 ? '+' : '') + n2(L1.to - L1.from), 'Lo que subió ' + L1.name) +
+        (L2 ? PT.tile((L2.to - L2.from >= 0 ? '+' : '') + n2(L2.to - L2.from), 'Lo que subió ' + L2.name) : '') + '</div>');
+      if (L2) {
+        var gap = L1.to - L2.to, extra = L1.n - L2.n;
+        h.push('<div class="close"><p>Al cierre, <b>' + n2(Math.abs(gap)) + '</b> de diferencia a favor de ' +
+          esc(gap >= 0 ? L1.name : L2.name) + '. ' + (extra ? esc(extra > 0 ? L1.name : L2.name) + ' jugó <b>' + Math.abs(extra) +
+          ' partidos más</b> en el club, y cada partido suma o resta.' : 'Los dos jugasteis los mismos partidos.') +
+          '</p><p>Se ve mejor en <button class="linkish" data-goto="temporada">la escalera</button>, con la métrica «Nivel del club».</p></div>');
+      }
+      h.push('</section>');
     }
     h.push('</div>');
     view.innerHTML = h.join('');
+
+    view.querySelectorAll('[data-fm]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var a = b.getAttribute('data-fm');
+        if (a === 'save') {
+          var nf = { me: {}, partner: {} };
+          ['me', 'partner'].forEach(function (k) {
+            nf[k].side = view.querySelector('[data-fm-side="' + k + '"]').value.trim();
+            nf[k].shots = textToShots(view.querySelector('[data-fm-shots="' + k + '"]').value);
+          });
+          saveFirmas(slug, nf);
+        }
+        cronUi.editing = a === 'edit';
+        paintCronica(view, bind);
+      });
+    });
     bind();
   }
 
@@ -337,7 +406,7 @@
       registro: 'En 2 min',
       historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Tus partidos',
       analisis: 'Y briefing',
-      cronica: PT.isS1() ? '1er semestre' : 'Por escribir',
+      cronica: global.PadelApp ? global.PadelApp.seasonName((m.season || {}).slug) : '',
       estemes: global.__NET_LABEL__ || (global.PadelEsteMes ? global.PadelEsteMes.netLabel() : '')
     };
 
