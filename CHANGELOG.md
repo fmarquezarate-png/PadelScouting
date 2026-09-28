@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Este mes, compartido con tu pareja
+- **Un solo grupo del mes por pareja**: lo ve y lo edita cualquiera de los dos (si los dos cambian
+  lo mismo, vale lo último guardado). Los resultados apuntados cuentan como «Provisional» para
+  los dos hasta que la liga los publica. Las notas de scouting siguen siendo de cada uno.
+- Base: `my_team_ids()`; políticas «pareja» en `rounds` y `fixtures`; `get_my_round` devuelve el
+  grupo de la pareja; `start_round` no abre un segundo grupo si tu pareja ya abrió el del mes y
+  rechaza abrir uno para una pareja que no es la tuya.
+- Al entrar en Este mes se trae lo último de la base y se repinta solo si cambió algo que importa.
+  Una respuesta pedida antes de un cambio tuyo se descarta (no pisa lo que acabas de hacer).
+- Datos: el grupo de Ana del mixto S2 (vacío, duplicado del tuyo) queda cerrado; se usa el tuyo.
+
 ### Security — un jugador, una cuenta
 - Cada jugador de la liga solo puede estar vinculado a **una** cuenta (y cada cuenta es un email):
   índice único `profiles_player_unique` en la base. Si alguien elige un jugador que ya tiene cuenta,

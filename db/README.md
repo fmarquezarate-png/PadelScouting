@@ -137,3 +137,12 @@ temporada de la misma competición, rechaza la carga.
 - `update_my_profile` y `set_my_profile` convierten la violación en `JUGADOR_OCUPADO: …`; la app
   quita el prefijo y enseña el mensaje. Para liberar un jugador (p. ej. alguien se vinculó por error),
   el administrador pone `player_id = null` en ese perfil desde el panel de Supabase.
+
+## Este mes compartido por la pareja
+
+- `my_team_ids()`: parejas (teams) en las que juega el jugador de tu perfil.
+- `rounds` / `fixtures`: se leen y cambian si son tuyos **o** de una de tus parejas
+  (políticas «pareja: leer / cambiar»). Crear y borrar sigue siendo solo tuyo.
+- `get_my_round(season)`: el grupo en curso de la competición (el de la pareja, el más reciente).
+- `start_round`: valida que `myTeamId` sea tuyo; si tu pareja ya abrió el grupo de ese mes, lo devuelve.
+- `update_fixture`: gana lo último guardado; toca también `rounds.updated_at`.

@@ -45,11 +45,18 @@
   function cacheWrite(r) { try { global.localStorage.setItem(cacheKey(), JSON.stringify(r)); } catch (e) {} }
   function cacheRead() { try { return JSON.parse(global.localStorage.getItem(cacheKey())); } catch (e) { return null; } }
 
+  /* Cada cambio tuyo sube este contador: una respuesta pedida antes de un
+     cambio llega con datos viejos y se descarta (no pisa lo que acabas de hacer). */
+  var editSeq = 0;
+  function touched() { editSeq++; }
+
   function load(done) {
     var slug = DB().currentSeason();
     if (!user()) { state.round = null; state.slug = slug; if (done) done(); return; }
     state.loading = true;
+    var seq = editSeq;
     DB().callAuthed('get_my_round', { season_slug: slug }).then(function (r) {
+      if (seq !== editSeq && slug === state.slug) { state.loading = false; return; }
       state.round = r || null; state.slug = slug; state.loading = false; state.known = true;
       cacheWrite(state.round);
     }).catch(function () {
@@ -197,8 +204,33 @@
       if (state.slug !== DB().currentSeason() && user()) {
         view.innerHTML = PL().loadingHtml('Cargando tu grupo…');
         load(function () { paint(view, bind); });
-      } else paint(view, bind);
+      } else {
+        paint(view, bind);
+        /* El grupo es de la pareja: al entrar se trae lo último que haya apuntado
+           cualquiera de los dos y se repinta si cambió (gana lo último guardado). */
+        if (user()) {
+          var before = roundSig(state.round);
+          load(function () {
+            var still = global.PadelApp && global.PadelApp.state.view === 'estemes' && !document.querySelector('.modal');
+            if (still && roundSig(state.round) !== before) paint(view, bind);
+          });
+        }
+      }
     });
+  }
+
+  /* Lo que importa de un grupo (para no repintar por diferencias de formato). */
+  function roundSig(r) {
+    if (!r) return '';
+    return [r.id, r.group, r.leagueMonth].concat((r.fixtures || []).map(function (f) {
+      var t = f.scheduledAt ? new Date(f.scheduledAt).getTime() : 0;
+      return [f.id, f.rivalTeamId, f.status, JSON.stringify(f.sets || null), t].join(':');
+    })).join('|');
+  }
+
+  /* El registro de scouting es personal: el enlace solo cuenta si ese registro es tuyo. */
+  function ownRecord(id) {
+    return !!(id && global.PadelStorage && global.PadelStorage.get && global.PadelStorage.get(id));
   }
 
   function paint(view, bind) {
@@ -206,7 +238,7 @@
     var h = ['<div class="lg estemes">'];
     if (!user()) {
       h.push('<section class="blk"><p class="lede">«Este mes» guarda tu grupo, las fechas de tus partidos y tus ' +
-        'resultados en tu cuenta.</p><button class="btn primary" data-goto="perfil">Entrar con mi cuenta</button></section></div>');
+        'resultados, compartidos con tu pareja.</p><button class="btn primary" data-goto="perfil">Entrar con mi cuenta</button></section></div>');
       view.innerHTML = h.join(''); bind(); return;
     }
     if (!me) {
@@ -229,7 +261,9 @@
     var srcTxt = { liga: 'grupo de la liga', prevision: 'grupo previsto', manual: 'elegido por ti' }[r.source] || '';
 
     h.push('<section class="blk em-head"><div class="eyebrow">Ronda de ' + esc(r.label) +
-      (r.group ? ' · Grupo ' + r.group : '') + ' · ' + esc(srcTxt) + '</div>');
+      (r.group ? ' · Grupo ' + r.group : '') + ' · ' + esc(srcTxt) + '</div>' +
+      '<p class="note em-shared">Compartido con tu pareja: lo que apunte cualquiera de los dos lo veis los dos ' +
+      '(si los dos cambiáis lo mismo, vale lo último). Tus notas de scouting siguen siendo solo tuyas.</p>');
     if (out) {
       /* En grupos donde nadie se mantiene (masculino de 4) no se enseña esa casilla. */
       var canStay = out.moves.indexOf(0) >= 0;
@@ -365,7 +399,7 @@
       (t ? '<button class="btn small" data-rival="' + t.id + '">Comparar →</button>' : '') +
       '<button class="btn small ghost" data-fx-result="' + f.id + '">' + (f.status === 'pendiente' ? 'Resultado' : 'Cambiar resultado') + '</button>' +
       (f.scheduledAt && f.status === 'pendiente' ? '<button class="btn small ghost" data-fx-ics="' + f.id + '">Al calendario</button>' : '') +
-      (f.recordId ? '' : (f.status === 'jugado' ? '<button class="btn small ghost" data-fx-full="' + f.id + '">Registro completo</button>' : '')) +
+      (ownRecord(f.recordId) ? '' : (f.status === 'jugado' ? '<button class="btn small ghost" data-fx-full="' + f.id + '">Registro completo</button>' : '')) +
       '</div></article>');
     return h.join('');
   }
@@ -444,7 +478,9 @@
 
   /* Guarda un cambio de un partido y vuelve a pintar todo lo que depende de él. */
   function saveFixture(id, patch, msg) {
+    touched();
     return DB().callAuthed('update_fixture', { p_id: id, patch: patch }).then(function (row) {
+      touched();
       var f = fixtureById(id);
       if (f && row) {
         f.scheduledAt = row.scheduled_at; f.status = row.status; f.sets = row.sets; f.recordId = row.record_id;
@@ -568,6 +604,7 @@
         var a = b.getAttribute('data-rm');
         if (a === 'later') { if (rm.auto) state.skipNew[DB().currentSeason()] = true; closeModal(); return; }
         if (a === 'keep') {
+          touched();
           DB().callAuthed('keep_round', { p_id: state.round.id }).then(function () {
             state.round.monthStart = firstOfMonth(); cacheWrite(state.round); closeModal();
             global.PadelApp.toast('Sigues en la ronda de ' + state.round.label + '.');
@@ -588,7 +625,9 @@
       source: rm.edited ? 'manual' : rm.source,
       rivals: rm.rivals.map(function (id) { return { teamId: id, label: m.teams[id].label }; })
     };
+    touched();
     DB().callAuthed('start_round', { payload: payload }).then(function (r) {
+      touched();
       state.round = r; state.slug = DB().currentSeason(); cacheWrite(r);
       closeModal(); PL().rebuild();
       global.PadelApp.toast('Grupo de ' + r.label + ' listo.');

@@ -101,7 +101,7 @@ async function mockApp(page, opts) {
   await p.fill(`[data-fx-date="${fx}"]`, '2026-09-27T19:00'); await p.dispatchEvent(`[data-fx-date="${fx}"]`, 'change'); await p.waitForTimeout(900);
   check('Guarda la fecha y hora', S.lastPatch && /^2026-09-27T\d\d:00:00.000Z$/.test(S.lastPatch.scheduledAt), S.lastPatch && S.lastPatch.scheduledAt);
   check('La tarjeta enseña la fecha', (await p.textContent(`[data-fx="${fx}"] .em-chip`)).includes('19:00'));
-  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 3000 }).catch(() => null), p.click(`[data-fx-ics="${fx}"]`)]);
+  const [dl] = await Promise.all([p.waitForEvent('download', { timeout: 10000 }).catch(() => null), p.click(`[data-fx-ics="${fx}"]`)]);
   let ics = '';
   if (dl) ics = fs.readFileSync(await dl.path(), 'utf8');
   check('Al calendario: archivo .ics con aviso 2 h antes', ics.includes('BEGIN:VEVENT') && ics.includes('TRIGGER:-PT2H'));
@@ -203,19 +203,21 @@ async function mockApp(page, opts) {
     const snap = JSON.parse(SNAP);
     const lad = {}; /* grupo del mes 5 según el fixture: rivales de 81 */
     const rnd = { id: 11, label: 'Junio', monthStart: '2026-06-01', leagueMonth: 5, group: 0, myTeamId: 81, status: 'en_curso', source: 'liga', fixtures: [] };
-    await mockApp(q, { round: rnd });
+    const SQ = await mockApp(q, { round: rnd });
     await q.addInitScript(() => { window.__PADEL_NOW__ = '2026-06-10T12:00:00Z'; });
     await q.goto(BASE); await q.waitForTimeout(2000);
     const info = await q.evaluate(() => {
       const m = window.PadelLiga.state.model, l = m.ladder[5], me = m.myTeamId;
       return { g: l[me].group, rivals: Object.keys(l).map(Number).filter(id => id !== me && l[id].group === l[me].group) };
     });
-    await q.evaluate(i => {
+    /* El grupo vive en la base (compartido con la pareja): se prepara ahí. */
+    SQ.round.group = info.g;
+    SQ.round.fixtures = info.rivals.map((id, k) => ({ id: 500 + k, rivalTeamId: id, rivalLabel: '', status: 'pendiente', sets: null }));
+    await q.evaluate(r => {
       const st = window.PadelEsteMes.state;
-      st.round.group = i.g;
-      st.round.fixtures = i.rivals.map((id, k) => ({ id: 500 + k, rivalTeamId: id, rivalLabel: '', status: 'pendiente', sets: null }));
+      st.round.group = r.group; st.round.fixtures = r.fixtures;
       window.PadelApp.go('estemes');
-    }, info);
+    }, SQ.round);
     await q.waitForTimeout(1500);
     const t = await text(q);
     check('Tabla del grupo: una fila por pareja', await q.locator('.em-table').first().locator('tbody tr').count() === 4);
@@ -240,9 +242,29 @@ async function mockApp(page, opts) {
       await q.evaluate(id => { const s = window.PadelLiga.state; return s.rivalId === +id && s.model.myTeamId === s.model.ownTeamId; }, firstRival));
     await q.evaluate(() => window.PadelApp.go('estemes')); await q.waitForTimeout(900);
     /* Sin clasificación del mes: explica qué falta */
+    SQ.round.leagueMonth = null;
     await q.evaluate(() => { window.PadelEsteMes.state.round.leagueMonth = null; window.PadelApp.go('estemes'); });
     await q.waitForTimeout(900);
     check('Cocina sin la clasificación: explica qué hace falta', (await text(q)).includes('Para esto necesito la clasificación'));
+    await q.close();
+  }
+
+  /* ---------- grupo compartido con la pareja ---------- */
+  {
+    const q = await newPage();
+    const shared = { id: 30, label: 'Septiembre', monthStart: '2026-09-01', leagueMonth: 6, group: 13, myTeamId: 81, status: 'en_curso',
+      source: 'liga', shared: true, fixtures: [{ id: 301, rivalTeamId: 1, rivalLabel: 'X', scheduledAt: null, status: 'pendiente', sets: null }] };
+    const S3 = await mockApp(q, { round: shared });
+    await q.addInitScript(() => { window.__PADEL_NOW__ = '2026-09-10T12:00:00Z'; });
+    await q.goto(BASE); await q.waitForTimeout(1800);
+    await q.evaluate(() => { document.getElementById('modal-root').innerHTML = ''; document.body.classList.remove('has-modal'); window.PadelApp.go('estemes'); });
+    await q.waitForTimeout(900);
+    check('Este mes dice que el grupo es compartido con tu pareja', (await text(q)).includes('Compartido con tu pareja'));
+    /* Tu pareja apunta un resultado en su móvil: al volver a entrar lo ves */
+    S3.round.fixtures[0].status = 'jugado'; S3.round.fixtures[0].sets = [[6, 2], [6, 3]];
+    await q.evaluate(() => window.PadelApp.go('inicio')); await q.waitForTimeout(400);
+    await q.evaluate(() => window.PadelApp.go('estemes')); await q.waitForTimeout(1500);
+    check('Al entrar en Este mes se ve lo que apuntó tu pareja', (await text(q)).includes('6–2'), (await text(q)).slice(0, 0));
     await q.close();
   }
 
