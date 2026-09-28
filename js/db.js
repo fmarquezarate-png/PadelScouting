@@ -179,7 +179,11 @@
     }).then(function (res) {
       return res.json().then(function (data) {
         if (!res.ok) {
-          throw new Error((data && (data.message || data.hint)) || ('Error ' + res.status));
+          var msg = (data && (data.message || data.hint)) || ('Error ' + res.status);
+          var e = new Error(String(msg).replace(/^JUGADOR_OCUPADO:\s*/, ''));
+          /* Un jugador de la liga solo puede estar en una cuenta. */
+          if (/^JUGADOR_OCUPADO/.test(msg)) e.code = 'player_taken';
+          throw e;
         }
         return data;
       });

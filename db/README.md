@@ -130,3 +130,10 @@ El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/lig
 texto están en el mismo grupo que en un mes existente de la temporada, lo trata como ese mes
 (`tmp_month_map.by_groups`) y se queda con el nombre nuevo. Si coincide con un mes de otra
 temporada de la misma competición, rechaza la carga.
+
+## Un jugador, una cuenta
+
+- `profiles_player_unique`: índice único parcial sobre `profiles.player_id`.
+- `update_my_profile` y `set_my_profile` convierten la violación en `JUGADOR_OCUPADO: …`; la app
+  quita el prefijo y enseña el mensaje. Para liberar un jugador (p. ej. alguien se vinculó por error),
+  el administrador pone `player_id = null` en ese perfil desde el panel de Supabase.

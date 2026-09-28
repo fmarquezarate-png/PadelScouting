@@ -5,6 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Security — un jugador, una cuenta
+- Cada jugador de la liga solo puede estar vinculado a **una** cuenta (y cada cuenta es un email):
+  índice único `profiles_player_unique` en la base. Si alguien elige un jugador que ya tiene cuenta,
+  la base lo rechaza (también por `set_my_profile`) y la app lo explica y vuelve a preguntar quién eres.
+  La app no enseña de antemano quién tiene cuenta: eso obligaría a exponer perfiles ajenos.
+
 ### Fixed — ronda duplicada en el mixto
 - **Causa**: la ronda de septiembre del mixto se cargó cuando la web la llamaba «Julio»; hoy la
   llama «Septiembre». La base emparejaba los meses solo por el nombre y creó un mes nuevo:

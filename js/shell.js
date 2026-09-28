@@ -291,7 +291,10 @@
         global.PadelApp.toast(editing ? 'Datos guardados.' : '¡Bienvenido, ' + (p && p.label ? p.label.split(' ')[0] : '') + '!');
       }).catch(function (err) {
         if (!wz) return;
-        wz.busy = false; wz.error = err.message; paintWelcome();
+        wz.busy = false; wz.error = err.message;
+        /* Jugador ya vinculado a otra cuenta: se vuelve a elegir. */
+        if (err.code === 'player_taken') { wz.label = ''; wz.query = ''; }
+        paintWelcome();
       });
   }
 

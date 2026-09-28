@@ -251,6 +251,17 @@ mx.matches.forEach(m => {
   check('360 px: la barra de arriba cabe sin desbordar', !overflow);
   await page.screenshot({ path: process.env.SHOTS ? process.env.SHOTS + '/50-competicion.png' : '/dev/null' }).catch(() => {});
 
+  /* ---------- un jugador, una cuenta ---------- */
+  await page.route('**/rest/v1/rpc/update_my_profile', r => r.fulfill({ status: 400, contentType: 'application/json',
+    body: JSON.stringify({ code: 'P0001', message: 'JUGADOR_OCUPADO: Ferran Cod ya está vinculado a otra cuenta. Cada jugador de la liga solo puede tener una. Si eres tú, escribe al administrador.' }) }));
+  await page.evaluate(() => window.PadelShell.openWelcome({ label: 'Ferran Cod', category: 'masculina', playsMixed: false, defaultKind: 'masculina' }, true));
+  await page.waitForTimeout(400);
+  await page.click('[data-wz="save"]'); await page.waitForTimeout(800);
+  const wzt = await page.textContent('.modal');
+  check('Jugador ya vinculado a otra cuenta: lo dice claro', wzt.includes('ya está vinculado a otra cuenta') && !wzt.includes('JUGADOR_OCUPADO'));
+  check('Jugador ya vinculado: vuelve a pedir quién eres', await page.locator('#wz-q').count() === 1);
+  await page.evaluate(() => window.PadelShell.closeModal());
+
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();
   ok.forEach(x => console.log('  ok  ' + x));
