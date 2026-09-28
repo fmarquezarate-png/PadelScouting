@@ -5,8 +5,8 @@
    · Temporada 2 (S2): septiembre → diciembre. La ronda de diciembre
      se puede jugar en diciembre y enero (enero es del S2 del año anterior).
    · Master: torneo aparte, fuera del ranking. No entra aquí.
-   Manda el mes en que se JUGÓ. La web del mixto nombra cada ronda con un
-   mes de adelanto («Julio» se jugó en septiembre); la del masculino no.
+   Manda el mes en que se JUGÓ. En el S1 de 2026 la web del mixto nombraba cada
+   ronda con un mes de adelanto; hoy ya usa el mes real.
    ============================================================ */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -49,8 +49,11 @@
     return 'Temporada ' + year + ' · ' + (sem === 1 ? 'primer' : 'segundo') + ' semestre';
   }
 
-  /* Cuántos meses de adelanto lleva el nombre de la web. */
-  function defaultShift(kind) { return kind === 'mixta' ? 1 : 0; }
+  /* Cuántos meses de adelanto lleva el nombre de la web. En el S1 de 2026 la web
+     del mixto iba un mes adelantada; desde septiembre de 2026 ya nombra cada ronda
+     por su mes real, así que se propone el mismo (en el cargador se puede cambiar).
+     Y aunque el nombre cambie, la base reconoce una ronda ya guardada por sus grupos. */
+  function defaultShift(kind) { return 0; }
 
   /* Mes jugado por defecto para un nombre de la web. */
   function playedIdx(webLabel, kind) {

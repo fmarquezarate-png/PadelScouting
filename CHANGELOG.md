@@ -5,6 +5,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed — ronda duplicada en el mixto
+- **Causa**: la ronda de septiembre del mixto se cargó cuando la web la llamaba «Julio»; hoy la
+  llama «Septiembre». La base emparejaba los meses solo por el nombre y creó un mes nuevo:
+  11 partidos repetidos (entre ellos el vuestro contra Sonia/Jordi).
+- **Datos**: se queda «Septiembre» (19 partidos) y se borra la copia «Julio» tras comprobar que
+  sus 11 partidos estaban idénticos en «Septiembre». Tu grupo de Este mes apunta al mes bueno.
+- **Para que no vuelva a pasar** (`ingest_league`): una ronda ya guardada se reconoce por sus grupos
+  (80 % o más de las parejas en el mismo grupo); si la web le cambia el nombre, se actualiza el
+  nombre en vez de duplicarla. Si esa ronda ya está en otra temporada de la competición, se
+  rechaza y se dice dónde está. Los meses distintos nunca se parecen tanto (en masculino cambian
+  todas de grupo; en mixto se queda en su grupo alrededor de un tercio).
+- El cargador ya no supone que la web del mixto va un mes adelantada (desde septiembre usa el mes
+  real); se sigue pudiendo corregir en la tabla.
+
 ### Added
 - **La pista de día en el tema claro** (`assets/pista-web-dia.webp`, `assets/pista-movil-dia.webp`) y de
   noche en el oscuro. Mismo encuadre que las de noche: los botones caen en el mismo sitio sin

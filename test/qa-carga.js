@@ -151,8 +151,11 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e ? ' → ' + e : ''));
 
   const calMx = await page.$$eval('.cal-t tbody tr', e => e.map(x => x.querySelector('td').textContent + '>' +
     x.querySelector('select').selectedOptions[0].textContent + '>' + x.lastElementChild.textContent));
-  check('Mixto: la web va un mes adelantada («Julio» se jugó en septiembre)',
-    /Enero>Febrero>20\d\d-s1-mixta/.test(calMx[0]) && /Julio>Septiembre>20\d\d-s2-mixta/.test(calMx[2]), calMx.join(' | '));
+  check('Mixto: propone el mes con el nombre de la web (ya no va adelantada)',
+    /Enero>Enero>20\d\d-s2-mixta/.test(calMx[0]) && /Julio>Julio>20\d\d-s1-mixta/.test(calMx[2]), calMx.join(' | '));
+  /* Como en el S1 de 2026: la web iba un mes adelantada y se corrige a mano en la tabla. */
+  await page.selectOption('[data-played="1"]', '1'); await page.selectOption('[data-played="2"]', '2');
+  await page.selectOption('[data-played="7"]', '8'); await page.waitForTimeout(300);
   ingests = []; ingest = null;
   await page.click('[data-action="save-league"]'); await page.waitForTimeout(1500);
   if (ingests.length) {

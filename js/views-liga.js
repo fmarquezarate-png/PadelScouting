@@ -240,8 +240,8 @@
       /* Calendario: mes de la web → mes en que se jugó → temporada. */
       var CAL = global.PadelCalendario, rowsCal = calMonths();
       h.push('<div class="card cal-card"><b>¿Cuándo se jugó cada mes?</b>' +
-        '<p class="field-note">' + (CAL.defaultShift(l.kind) ? 'En el mixto la web nombra cada ronda con un mes de ' +
-          'adelanto («Julio» se jugó en septiembre): ya lo tengo en cuenta. ' : '') + 'Cámbialo si no cuadra.</p>' +
+        '<p class="field-note">Propongo el mes con el nombre de la web. Cámbialo si no cuadra. Si pegas una ronda ya ' +
+          'guardada (aunque la web le haya cambiado el nombre), la base la reconoce por sus grupos y no la duplica.</p>' +
         '<table class="table cal-t"><thead><tr><th>En la web</th><th>Se jugó en</th><th>Temporada</th></tr></thead><tbody>' +
         rowsCal.map(function (M) {
           var sem = CAL.semesterOf(M.played), yr = CAL.seasonYear(M.played);

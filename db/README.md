@@ -123,3 +123,10 @@ El primer semestre de 2026 se cargó desde `legacy/liga-2026-s1.txt` con `js/lig
   `players`, `teams` y `league_imports`: solo `is_admin()`. La lectura sigue siendo pública.
 - `assert_admin()` da el mensaje claro al principio de `ingest_league` e `ingest_league_matches`.
 - `get_my_profile()` devuelve `isAdmin`, `side` y `hand`; `update_my_profile` acepta `side` y `hand`.
+
+## Rondas repetidas con otro nombre
+
+`ingest_league` reconoce un mes ya guardado por sus grupos: si el 80 % o más de las parejas del
+texto están en el mismo grupo que en un mes existente de la temporada, lo trata como ese mes
+(`tmp_month_map.by_groups`) y se queda con el nombre nuevo. Si coincide con un mes de otra
+temporada de la misma competición, rechaza la carga.
