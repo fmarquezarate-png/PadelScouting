@@ -105,6 +105,8 @@ async function mockApp(page, opts) {
   let ics = '';
   if (dl) ics = fs.readFileSync(await dl.path(), 'utf8');
   check('Al calendario: archivo .ics con aviso 2 h antes', ics.includes('BEGIN:VEVENT') && ics.includes('TRIGGER:-PT2H'));
+  /* Reloj de la app fijado antes del partido: la prueba no depende del día en que se pase. */
+  await p.evaluate(() => { window.__PADEL_NOW__ = '2026-09-20T12:00:00Z'; });
   await p.evaluate(() => window.PadelApp.go('inicio')); await p.waitForTimeout(1200);
   check('La red enseña el próximo partido', /19:00/.test(await p.textContent('.net-btn')), await p.textContent('.net-btn'));
 
@@ -187,7 +189,8 @@ async function mockApp(page, opts) {
     const q = await newPage();
     const old = { id: 9, label: 'Septiembre', monthStart: '2026-08-01', leagueMonth: null, group: 12, myTeamId: 81, status: 'en_curso', source: 'prevision', fixtures: [] };
     const S2 = await mockApp(q, { round: old });
-    await q.goto(BASE); await q.waitForTimeout(2200);
+    await q.goto(BASE);
+    await q.waitForSelector('[data-rm="keep"]', { timeout: 8000 }).catch(() => {});
     check('Mes nuevo con ronda abierta: vuelve a preguntar', await q.locator('[data-rm="keep"]').count() === 1);
     await q.click('[data-rm="keep"]'); await q.waitForTimeout(700);
     check('«Sigue la misma ronda» no crea otra', S2.calls.includes('keep_round') && !S2.calls.includes('start_round'));
