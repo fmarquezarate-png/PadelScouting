@@ -146,3 +146,26 @@ temporada de la misma competición, rechaza la carga.
 - `get_my_round(season)`: el grupo en curso de la competición (el de la pareja, el más reciente).
 - `start_round`: valida que `myTeamId` sea tuyo; si tu pareja ya abrió el grupo de ese mes, lo devuelve.
 - `update_fixture`: gana lo último guardado; toca también `rounds.updated_at`.
+
+## Avisos en el móvil (web push)
+
+- **Aparatos**: `push_subscriptions` (uno por navegador, con `user_id`). La app los guarda con
+  `save_push_subscription(sub)` y los borra con `delete_push_subscription(p_endpoint)`; la clave
+  pública sale de `vapid_public_key()`. Las claves VAPID y la contraseña interna (`notify_token`)
+  viven en Vault; la privada nunca sale de la base ni de la función.
+- **Preferencias**: `profiles.notify_reminders / notify_results / notify_loads` (por defecto sí),
+  editables con `update_my_profile` (`notifyReminders`, `notifyResults`, `notifyLoads`).
+- **Cuándo se avisa** (todo pasa por `notify_call(body)` → pg_net → función `notify`):
+  - `fixtures_notify_result`: un resultado apuntado (jugado / w.o.) → avisa a la pareja de quien lo apuntó.
+  - `league_imports_notify`: carga masiva con partidos → a todos los de esa competición con cuenta,
+    con su grupo y puesto.
+  - Tarea `padel-recordatorios` (cada hora): la función solo actúa a las 20:00 de España y avisa
+    de los partidos con fecha de mañana.
+  - `send_test_push()`: aviso de prueba a tus aparatos.
+- **Función `notify`** (`db/functions/notify/index.ts`, sin verificación JWT: exige la cabecera
+  `x-notify-token`). Los mensajes los arman funciones solo para `service_role`
+  (`notify_result_messages`, `notify_load_messages`, `notify_reminder_messages`,
+  `notify_test_messages`, `notify_targets`). Un aparato que responde 404/410 se borra (`push_mark`).
+  Un aviso que falla nunca rompe lo que se estaba guardando.
+- Probar a mano (SQL): `select notify_call('{"type":"reminders","force":true}')` y mirar
+  `net._http_response`.

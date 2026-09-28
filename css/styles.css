@@ -1040,3 +1040,12 @@ html[data-theme="light"] .court-photo{background:#dfe8ef}
   .comp-btn{font-size:10.5px}
   .pair-chip{bottom:9px;height:20px;font-size:11px}
 }
+
+/* Avisos (Configuración) */
+.av-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+.av-row{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.av-row input{width:20px;height:20px;margin-top:2px;accent-color:var(--orange);flex:none}
+.av-row span{display:flex;flex-direction:column;gap:2px;font-size:15px}
+.av-row small{color:var(--mute);font-size:13px}
+#av-actions:empty{display:none}
+#av-actions{margin-bottom:12px}

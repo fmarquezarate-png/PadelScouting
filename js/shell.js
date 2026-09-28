@@ -435,6 +435,8 @@
       }).join('') + '</div><p class="field-note">«Como el móvil» cambia solo cuando tu móvil pasa a modo claro u oscuro. ' +
       'En claro, la pista de inicio se ve de día; en oscuro, de noche.</p></section>');
 
+    h.push(avisosCard(u, p));
+
     h.push('<section class="card"><h3>Competición</h3>' +
       '<p class="field-note">Estás viendo <b>' + esc((global.PadelApp.KIND[global.PadelApp.kindOfSlug(slug)] || '') + ' · ' +
       global.PadelApp.seasonName(slug)) + '</b>. La competición se cambia arriba, junto al título; el semestre, dentro de cada página.</p>');
@@ -475,8 +477,78 @@
         redraw();
       }).catch(function (err) { global.PadelApp.toast(err.message, true); });
     });
+    bindAvisos(u, redraw);
     PL().bindLoader(view, redraw);
     bind();
+  }
+
+  /* ---------- Avisos (notificaciones en el móvil) ---------- */
+  var AVISO_TIPOS = [
+    ['notifyReminders', 'La víspera de un partido', 'A las 20:00 del día antes, si tenéis partido con fecha.'],
+    ['notifyResults', 'Tu pareja apunta un resultado', 'Cuando tu pareja guarda un marcador vuestro.'],
+    ['notifyLoads', 'Nueva clasificación cargada', 'Cuando se sube la clasificación de tu competición, con vuestro puesto.']
+  ];
+  function avisosCard(u, p) {
+    var h = '<section class="card" id="cfg-avisos"><h3>Avisos</h3>';
+    if (!u) return h + '<p class="field-note">Inicia sesión para recibir avisos en el móvil.</p>' +
+      '<div class="btn-row"><button class="btn" data-goto="perfil">Iniciar sesión</button></div></section>';
+    h += '<p class="field-note" id="av-state">Mirando este aparato…</p><div class="btn-row" id="av-actions"></div>';
+    h += '<span class="field-label">Qué avisos quieres</span><div class="av-list" id="av-prefs">' +
+      AVISO_TIPOS.map(function (t) {
+        var on = p[t[0]] !== false;
+        return '<label class="av-row"><input type="checkbox" data-pref="' + t[0] + '"' + (on ? ' checked' : '') + '>' +
+          '<span><b>' + t[1] + '</b><small>' + t[2] + '</small></span></label>';
+      }).join('') + '</div>' +
+      '<p class="field-note">Estas preferencias van con tu cuenta: valen para todos tus aparatos con avisos activados.</p></section>';
+    return h;
+  }
+  function bindAvisos(u, redraw) {
+    var AV = global.PadelAvisos, st = document.getElementById('av-state'), act = document.getElementById('av-actions');
+    if (!u || !AV || !st) return;
+    function paint(s) {
+      if (!document.body.contains(st)) return;
+      var msg, btns = '';
+      if (s.reason === 'install') {
+        msg = 'En iPhone los avisos solo funcionan con la app en la pantalla de inicio: en Safari, botón Compartir → «Añadir a pantalla de inicio», y ábrela desde ahí.';
+      } else if (s.reason === 'unsupported') {
+        msg = 'Este navegador no admite avisos. Prueba con Chrome, Edge, Firefox o Safari al día.';
+      } else if (s.reason === 'denied') {
+        msg = 'Tienes los avisos bloqueados para esta web. Desbloquéalos en los ajustes del navegador y vuelve aquí.';
+      } else if (s.on) {
+        msg = '✅ Este aparato recibe avisos.';
+        btns = '<button class="btn" data-av="test">Enviar aviso de prueba</button><button class="btn ghost" data-av="off">Desactivar en este aparato</button>';
+      } else {
+        msg = 'Este aparato no recibe avisos.';
+        btns = '<button class="btn primary" data-av="on">Activar avisos en este aparato</button>';
+      }
+      st.textContent = msg;
+      act.innerHTML = btns;
+    }
+    AV.status().then(paint).catch(function () { paint({ on: false }); });
+    act.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-av]');
+      if (!b || b.disabled) return;
+      var what = b.getAttribute('data-av');
+      b.disabled = true;
+      var job = what === 'on' ? AV.enable() : what === 'off' ? AV.disable() : AV.test();
+      job.then(function (r) {
+        if (what === 'test') {
+          global.PadelApp.toast('Aviso de prueba enviado: debería llegarte en unos segundos. Si no llega, desactiva y vuelve a activar.');
+          b.disabled = false;
+          return;
+        }
+        global.PadelApp.toast(what === 'on' ? 'Avisos activados en este aparato.' : 'Avisos desactivados en este aparato.');
+        return AV.status().then(paint);
+      }).catch(function (err) { b.disabled = false; global.PadelApp.toast(err.message, true); });
+    });
+    document.getElementById('av-prefs').addEventListener('change', function (ev) {
+      var c = ev.target.closest('[data-pref]');
+      if (!c) return;
+      var patch = {}; patch[c.getAttribute('data-pref')] = c.checked;
+      DB().updateProfile(patch).then(function () {
+        global.PadelApp.toast(c.checked ? 'Aviso activado.' : 'Aviso desactivado.');
+      }).catch(function (err) { c.checked = !c.checked; global.PadelApp.toast(err.message, true); });
+    });
   }
 
   global.PadelShell = {

@@ -1310,8 +1310,19 @@
         if (global.PadelShell) global.PadelShell.onProfile(p);
         applyDefaultKind(p && p.defaultKind);
       }).catch(function () {});
+      if (global.PadelAvisos) global.PadelAvisos.refresh();
     }
-    go('inicio');
+    /* Los avisos abren la app en su pantalla: ./#estemes, ./#temporada… */
+    global.addEventListener('hashchange', function () { var v = hashView(); if (v) go(v); });
+    go(hashView() || 'inicio');
+  }
+
+  /* Pantalla pedida en el # de la dirección (solo nombres de pantalla; se limpia al leerla). */
+  function hashView() {
+    var h = String(global.location.hash || '').replace(/^#/, '');
+    if (!h || !VIEWS[h]) return null;
+    try { global.history.replaceState(null, '', global.location.pathname + global.location.search); } catch (e) {}
+    return h;
   }
 
   /* El enlace del correo falló (caducado o ya usado). La cuenta suele existir:

@@ -5,6 +5,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added — Avisos en el móvil
+- **Configuración → Avisos**: activar o desactivar los avisos en cada aparato, botón de aviso de
+  prueba y tres tipos que se encienden por separado (van con tu cuenta):
+  - **La víspera de un partido**, a las 20:00 (hora de España), si el partido tiene fecha.
+  - **Tu pareja apunta un resultado** (marcador provisional incluido).
+  - **Nueva clasificación cargada** de tu competición, con vuestro grupo y puesto.
+- iPhone: solo con la app en la pantalla de inicio; la tarjeta lo explica en vez de ofrecer activar.
+- Tocar un aviso abre la app en su pantalla (`./#estemes`, `./#temporada`); cualquier `#pantalla`
+  conocida funciona al abrir o con la app ya abierta.
+- Al abrir la app con avisos activos se vuelve a guardar el aparato (los navegadores renuevan la
+  suscripción de vez en cuando); los aparatos que ya no existen se olvidan solos.
+- `sw.js` (solo recibe avisos; no guarda la app en caché) y `js/avisos.js`.
+- Base: `push_subscriptions`, `push_log`, preferencias `notify_*` en `profiles`, disparadores en
+  `fixtures` y `league_imports`, tarea horaria `padel-recordatorios` (pg_cron) y función `notify`
+  (código en `db/functions/notify/`). Las claves de avisos se generan y guardan en la caja fuerte de
+  la base; la privada no sale nunca de allí.
+- Pruebas: `test/qa-avisos.js` (21 comprobaciones).
+
 ### Fixed
 - **Seguían saliendo 3 partidos de septiembre en el mixto.** La base ya tenía 2; el tercero venía
   de la copia de la liga guardada en el móvil (se reutilizaba 3 horas sin preguntar). Ahora la base
