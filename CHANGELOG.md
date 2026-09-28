@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Seguían saliendo 3 partidos de septiembre en el mixto.** La base ya tenía 2; el tercero venía
+  de la copia de la liga guardada en el móvil (se reutilizaba 3 horas sin preguntar). Ahora la base
+  lleva una **versión** que sube sola con cualquier cambio (`data_version`, `league_version()`), y la
+  app la consulta al abrir: si no coincide con su copia, descarga la liga nueva. Sin conexión, la copia.
+- **Una pantalla que tardaba en cargar se pintaba encima de la siguiente** (p. ej. la pista encima de
+  Registrar). Cada navegación lleva su número y una carga tardía solo se pinta si sigues en ella.
+- Registrar espera a la liga para enseñar «tus últimos partidos».
+
+### Changed
+- **Barra de arriba con más aire**: 78 px en móvil y 96 px en ordenador, escudo y título más grandes.
+  Todo lo que depende de su altura lee `--nav-h` (y la pista, su altura real).
+
 ### Changed — Este mes, compartido con tu pareja
 - **Un solo grupo del mes por pareja**: lo ve y lo edita cualquiera de los dos (si los dos cambian
   lo mismo, vale lo último guardado). Los resultados apuntados cuentan como «Provisional» para

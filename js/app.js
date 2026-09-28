@@ -637,6 +637,15 @@
   }
 
   function renderChooser() {
+    /* «Tus últimos partidos» sale de la liga: si aún no ha llegado, se espera. */
+    if (!(global.PadelLiga.state.model)) {
+      var seq = navSeq();
+      $view.innerHTML = global.PadelLiga.loadingHtml('Cargando tus partidos…');
+      global.PadelLiga.ensureLoaded(function () {
+        if (still(seq) && state.view === 'registro' && !state.form && !state.savedId) renderChooser();
+      });
+      return;
+    }
     var list = lastMatches(5);
     var h = ['<div class="reg-choose">',
       '<p class="lede">¿Cómo quieres cargar?</p>',
@@ -1183,6 +1192,7 @@
     }
     var y = opts && opts.y != null ? opts.y : (global.scrollY || 0);
     state.view = view;
+    state.navSeq = (state.navSeq || 0) + 1;
     $title.textContent = VIEWS[view].title;
     fitTitle();
     if (!keep) global.scrollTo({ top: 0 });
@@ -1577,7 +1587,12 @@
     document.addEventListener('DOMContentLoaded', init);
   } else { init(); }
 
-  global.PadelApp = { paintPairBtn: paintPairBtn, openPairPicker: openPairPicker, choosePair: choosePair, kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
+  /* Cada navegación tiene su número: una pantalla que termina de cargar tarde
+     solo se pinta si sigues en ella (si no, pisaría la pantalla a la que fuiste). */
+  function navSeq() { return state.navSeq || 0; }
+  function still(seq) { return seq === navSeq(); }
+
+  global.PadelApp = { navSeq: navSeq, still: still, paintPairBtn: paintPairBtn, openPairPicker: openPairPicker, choosePair: choosePair, kindOfSlug: kindOfSlug, seasonName: seasonName, latestSlugOfKind: latestSlugOfKind, records: records, belongsHere: belongsHere, refreshSeasons: function () { return refreshSeasons(); }, go: go, state: state,
                       toast: toast, KIND: KIND, applyDefaultKind: applyDefaultKind,
                       prefillRegistro: prefillRegistro,
                       switchTo: function (slug, announce) { switchTo(slug, announce); } };

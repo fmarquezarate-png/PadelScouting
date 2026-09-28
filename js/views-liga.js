@@ -672,7 +672,8 @@
      RIVAL
      ============================================================ */
   function renderRival(view, bind) {
-    ensureLoaded(function () { paintRival(view, bind); });
+    var A = global.PadelApp, seq = A && A.navSeq ? A.navSeq() : null;
+    ensureLoaded(function () { if (seq == null || A.still(seq)) paintRival(view, bind); });
     if (!state.model) view.innerHTML = loadingHtml('Cargando la liga…');
   }
 

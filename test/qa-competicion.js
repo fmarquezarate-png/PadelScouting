@@ -155,7 +155,7 @@ mx.matches.forEach(m => {
   check('Masculino: su crónica', (await text()).includes('Tres actos'));
   const keys = await page.evaluate(() => Object.keys(localStorage));
   check('Cada competición con su copia en el móvil',
-    keys.includes('padel-scouting.liga.v3') && keys.includes('padel-scouting.liga.v3:2026-s1-mixta'), keys.join(','));
+    keys.includes('padel-scouting.liga.v4') && keys.includes('padel-scouting.liga.v4:2026-s1-mixta'), keys.join(','));
 
   // --- quién soy: avatar → entrar → bienvenida de 3 datos ---
   check('Sin sesión el avatar es un interrogante', (await page.textContent('#avatar-btn')).trim() === '?');

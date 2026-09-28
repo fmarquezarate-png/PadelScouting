@@ -15,7 +15,7 @@
     seasonKey: 'padel-scouting.season.v1',
     seasonsKey: 'padel-scouting.seasons.v1',
     meKey: 'padel-scouting.me.v1',
-    cacheKey: 'padel-scouting.liga.v3',   /* v3: septiembre del mixto pasa al S2 */
+    cacheKey: 'padel-scouting.liga.v4',   /* v4: la copia guarda la versión de los datos */
     maxAgeMinutes: 180
   };
 
@@ -96,10 +96,10 @@
     } catch (e) { return null; }
   }
 
-  function writeCache(snapshot) {
+  function writeCache(snapshot, version) {
     try {
       global.localStorage.setItem(cacheKey(), JSON.stringify({
-        savedAt: new Date().toISOString(), snapshot: snapshot
+        savedAt: new Date().toISOString(), snapshot: snapshot, version: version == null ? null : version
       }));
     } catch (e) { /* sin espacio o navegación privada: seguimos sin caché */ }
   }
@@ -144,17 +144,38 @@
 
   /* Devuelve { snapshot, from: 'red'|'cache', savedAt, error }.
      Nunca lanza: si falla la red y hay caché, se usa la caché. */
+  /* Versión de los datos de la liga (sube sola con cualquier cambio en la base).
+     Tarda nada; si no contesta en 2,5 s se sigue con la copia. */
+  function fetchVersion() {
+    var timer;
+    var timeout = new Promise(function (_, rej) { timer = setTimeout(function () { rej(new Error('timeout')); }, 2500); });
+    return Promise.race([rpcPublic('league_version'), timeout]).then(function (v) {
+      clearTimeout(timer); return v == null ? null : Number(v);
+    }, function (e) { clearTimeout(timer); throw e; });
+  }
+
+  /* La copia del móvil solo se usa si sigue siendo la de la base: se compara la
+     versión. Sin conexión, la copia (aunque sea vieja) antes que nada. */
   function load(options) {
     var opts = options || {};
     var cached = readCache();
-    var fresh = cached && minutesSince(cached.savedAt) < CFG.maxAgeMinutes;
-
-    if (cached && fresh && !opts.force) {
-      return Promise.resolve({ snapshot: cached.snapshot, from: 'cache', savedAt: cached.savedAt });
-    }
-    return fetchSnapshot().then(function (snapshot) {
-      writeCache(snapshot);
-      return { snapshot: snapshot, from: 'red', savedAt: new Date().toISOString() };
+    var check = opts.force ? Promise.resolve(null) : fetchVersion().catch(function () { return undefined; });
+    return check.then(function (version) {
+      if (cached && !opts.force) {
+        var sameVersion = version != null && cached.version != null && version === cached.version;
+        var offlineFresh = version === undefined && minutesSince(cached.savedAt) < CFG.maxAgeMinutes;
+        if (sameVersion || offlineFresh) {
+          return { snapshot: cached.snapshot, from: 'cache', savedAt: cached.savedAt };
+        }
+      }
+      return fetchSnapshot().then(function (snapshot) {
+        /* Si la versión no se pudo leer (forzado), se pide ahora para guardarla. */
+        var v = version == null ? fetchVersion().catch(function () { return null; }) : Promise.resolve(version);
+        return v.then(function (vv) {
+          writeCache(snapshot, vv);
+          return { snapshot: snapshot, from: 'red', savedAt: new Date().toISOString() };
+        });
+      });
     }).catch(function (err) {
       if (cached) {
         return { snapshot: cached.snapshot, from: 'cache', savedAt: cached.savedAt, error: err };

@@ -249,9 +249,11 @@
     /* Primero el aviso de carga y después los datos: si ya estaban en
        memoria, la crónica se pinta al instante y no queda tapada. */
     view.innerHTML = PL.loadingHtml('Cargando la crónica…');
+    var A = global.PadelApp, seq = A && A.navSeq ? A.navSeq() : null;
     PL.ensureLoaded(function () {
+      if (seq != null && !A.still(seq)) return;
       if (!PL.state.model) { paintCronicaPendiente(view, bind); return; }
-      PT.loadClub(function () { paintCronica(view, bind); });
+      PT.loadClub(function () { if (seq == null || A.still(seq)) paintCronica(view, bind); });
     });
   }
 

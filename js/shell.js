@@ -416,7 +416,8 @@
      ============================================================ */
   function renderConfig(view, bind) {
     view.innerHTML = PL().loadingHtml('Cargando…');
-    PL().ensureLoaded(function () { paintConfig(view, bind); });
+    var A = global.PadelApp, seq = A && A.navSeq ? A.navSeq() : null;
+    PL().ensureLoaded(function () { if (seq == null || A.still(seq)) paintConfig(view, bind); });
   }
 
   function paintConfig(view, bind) {

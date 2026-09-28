@@ -10,7 +10,7 @@
   --disp:'Archivo',system-ui,sans-serif;
   --body:'IBM Plex Sans',system-ui,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
-  --nav-h:66px;
+  --nav-h:78px;
   --r:6px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -519,7 +519,7 @@ body.switching #view{opacity:.35;transition:opacity .2s}
    MARCO · barra fija arriba y panel lateral
    ============================================================ */
 .topbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;
-  padding:10px 18px;min-height:66px;justify-content:initial}
+  padding:12px 18px;min-height:var(--nav-h);justify-content:initial}
 .tb-brand{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;color:var(--bone);text-align:left}
 .tb-brand .brand-mark{width:42px;height:42px}
 .tb-club{display:none;line-height:1.35}
@@ -594,7 +594,7 @@ body.has-modal{overflow:hidden}
    LA PISTA · portada (la pista la dibuja js/court.js)
    ============================================================ */
 body[data-view="inicio"] .view{max-width:none;padding:0}
-.home{position:relative;min-height:calc(100vh - 66px);overflow:hidden;
+.home{position:relative;min-height:calc(100vh - var(--nav-h));overflow:hidden;
   background:
     radial-gradient(70% 45% at 50% 58%,rgba(29,79,140,.22),transparent 70%),
     radial-gradient(40% 30% at 12% 100%,rgba(35,52,26,.9),transparent 70%),
@@ -749,7 +749,7 @@ body[data-view="inicio"] .view{max-width:none;padding:0}
   .view{padding-left:calc(26px + env(safe-area-inset-left));padding-right:calc(26px + env(safe-area-inset-right))}
 }
 body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-.home{min-height:calc(100vh - 66px - env(safe-area-inset-top));min-height:calc(100dvh - 66px - env(safe-area-inset-top))}
+.home{min-height:calc(100vh - var(--nav-h) - env(safe-area-inset-top));min-height:calc(100dvh - var(--nav-h) - env(safe-area-inset-top))}
 .comp-menu{max-width:calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))}
 
 /* ============================================================
@@ -762,8 +762,8 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
 .court-photo img{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;
   animation:photoIn .6s ease-out both}
 .court-photo .court-over{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none}
-.court-photo.wide{width:min(100%, calc((100vh - 66px - env(safe-area-inset-top)) * 1.7768));
-  width:min(100%, calc((100dvh - 66px - env(safe-area-inset-top)) * 1.7768))}
+.court-photo.wide{width:min(100%, calc((100vh - var(--nav-h) - env(safe-area-inset-top)) * 1.7768));
+  width:min(100%, calc((100dvh - var(--nav-h) - env(safe-area-inset-top)) * 1.7768))}
 .court-over .zb{fill:rgba(8,11,16,.78);stroke-width:2.5}
 .court-over .zt{stroke:rgba(3,6,14,.7);stroke-width:5px}
 .court-over .zs{stroke:rgba(3,6,14,.65);stroke-width:4px}
@@ -782,8 +782,8 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
 }
 /* En vertical la foto llena la pantalla bajo la barra: recorta un poco los lados
    (la pista ya se sale del encuadre) y se ancla abajo para no perder la puerta. */
-.court-photo.tall{aspect-ratio:auto!important;height:calc(100vh - 66px - env(safe-area-inset-top));
-  height:calc(100dvh - 66px - env(safe-area-inset-top));min-height:520px}
+.court-photo.tall{aspect-ratio:auto!important;height:calc(100vh - var(--nav-h) - env(safe-area-inset-top));
+  height:calc(100dvh - var(--nav-h) - env(safe-area-inset-top));min-height:520px}
 .court-photo.tall img{object-position:center bottom}
 @media(prefers-reduced-motion:reduce){ .court-photo img{animation:none} }
 
@@ -846,7 +846,7 @@ body[data-view="inicio"] .view{padding-left:env(safe-area-inset-left);padding-ri
 
 /* Tablet en vertical: la foto entera y centrada (no se recorta el fondo de la pista). */
 .court-photo.tall.fit{aspect-ratio:941 / 1672!important;width:auto;max-width:100%;
-  height:calc(100vh - 66px - env(safe-area-inset-top));height:calc(100dvh - 66px - env(safe-area-inset-top))}
+  height:calc(100vh - var(--nav-h) - env(safe-area-inset-top));height:calc(100dvh - var(--nav-h) - env(safe-area-inset-top))}
 .court-photo.tall.fit img{object-fit:contain}
 @media(min-width:600px) and (max-width:899px){
   .home.has-photo .home-side{left:50%;right:auto;transform:translateX(-50%);width:min(520px,calc(100% - 20px))}
@@ -1017,3 +1017,26 @@ html[data-theme="light"] .scrim,html[data-theme="light"] .modal{background:rgba(
 html[data-theme="light"] .home::after{background:radial-gradient(95% 85% at 50% 45%,transparent 65%,rgba(0,0,0,.22))}
 html[data-theme="light"] .home-quote{color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 14px rgba(0,0,0,.55)}
 html[data-theme="light"] .court-photo{background:#dfe8ef}
+
+/* ============================================================
+   Barra de arriba con más aire (78 px en móvil, 92 px en ordenador).
+   Todo lo que depende de su altura lee --nav-h.
+   ============================================================ */
+@media(min-width:760px){ :root{--nav-h:96px} }
+.topbar{padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:12px}
+.tb-brand .brand-mark{width:46px;height:46px}
+.topbar h1{font-size:1.12rem;letter-spacing:.17em}
+.comp{margin-top:7px}
+.comp-btn{padding:4px 10px;font-size:10px}
+.topbar .tb-actions{margin-top:0}
+.pair-chip{bottom:7px;height:18px;font-size:10px}
+@media(min-width:760px){
+  .topbar{padding-top:calc(16px + env(safe-area-inset-top));padding-bottom:16px;gap:24px}
+  .tb-brand .brand-mark{width:52px;height:52px}
+  .tb-club b{font-size:12.5px}
+  .tb-club small{font-size:10.5px}
+  .topbar h1{font-size:1.65rem;letter-spacing:.2em}
+  .comp{margin-top:9px}
+  .comp-btn{font-size:10.5px}
+  .pair-chip{bottom:9px;height:20px;font-size:11px}
+}

@@ -561,7 +561,9 @@
       var next = host.clientWidth >= 700 && global.innerWidth > global.innerHeight * 0.9 ? 'wide' : 'tall';
       if (next === mode && host.firstChild) return;
       mode = next;
-      var availH = global.innerHeight - 66;
+      /* Lo que queda bajo la barra de arriba (su altura real, que cambia con el diseño). */
+      var bar = document.querySelector('.topbar');
+      var availH = global.innerHeight - (bar ? bar.offsetHeight : 78);
       var fit = host.clientWidth / Math.max(1, availH) > 0.6;
       paint(photoOk ? photoSvg(mode, live, fit) : svg(mode, live));
       var img = host.querySelector('.court-photo img');

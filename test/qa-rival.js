@@ -67,6 +67,25 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await page.waitForTimeout(500);
   check('Los mismos jugadores con otra pareja', (await page.textContent('#view')).includes('Aleix Samb'));
 
+  /* ---------- copia vieja en el móvil: la base cambió (tu caso del mixto) ---------- */
+  {
+    const p3 = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    let v = 5, snaps = 0;
+    await p3.route('**/rest/v1/rpc/league_version', r => r.fulfill({ status: 200, contentType: 'application/json', body: String(v) }));
+    await p3.route('**/rest/v1/rpc/get_league_snapshot', r => { snaps++; r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }); });
+    await p3.goto(BASE); await p3.waitForTimeout(1200);
+    check('Primera vez: descarga la liga', snaps === 1, 'descargas=' + snaps);
+    await p3.reload(); await p3.waitForTimeout(1000);
+    check('Misma versión en la base: usa la copia del móvil', snaps === 1, 'descargas=' + snaps);
+    v = 6;
+    await p3.reload(); await p3.waitForTimeout(1200);
+    check('La base cambió (versión nueva): vuelve a descargar aunque la copia sea reciente', snaps === 2, 'descargas=' + snaps);
+    await p3.route('**/rest/v1/rpc/league_version', r => r.abort());
+    await p3.reload(); await p3.waitForTimeout(1200);
+    check('Sin conexión: sigue con la copia', snaps === 2 && (await p3.textContent('#view')).length > 200, 'descargas=' + snaps);
+    await p3.close();
+  }
+
   const p2 = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await p2.route('**/rest/v1/rpc/get_league_snapshot', r => r.abort());
   await p2.goto(BASE); await p2.waitForTimeout(900);

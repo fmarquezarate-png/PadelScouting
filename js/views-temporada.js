@@ -182,7 +182,9 @@
   }
 
   function withModel(view, paint) {
+    var A = global.PadelApp, seq = A && A.navSeq ? A.navSeq() : null;
     PL.ensureLoaded(function () {
+      if (seq != null && !A.still(seq)) return;   /* ya estás en otra pantalla */
       if (!PL.state.model) {
         view.innerHTML = '<div class="notice bad"><b>No he podido cargar la liga.</b> ' +
           'Comprueba la conexión y vuelve a entrar.</div>';
