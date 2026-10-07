@@ -5,6 +5,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added — La liga: Grupos | Clasif. general
+- **Dos botones arriba en La liga**. **Grupos** (abre por defecto) enseña todos los grupos del mes:
+  tabla (PJ, G, P, PT, ordenada por puntos; a igualdad, el orden de la web) y sus partidos:
+  lo pendiente primero, con la fecha y hora de la web, y lo jugado con su marcador. Selector de
+  mes (abre en el último), buscador de pareja y «Ir a nuestro grupo». **Clasif. general** es la
+  tabla de siempre. La app recuerda la pestaña.
+- **La carga lee las fechas de los partidos por jugar** («25 / viernes / sept2026 / 20:00h», también
+  en catalán) y las manda en el paquete (`schedules`). La vista previa dice cuántas trae.
+  ⚠️ Falta la parte de la base (guardarlas, devolverlas en la foto de la liga y pasarlas a Este mes
+  si un partido vuestro no tenía fecha): pendiente de reconectar Supabase.
+
+### Added — Borrar un resultado
+- En Este mes, un partido con resultado tiene **«Borrar resultado»**: vuelve a pendiente.
+- **«Aún no se jugó»** sobre un partido con resultado avisa de que lo borra y guarda la nueva fecha.
+- Si hay un registro de scouting completo tuyo enganchado, **pregunta cada vez** si borrarlo también
+  (si no, se queda en el Historial, desenganchado).
+- Pruebas: `test/qa-grupos.js` (19) y 8 comprobaciones nuevas en `qa-estemes`.
+
 ### Added — Avisos en el móvil
 - **Configuración → Avisos**: activar o desactivar los avisos en cada aparato, botón de aviso de
   prueba y tres tipos que se encienden por separado (van con tu cuenta):

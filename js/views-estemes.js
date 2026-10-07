@@ -677,7 +677,14 @@
     var h = ['<div class="modal-card em-modal" role="dialog" aria-modal="true" aria-labelledby="rs-t">'];
     h.push('<div class="eyebrow">' + (f.scheduledAt ? esc(shortWhen(f.scheduledAt)) : 'Ronda de ' + esc(state.round.label)) + '</div>');
     h.push('<h2 id="rs-t">¿Cómo fue contra ' + esc(f.rivalLabel) + '?</h2>');
-    if (res.reschedule) {
+    var played = f.status !== 'pendiente';
+    if (res.askRecord) {
+      h.push('<p class="lede">Tienes un registro de scouting completo de este partido. ¿Lo borro también?</p>' +
+        '<div class="btn-row"><button class="btn primary" data-rs="rec-del">Sí, borrar también el registro</button>' +
+        '<button class="btn" data-rs="rec-keep">No, guardar mis notas</button></div>' +
+        '<div class="btn-row tight"><button class="btn small ghost" data-rs="back">Volver</button></div></div>');
+    } else if (res.reschedule) {
+      if (played) h.push('<p class="note">El resultado apuntado se borrará: el partido vuelve a quedar pendiente.</p>');
       h.push('<label class="em-date">Nueva fecha y hora<input type="datetime-local" id="rs-when" value="' + esc(res.when) + '"></label>' +
         '<div class="btn-row"><button class="btn primary" data-rs="resave">Guardar fecha</button>' +
         '<button class="btn ghost" data-rs="back">Volver</button></div></div>');
@@ -696,6 +703,7 @@
         '<div class="btn-row tight rs-more"><button class="btn small ghost" data-rs="wo_favor">WO a favor</button>' +
         '<button class="btn small ghost" data-rs="wo_contra">WO en contra</button>' +
         '<button class="btn small ghost" data-rs="notyet">Aún no se jugó</button>' +
+        (played ? '<button class="btn small ghost danger" data-rs="clear">Borrar resultado</button>' : '') +
         '<button class="btn small ghost" data-rs="later">' + (res.auto ? 'Luego' : 'Cancelar') + '</button></div></div>');
     }
     var root = modal(h.join(''));
@@ -723,12 +731,28 @@
     var f = res.f;
     if (a === 'later') { if (res.auto) state.skipResult[f.id] = true; closeModal(); if (res.auto) checkPrompts(); return; }
     if (a === 'notyet') { res.reschedule = true; paintResultModal(); return; }
-    if (a === 'back') { res.reschedule = false; paintResultModal(); return; }
+    if (a === 'back') { res.reschedule = false; res.askRecord = false; res.pending = null; paintResultModal(); return; }
     if (a === 'resave') {
       var v = document.getElementById('rs-when').value;
+      res.pending = { scheduledAt: v ? new Date(v).toISOString() : '' };
+      res.pendingMsg = v ? 'Nueva fecha guardada.' : 'Sin fecha: te pregunto cuando la pongas.';
+      if (f.status === 'pendiente') { closeModal(); saveFixture(f.id, res.pending, res.pendingMsg).then(checkPrompts, function () {}); return; }
+      a = 'clear';
+    }
+    /* Borrar el resultado: vuelve a pendiente. Si hay un registro completo tuyo enganchado, se pregunta. */
+    if (a === 'clear') {
+      if (ownRecord(f.recordId) && !res.askRecord) { res.askRecord = true; paintResultModal(); return; }
+      if (!ownRecord(f.recordId)) a = 'rec-keep';
+    }
+    if (a === 'rec-del' || a === 'rec-keep') {
+      var rid = f.recordId;
+      var patch = Object.assign({ status: 'pendiente', sets: null, recordId: null }, res.pending || {});
+      var msg = res.pending ? 'Resultado borrado. ' + res.pendingMsg : 'Resultado borrado: el partido vuelve a estar pendiente.';
       closeModal();
-      saveFixture(f.id, { scheduledAt: v ? new Date(v).toISOString() : '' },
-        v ? 'Nueva fecha guardada.' : 'Sin fecha: te pregunto cuando la pongas.').then(checkPrompts, function () {});
+      saveFixture(f.id, patch, msg).then(function () {
+        if (a === 'rec-del' && rid && global.PadelStorage) global.PadelStorage.remove(rid);
+        checkPrompts();
+      }, function () {});
       return;
     }
     if (a === 'wo_favor' || a === 'wo_contra') {

@@ -88,6 +88,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
     check('Sin sesión, ' + v + ' lleva a iniciar sesión', (await page.textContent('#page-title')) === 'Mi perfil');
   }
   await go(page, 'liga');
+  await page.click('[data-lgtab="general"]'); await page.waitForTimeout(300);
   t = await text(page);
   check('La liga sin sesión: solo la clasificación', t.includes('Clasificación general') && !t.includes('Explorador de la liga'));
   check('La liga sin sesión: sin enlace a cargar datos', !t.includes('Cárgalo desde Configuración'));

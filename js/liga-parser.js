@@ -159,11 +159,39 @@
     return Object.keys(names);
   }
 
+  /* Fecha de un partido aún no jugado. La web la escribe en varias líneas
+     («25», «viernes», «sept2026», «20:00h»); joinDateLines las junta en una
+     celda y parseWhen la lee. Devuelve «2026-09-25T20:00» (hora de España) o null. */
+  var WEEKDAY = /^(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo|dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge)$/i;
+  var MONTH_YEAR = /^[a-zç]{3,10}\.?\s*\d{4}$/i;
+  var HOUR = /^\d{1,2}[:.]\d{2}\s*h?(\t|$)/i;
+  var MON3 = { ene: 1, gen: 1, feb: 2, mar: 3, abr: 4, may: 5, mai: 5, jun: 6, jul: 7, ago: 8, ag: 8,
+    sep: 9, set: 9, oct: 10, nov: 11, dic: 12, des: 12 };
+  function joinDateLines(lines) {
+    var out = [];
+    lines.forEach(function (raw) {
+      var t = raw.trim();
+      if (out.length && t && (WEEKDAY.test(t) || MONTH_YEAR.test(t) || HOUR.test(t))) {
+        out[out.length - 1] = out[out.length - 1].replace(/\s+$/, '') + ' ' + raw.replace(/^\s+/, '');
+      } else out.push(raw);
+    });
+    return out;
+  }
+  function parseWhen(cell) {
+    var m = String(cell || '').trim().match(/^(\d{1,2})\s+\S+\s+([a-zç]+)\.?\s*(\d{4})(?:\s+(\d{1,2})[:.](\d{2}))?/i);
+    if (!m) return null;
+    var w = normalize(m[2]).replace('ç', 'c'), mon = MON3[w.slice(0, 3)] || MON3[w.slice(0, 2)];
+    var d = +m[1];
+    if (!mon || d < 1 || d > 31) return null;
+    var pad = function (x) { return String(x).padStart(2, '0'); };
+    return m[3] + '-' + pad(mon) + '-' + pad(d) + 'T' + (m[4] != null ? pad(+m[4]) + ':' + m[5] : '00:00');
+  }
+
   function parse(text) {
     var months = [], warnings = [];
     var month = null, group = null;
 
-    String(text).split(/\r?\n/).forEach(function (raw) {
+    joinDateLines(String(text).split(/\r?\n/)).forEach(function (raw) {
       var line = raw.replace(/\s+$/, '');
       var mm = line.trim().match(/^MES\s+(\d+)$/i);
       if (mm) {
@@ -215,7 +243,7 @@
     });
 
     /* Cada enfrentamiento aparece dos veces en la tabla; se queda uno. */
-    var matches = [];
+    var matches = [], schedules = [];
     months.forEach(function (M) {
       M.groups.forEach(function (G) {
         for (var i = 0; i < G.teams.length; i++) {
@@ -230,7 +258,11 @@
             else if (pa && pa.wo) walkover = pa.wo > 0 ? 'home' : 'away';
             else if (pb && pb.wo) walkover = pb.wo > 0 ? 'away' : 'home';
 
-            if (!sets && !walkover) continue;   // partido aún no jugado
+            if (!sets && !walkover) {           // partido aún no jugado: ¿tiene fecha?
+              var when = parseWhen(G.grid[A + '||' + B]) || parseWhen(G.grid[B + '||' + A]);
+              if (when) schedules.push({ month: M.n, group: G.n, home: A, away: B, at: when });
+              continue;
+            }
 
             if (pa && pa.sets && pb && pb.sets) {
               var x = tally(pa.sets);
@@ -285,7 +317,7 @@
       teamLabels = teamLabels.map(canonTeam).filter(function (v, i, arr) {
         return arr.indexOf(v) === i;
       });
-      matches.forEach(function (m) { m.home = canonTeam(m.home); m.away = canonTeam(m.away); });
+      matches.concat(schedules).forEach(function (m) { m.home = canonTeam(m.home); m.away = canonTeam(m.away); });
       months.forEach(function (M) {
         M.groups.forEach(function (G) {
           G.teams = G.teams.map(canonTeam);
@@ -295,7 +327,7 @@
     }
 
     return {
-      months: months, matches: matches, teams: teamLabels, warnings: warnings,
+      months: months, matches: matches, schedules: schedules, teams: teamLabels, warnings: warnings,
       aliases: al.aliases,
       suspicious: suspiciousPairs(nameList)
     };
@@ -344,13 +376,15 @@
       matches: parsed.matches.map(function (m) {
         return [m.month, m.group, m.home, m.away, m.sets, m.walkover];
       }),
+      /* Partidos aún sin jugar con fecha de la web: [mes, grupo, local, visitante, 'AAAA-MM-DDTHH:MM'] */
+      schedules: (parsed.schedules || []).map(function (x) { return [x.month, x.group, x.home, x.away, x.at]; }),
       source: season.source || 'paste',
       rawText: rawText || ''
     };
   }
 
   return { parse: parse, parseScore: parseScore, splitTeam: splitTeam, tally: tally,
-           isSuperTieBreak: isSuperTieBreak, toPayload: toPayload,
+           isSuperTieBreak: isSuperTieBreak, toPayload: toPayload, parseWhen: parseWhen,
            monthFromName: monthFromName, normalize: normalize,
            mergesAgainstKnown: mergesAgainstKnown, playerNames: playerNames };
 });

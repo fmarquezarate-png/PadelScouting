@@ -137,6 +137,30 @@ async function mockApp(page, opts) {
   await p.fill('#rs-when', '2026-10-10T18:30'); await p.click('[data-rs="resave"]'); await p.waitForTimeout(900);
   check('«Aún no se jugó» deja poner otra fecha', /2026-10-10T\d\d:30:00.000Z/.test(S.lastPatch.scheduledAt || ''), S.lastPatch.scheduledAt);
 
+  /* borrar un resultado */
+  await p.evaluate(id => window.PadelEsteMes.openResultModal(window.PadelEsteMes.state.round.fixtures.find(f => f.id === id), false), fx2);
+  check('Con resultado puesto hay «Borrar resultado»', await p.locator('[data-rs="clear"]').count() === 1);
+  await p.click('[data-rs="notyet"]'); await p.waitForTimeout(200);
+  check('«Aún no se jugó» avisa que borra el resultado', (await p.textContent('.modal')).includes('se borrará'));
+  await p.fill('#rs-when', '2026-10-12T19:00'); await p.click('[data-rs="resave"]'); await p.waitForTimeout(900);
+  check('«Aún no se jugó» con resultado: lo borra y guarda la fecha', S.lastPatch.status === 'pendiente' && S.lastPatch.sets === null &&
+    /2026-10-12/.test(S.lastPatch.scheduledAt || ''), JSON.stringify(S.lastPatch));
+  const recId = await p.evaluate(id => {
+    const rec = window.PadelStorage.save({ date: '2026-10-01', result: 'win', rivals: [{ name: 'X' }, { name: 'Y' }], sets: [] });
+    const f = window.PadelEsteMes.state.round.fixtures.find(x => x.id === id);
+    f.status = 'jugado'; f.sets = [[6, 1], [6, 1]]; f.recordId = rec.id;
+    window.PadelEsteMes.openResultModal(f, false);
+    return rec.id;
+  }, fx2);
+  await p.click('[data-rs="clear"]'); await p.waitForTimeout(200);
+  check('Borrar con registro completo: pregunta si borrarlo también', (await p.textContent('.modal')).includes('¿Lo borro también?'));
+  await p.click('[data-rs="rec-del"]'); await p.waitForTimeout(900);
+  check('Borrar resultado: vuelve a pendiente y desengancha el registro', S.lastPatch.status === 'pendiente' && S.lastPatch.sets === null &&
+    S.lastPatch.recordId === null, JSON.stringify(S.lastPatch));
+  check('…y borra el registro si lo pides', await p.evaluate(id => !window.PadelStorage.get(id), recId));
+  await p.evaluate(() => window.PadelApp.go('estemes')); await p.waitForTimeout(700);
+  check('La tarjeta vuelve a ofrecer «Resultado»', (await p.textContent(`[data-fx="${fx2}"]`).catch(() => '')).includes('Resultado'));
+
   /* registro completo desde un partido */
   await p.evaluate(() => window.PadelApp.go('estemes')); await p.waitForTimeout(800);
   await p.click(`[data-fx-full="${fx}"]`); await p.waitForTimeout(800);

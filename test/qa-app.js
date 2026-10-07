@@ -200,6 +200,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
 
   /* ---------------- 07 CLASIFICACIÓN ---------------- */
   await go('liga');
+  await page.click('[data-lgtab="general"]'); await page.waitForTimeout(300);
   const tblN = () => page.locator('#tblRows tr').count();
   check('07 · 81 parejas', await tblN() === 81, await tblN());
   check('07 · nuestra fila marcada', (await page.textContent('#tblRows tr.mine')).includes('Francisco'));

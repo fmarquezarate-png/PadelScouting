@@ -111,11 +111,16 @@
       B.history.push({ month: m.month, rating: B.rating });
     });
 
+    /* Fechas de la web para los partidos aún sin jugar: [mes, grupo, local, visitante, 'AAAA-MM-DDTHH:MM']. */
+    var schedules = (snapshot.schedules || []).map(function (x) {
+      return { month: x[0], group: x[1], home: x[2], away: x[3], at: x[4] };
+    });
+
     var lastMonth = months.length ? months[months.length - 1].n : null;
     var mine = order.filter(function (id) { return teams[id].isMine; })[0] || null;
 
     return {
-      cfg: CFG, teams: teams, order: order, months: months, matches: matches,
+      cfg: CFG, teams: teams, order: order, months: months, matches: matches, schedules: schedules,
       ladder: ladder, lastMonth: lastMonth, myTeamId: mine,
       season: snapshot.season || null
     };
@@ -533,7 +538,7 @@
 
   function mergeSnapshots(snaps, kind) {
     var out = { season: { slug: 'all:' + kind, name: 'Todo el recorrido', kind: kind, parts: [] },
-      months: [], teams: [], standings: [], matches: [], archetypes: {} };
+      months: [], teams: [], standings: [], matches: [], schedules: [], archetypes: {} };
     var seenTeam = {}, seenLabel = {}, next = 0;
     snaps.forEach(function (s) {
       var tag = shortSeason(s.season && s.season.slug, s.season && s.season.name);
@@ -552,6 +557,7 @@
       });
       (s.standings || []).forEach(function (x) { if (map[x[0]]) out.standings.push([map[x[0]]].concat(x.slice(1))); });
       (s.matches || []).forEach(function (x) { if (map[x[0]]) out.matches.push([map[x[0]]].concat(x.slice(1))); });
+      (s.schedules || []).forEach(function (x) { if (map[x[0]]) out.schedules.push([map[x[0]]].concat(x.slice(1))); });
       Object.keys(s.archetypes || {}).forEach(function (k) { out.archetypes[k] = s.archetypes[k]; });
       out.season.parts.push({ slug: s.season && s.season.slug, tag: tag, map: map, from: first, to: next });
     });

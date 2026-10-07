@@ -230,8 +230,9 @@
         '<li>' + p.matches.length + ' partidos, ' +
         p.matches.filter(function (m) { return m.walkover; }).length + ' de ellos WO</li>' +
         '<li>' + (p.warnings.length ? p.warnings.length + ' descuadres' : 'sin descuadres') + '</li>' +
-        '</ul><p class="field-note">Los partidos con fecha pero sin resultado no se cargan: ' +
-        'entrarán cuando se jueguen.</p></div>');
+        '<li>' + ((p.schedules || []).length ? p.schedules.length + ' partidos por jugar con fecha' : 'ningún partido por jugar con fecha') + '</li>' +
+        '</ul><p class="field-note">Los partidos por jugar con fecha salen en La liga → Grupos y, si un partido vuestro aún no ' +
+        'tenía fecha en Este mes, la coge de aquí.</p></div>');
 
       if (p.warnings.length) {
         h.push('<div class="notice warn">' + p.warnings.slice(0, 4).map(esc).join('<br>') + '</div>');
@@ -592,7 +593,7 @@
         var sub = Object.assign({}, payload, {
           season: { slug: G.slug, name: G.name, kind: l.kind, startsOn: G.year + (G.sem === 1 ? '-02-01' : '-09-01') },
           months: pick(payload.months), groups: pick(payload.groups),
-          standings: pick(payload.standings), matches: pick(payload.matches)
+          standings: pick(payload.standings), matches: pick(payload.matches), schedules: pick(payload.schedules || [])
         });
         chain = chain.then(function () {
           return global.PadelDB.callAuthed('ingest_league', { payload: sub }).then(function (res) { results.push(res); });

@@ -41,7 +41,7 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   await page.route('**/rest/v1/rpc/get_league_snapshot', r => J(r, SN[JSON.parse(r.request().postData()).season_slug]));
   await page.route('**/rest/v1/rpc/list_seasons', r => J(r, [{ slug: '2026-s1', name: 'S1', kind: 'masculina' }, { slug: '2026-s1-mixta', name: 'Mixta', kind: 'mixta' }]));
   await page.route('**/rest/v1/rpc/get_my_profile', r => J(r, { label: 'Francisco', category: 'masculina', playsMixed: true, defaultKind: 'masculina' }));
-  await page.route('**/rest/v1/rpc/get_my_round', r => J(r, null));
+  await page.route('**/rest/v1/rpc/get_my_round', r => r.abort());
   await page.route('**/rest/v1/rpc/list_my_records', r => J(r, []));
   await page.route('**/rest/v1/rpc/get_my_club_levels', r => J(r, db));
   await page.route('**/rest/v1/rpc/import_club_levels', r => {
@@ -49,6 +49,8 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
     db[a.p_who] = { ranking: a.p_ranking, name: a.p_name, rows: a.p_rows };
     J(r, { added: a.p_rows.length, updated: 0, total: a.p_rows.length });
   });
+  /* Reloj fijo: el aviso de «nuevo mes» no depende del día en que se pase la prueba. */
+  await page.addInitScript(() => { window.__PADEL_NOW__ = '2026-09-20T12:00:00Z'; });
   await page.addInitScript(() => localStorage.setItem('padel-scouting.session.v1', JSON.stringify({
     access_token: 't', refresh_token: 'r', expires_at: Math.floor(Date.now() / 1000) + 3600, user: { email: 'x' } })));
   const clearModal = () => page.evaluate(() => { document.getElementById('modal-root').innerHTML = ''; document.body.classList.remove('has-modal'); });

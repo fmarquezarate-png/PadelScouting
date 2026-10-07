@@ -42,6 +42,19 @@
     var rows = leagueTable(m);
     var h = ['<div class="lg">'];
     h.push(PL.sourceNote());
+    var tab = ui.ligaTab || 'grupos';
+    h.push('<div class="lg-tabs" role="tablist" id="lgTabs">' +
+      [['grupos', 'Grupos'], ['general', 'Clasif. general']].map(function (t) {
+        return '<button type="button" role="tab" data-lgtab="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>';
+      }).join('') + '</div>');
+    if (tab === 'grupos') {
+      h.push(groupsHtml(m) + '</div>');
+      view.innerHTML = h.join('');
+      bindTabs(view, bind);
+      bindGroups(view, m, bind);
+      bind();
+      return;
+    }
 
     h.push('<section class="blk">' + PT.sectionHead('07', 'Clasificación general',
       'Las <b>' + rows.length + '</b> parejas ordenadas por su posición actual. Toca una cabecera para ' +
@@ -67,6 +80,7 @@
       h.push('<section class="blk"><p class="note">Entra con tu cuenta para el explorador de cada pareja. ' +
         '<button class="linkish" data-goto="perfil">Iniciar sesión →</button></p></section></div>');
       view.innerHTML = h.join('');
+      bindTabs(view, bind);
       drawTable(m, rows);
       bindGeneral(view, m, rows, bind);
       return;
@@ -82,11 +96,147 @@
       '<button class="linkish" data-goto="config">Cárgalo desde Configuración →</button></p></section>');
     h.push('</div>');
     view.innerHTML = h.join('');
+    bindTabs(view, bind);
 
     drawTable(m, rows);
     drawExpList(m);
     showTeam(m, ui.expSel || m.myTeamId);
     bindGeneral(view, m, rows, bind);
+  }
+
+  function bindTabs(view, bind) {
+    var t = document.getElementById('lgTabs');
+    if (t) t.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-lgtab]');
+      if (!b || b.getAttribute('data-lgtab') === (ui.ligaTab || 'grupos')) return;
+      ui.ligaTab = b.getAttribute('data-lgtab');
+      paintGeneral(view, bind);
+    });
+  }
+
+  /* ============================================================
+     GRUPOS · cómo va cada grupo del mes: tabla y sus partidos
+     (jugados con marcador; pendientes con la fecha de la web)
+     ============================================================ */
+  var DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  var MESES3 = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  function whenLabel(at) {
+    var x = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(at || '');
+    if (!x) return '';
+    var d = new Date(+x[1], +x[2] - 1, +x[3]);
+    return DIAS[d.getDay()] + ' ' + (+x[3]) + ' ' + MESES3[+x[2] - 1] + (x[4] + x[5] !== '0000' ? ' · ' + x[4] + ':' + x[5] : '');
+  }
+
+  function monthGroups(m, month) {
+    var lad = m.ladder[month] || {}, groups = {};
+    Object.keys(lad).forEach(function (id) {
+      var l = lad[id];
+      (groups[l.group] = groups[l.group] || []).push({ id: +id, inGroup: l.inGroup });
+    });
+    return Object.keys(groups).map(Number).sort(function (a, b) { return a - b; }).map(function (g) {
+      var members = groups[g].sort(function (a, b) { return a.inGroup - b.inGroup; }).map(function (x) { return x.id; });
+      var ms = m.matches.filter(function (x) { return x.month === month && members.indexOf(x.home) >= 0 && members.indexOf(x.away) >= 0; });
+      var known = ms.map(function (x) {
+        return { a: x.home, b: x.away, sa: x.setsHome, sb: x.setsAway, wo: !!x.walkover, prov: x.provisional };
+      });
+      /* Orden por puntos; a igualdad, el orden de la web de la liga. */
+      var rows = L.groupTable(members, known);
+      var pairs = [];
+      for (var i = 0; i < members.length; i++) {
+        for (var j = i + 1; j < members.length; j++) {
+          var a = members[i], b = members[j];
+          var played = ms.filter(function (x) { return (x.home === a && x.away === b) || (x.home === b && x.away === a); })[0];
+          var sch = (m.schedules || []).filter(function (x) {
+            return x.month === month && ((x.home === a && x.away === b) || (x.home === b && x.away === a));
+          })[0];
+          pairs.push({ a: played ? played.home : a, b: played ? played.away : b, match: played || null, at: sch ? sch.at : null });
+        }
+      }
+      /* Primero lo que falta por jugar (por fecha), luego lo jugado. */
+      pairs.sort(function (x, y) {
+        if (!!x.match !== !!y.match) return x.match ? 1 : -1;
+        if (!x.match) return (x.at || '9') < (y.at || '9') ? -1 : (x.at || '9') > (y.at || '9') ? 1 : 0;
+        return 0;
+      });
+      return { group: g, members: members, rows: rows, pairs: pairs };
+    });
+  }
+
+  function groupsHtml(m) {
+    if (!m.months.length) return '<p class="note">Aún no hay meses cargados en esta temporada.</p>';
+    var month = ui.grMonth != null && m.ladder[ui.grMonth] ? ui.grMonth : m.lastMonth;
+    ui.grMonth = month;
+    var mlabel = (m.months.filter(function (x) { return x.n === month; })[0] || {}).label || 'Mes ' + month;
+    var gs = monthGroups(m, month);
+    var q = (ui.grQuery || '').trim().toLowerCase();
+    var mineG = null;
+    gs.forEach(function (G) { if (G.members.indexOf(m.myTeamId) >= 0) mineG = G.group; });
+    var h = ['<section class="blk">' + PT.sectionHead('07', 'Grupos · ' + esc(mlabel),
+      'Cómo va cada grupo: la tabla y sus partidos. Lo pendiente lleva la fecha que puso la web de la liga.')];
+    if (m.months.length > 1) {
+      h.push('<div class="chips tight gr-months" id="grMonths">' + m.months.map(function (x) {
+        return '<button type="button" class="chip" data-grm="' + x.n + '" aria-pressed="' + (x.n === month) + '">' + esc(x.label) + '</button>';
+      }).join('') + '</div>');
+    }
+    h.push('<div class="ctrl"><input type="search" id="grSearch" placeholder="Buscar pareja o jugador…" autocomplete="off" value="' +
+      esc(ui.grQuery || '') + '">' + (mineG ? '<button id="grMine">Ir a nuestro grupo (G' + mineG + ')</button>' : '') + '</div>');
+    var shown = gs.filter(function (G) {
+      return !q || G.members.some(function (id) { return m.teams[id].label.toLowerCase().indexOf(q) >= 0; });
+    });
+    h.push('<div class="gr-grid">' + shown.map(function (G) {
+      var pend = G.pairs.filter(function (p) { return !p.match; }).length;
+      var t = '<article class="gr-card' + (G.group === mineG ? ' mine' : '') + '" id="gr-' + G.group + '">' +
+        '<header><b>Grupo ' + G.group + '</b><span>' + (pend ? pend + ' por jugar' : 'completo') + '</span></header>' +
+        '<table class="gr-tbl"><thead><tr><th></th><th>Pareja</th><th>PJ</th><th>G</th><th>P</th><th>PT</th></tr></thead><tbody>' +
+        G.rows.map(function (r, i) {
+          return '<tr class="' + (r.id === m.myTeamId ? 'mine' : '') + '"><td class="ps">' + (i + 1) + '</td>' +
+            '<td class="nm">' + (r.id === m.myTeamId ? '<b>' + esc(m.teams[r.id].label) + '</b>'
+              : '<button class="linkish" data-rival="' + r.id + '">' + esc(m.teams[r.id].label) + '</button>') + '</td>' +
+            '<td>' + r.pj + '</td><td>' + r.g + '</td><td>' + r.p + '</td><td><b>' + r.pts + '</b>' + (r.prov ? '*' : '') + '</td></tr>';
+        }).join('') + '</tbody></table><ul class="gr-ms">' +
+        G.pairs.map(function (p) {
+          var A = m.teams[p.a].label, B = m.teams[p.b].label, x = p.match, right;
+          if (x) {
+            right = x.walkover ? 'WO ' + (x.walkover === 'home' ? '→ ' + esc(shortTeam(A)) : '→ ' + esc(shortTeam(B)))
+              : x.sets.map(function (v) { return v[0] + '-' + v[1]; }).join(' ');
+            if (x.provisional) right += ' <span class="prov">provisional</span>';
+          } else right = p.at ? '<span class="when">' + esc(whenLabel(p.at)) + '</span>' : '<span class="nodate">sin fecha</span>';
+          var hw = x && x.homeWon, mineP = p.a === m.myTeamId || p.b === m.myTeamId;
+          return '<li class="' + (x ? 'done' : 'todo') + (mineP ? ' mine' : '') + '"><span class="vs">' +
+            '<span class="' + (x && hw ? 'w' : '') + '">' + esc(A) + '</span><i>vs</i><span class="' + (x && !hw ? 'w' : '') + '">' + esc(B) + '</span></span>' +
+            '<span class="rs">' + right + '</span></li>';
+        }).join('') + '</ul></article>';
+      return t;
+    }).join('') + '</div>');
+    if (!shown.length) h.push('<p class="note">Ningún grupo con esa pareja este mes.</p>');
+    if (gs.some(function (G) { return G.rows.some(function (r) { return r.prov; }); }))
+      h.push('<p class="note">* Incluye un resultado apuntado en la app que la liga aún no ha publicado.</p>');
+    h.push('</section>');
+    return h.join('');
+  }
+  function shortTeam(label) { return String(label).split('/')[0].trim(); }
+
+  function bindGroups(view, m, bind) {
+    var mo = document.getElementById('grMonths');
+    if (mo) mo.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-grm]');
+      if (!b) return;
+      ui.grMonth = +b.getAttribute('data-grm');
+      paintGeneral(view, bind);
+    });
+    var se = document.getElementById('grSearch');
+    if (se) se.addEventListener('input', function () {
+      ui.grQuery = se.value;
+      var pos = se.selectionStart;
+      paintGeneral(view, bind);
+      var again = document.getElementById('grSearch');
+      if (again) { again.focus(); try { again.setSelectionRange(pos, pos); } catch (e) {} }
+    });
+    var mine = document.getElementById('grMine');
+    if (mine) mine.addEventListener('click', function () {
+      var c = view.querySelector('.gr-card.mine');
+      if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   function drawTable(m, rows) {
