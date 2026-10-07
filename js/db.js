@@ -43,7 +43,16 @@
       body: JSON.stringify(args || {})
     }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
+      return readJson(res);
+    });
+  }
+
+  /* Las funciones que no devuelven nada («hecho») responden sin contenido (204):
+     eso es un éxito, no un error al leer. */
+  function readJson(res) {
+    return res.text().then(function (t) {
+      if (!t) return null;
+      try { return JSON.parse(t); } catch (e) { if (res.ok) return null; return { message: t }; }
     });
   }
 
@@ -198,7 +207,7 @@
         body: JSON.stringify(args || {})
       });
     }).then(function (res) {
-      return res.json().then(function (data) {
+      return readJson(res).then(function (data) {
         if (!res.ok) {
           var msg = (data && (data.message || data.hint)) || ('Error ' + res.status);
           var e = new Error(String(msg).replace(/^JUGADOR_OCUPADO:\s*/, ''));
