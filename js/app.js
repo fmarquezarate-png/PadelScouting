@@ -1449,17 +1449,23 @@
       });
     };
 
+    var openedLatest = false;
     refreshSeasons = function () {
       return global.PadelDB.listSeasons().then(function (list) {
         global.PadelLiga.state.seasons = list;
         /* Si la temporada guardada ya no existe, vuelve a la de por defecto. */
         var slug = global.PadelDB.currentSeason();
         var known = list.some(function (x) { return x.slug === slug || 'all:' + x.kind === slug; });
-        if (!known && list.length) {
-          global.PadelLiga.switchSeason(list.filter(function (x) {
-            return x.slug === global.PadelDB.CFG.season; })[0] ? global.PadelDB.CFG.season : list[0].slug,
-            function () { go(state.view); });
+        /* Al abrir la app, siempre el semestre más reciente de tu competición: un semestre
+           antiguo mirado otro día no se queda fijo (dentro de la visita sí se respeta). */
+        var kind = known ? kindOfSlug(slug) : null;
+        if (!kind || !seasonsOfKind(kind).length) kind = seasonsOfKind('masculina').length ? 'masculina' : (list[0] && list[0].kind);
+        var target = latestSlugOfKind(kind);
+        if (!openedLatest && list.length && target && target !== slug) {
+          openedLatest = true;
+          global.PadelLiga.switchSeason(target, function () { paintButton(); go(state.view, { keep: true }); });
         }
+        openedLatest = true;
         paintButton();
       });
     };

@@ -5,6 +5,26 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Alguien nuevo no veía los partidos de esta temporada**: la app abría por defecto en el
+  semestre fijado en el código (2026 S1, febrero–julio). Además, cualquier cambio de semestre se
+  quedaba guardado para siempre. Ahora, **al abrir la app siempre se ve el semestre más reciente
+  de tu competición** (masculina o mixta); un cambio a mano vale durante la visita.
+  Pruebas: `test/qa-abrir.js` (7).
+
+### Added — Descarga la app e invitación a los avisos
+- **Asistente «Descarga la app»** (menú ☰ y aviso al entrar desde el navegador): detecta aparato
+  y navegador («Parece que usas iPhone con Safari, ¿es así?»), deja elegirlos a mano y da los
+  pasos exactos: iPhone/iPad (Safari, Chrome, Edge, Firefox), Android (Chrome, Samsung Internet,
+  Edge, Firefox), ordenador (Chrome, Edge, Safari en Mac, Firefox). En Chrome/Edge ofrece el botón
+  nativo «Instalar ahora». Dentro de Instagram/Facebook/WhatsApp explica cómo abrirla en el
+  navegador. En iPhone recuerda volver a entrar con la cuenta en la app instalada.
+- **Invitación a activar los avisos**: con cuenta y sin avisos en ese aparato. En iPhone sin
+  instalar, lleva a instalarla primero.
+- Las dos invitaciones: como mucho una por visita, nunca encima de otra ventana; «Ahora no» las
+  vuelve a ofrecer a los 7 días y «No, gracias» no vuelve a salir. `sw.js` se registra al abrir
+  (ayuda a que la app sea instalable). Pruebas: `test/qa-instalar.js` (26).
+
 ### Added — La liga: Grupos | Clasif. general
 - **Dos botones arriba en La liga**. **Grupos** (abre por defecto) enseña todos los grupos del mes:
   tabla (PJ, G, P, PT, ordenada por puntos; a igualdad, el orden de la web) y sus partidos:

@@ -1098,3 +1098,14 @@ html[data-theme="light"] .court-photo{background:#dfe8ef}
 .lg .gr-tbl tr.mine td,.lg .gr-tbl tr.mine td b{color:var(--orange)}
 .gr-ms .vs{flex:1}
 .gr-ms .vs span{overflow-wrap:anywhere}
+
+/* Descarga la app / invitaciones */
+.ins-card h2{margin:4px 0 10px}
+.ins-steps{margin:6px 0 12px;padding-left:22px;display:flex;flex-direction:column;gap:10px;line-height:1.45}
+.ins-steps li::marker{color:var(--orange);font-weight:700}
+.ins-list{margin:6px 0 10px;padding-left:20px;line-height:1.5}
+.ins-ico{display:inline-block;padding:0 5px;border:1px solid var(--line);border-radius:5px;font-size:12px;line-height:18px}
+.ins-card .notice{margin:4px 0 12px}
+.ins-later{margin-top:10px;justify-content:center}
+.ins-later .btn{flex:0 1 auto;min-width:0}
+.dr-install{color:var(--orange)}

@@ -233,7 +233,7 @@ mx.matches.forEach(m => {
     calF.join(',') === '2025-s2-femenina,2026-s1-femenina,2026-s1-femenina', calF.join(','));
   await page.click('[data-action="save-league"]'); await page.waitForTimeout(1500);
   const saved = await text();
-  check('Tras guardar dice dónde y cuánto', saved.includes('Guardado en la base: 2026-s1-femenina') && saved.includes('17 partidos nuevos'));
+  check('Tras guardar dice dónde y cuánto', saved.includes('Guardado en la base: 2026-s1-femenina') && saved.includes('17 partidos nuevos'), (await page.textContent('#page-title')) + ' :: ' + saved.slice(0, 300));
   check('Ofrece verla', await page.locator('[data-action="view-season"][data-slug="2026-s1-femenina"]').count() === 1);
   await page.click('[data-action="view-season"][data-slug="2026-s1-femenina"]');
   await page.waitForFunction(() => document.getElementById('comp-label').textContent === 'Femenina' &&

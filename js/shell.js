@@ -51,7 +51,9 @@
           return '<button type="button" class="dr-item" data-drawer-go="' + it[0] + '">' +
             icon(it[2]) + '<span>' + esc(it[1]) + '</span></button>';
         }).join('') + '</div>';
-    }).join('');
+    }).join('') + '<div class="dr-group"><button type="button" class="dr-item dr-install" data-shell="instalar">' +
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7M9 11.5l3 3 3-3M10 18.5h4"/></svg><span>Descarga la app</span></button></div>';
 
     document.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-shell]');
@@ -62,6 +64,7 @@
         if (a === 'home') { closeDrawer(); go('inicio'); return; }
         if (a === 'config') { closeDrawer(); go('config'); return; }
         if (a === 'perfil') { closeDrawer(); go('perfil'); return; }
+        if (a === 'instalar') { closeDrawer(); if (global.PadelInstalar) global.PadelInstalar.openWizard('menu'); return; }
       }
       var d = ev.target.closest('[data-drawer-go]');
       if (d) { closeDrawer(); go(d.getAttribute('data-drawer-go')); }

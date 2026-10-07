@@ -283,7 +283,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   {
     const sm = await browser.newPage({ viewport: { width: 360, height: 640 } });
     await sm.route('**/rest/v1/rpc/get_league_snapshot', r => r.fulfill({ status: 200, contentType: 'application/json', body: SNAP }));
-    await sm.goto(BASE); await sm.waitForTimeout(1200);
+    await sm.goto(BASE); await sm.waitForSelector('.zone.door', { timeout: 10000 }).catch(() => {}); await sm.waitForTimeout(300);
     const outside = await sm.$$eval('.court .zt, .court .zs', els => els.filter(e => {
       const b = e.getBoundingClientRect(); return b.width && (b.left < 0 || b.right > window.innerWidth);
     }).length);
