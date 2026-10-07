@@ -169,3 +169,13 @@ temporada de la misma competición, rechaza la carga.
   Un aviso que falla nunca rompe lo que se estaba guardando.
 - Probar a mano (SQL): `select notify_call('{"type":"reminders","force":true}')` y mirar
   `net._http_response`.
+
+## Fechas de la liga (partidos por jugar)
+
+- `league_schedules`: una fila por enfrentamiento y mes (`team_lo`/`team_hi` para no duplicar el
+  cruce), con `scheduled_at` en hora de España. La escribe `ingest_league` desde `payload.schedules`
+  (`[mes, grupo, local, visitante, 'AAAA-MM-DDTHH:MM']`, que saca `LigaParser`); si la web cambia
+  la fecha, se actualiza.
+- `apply_league_schedules(season)` (admin): pasa esas fechas a los `fixtures` pendientes y **sin
+  fecha** de las rondas en curso. Una fecha puesta por la pareja no se pisa nunca.
+- `get_league_snapshot` devuelve `schedules` solo de los cruces que aún no tienen partido.

@@ -13,8 +13,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   tabla de siempre. La app recuerda la pestaña.
 - **La carga lee las fechas de los partidos por jugar** («25 / viernes / sept2026 / 20:00h», también
   en catalán) y las manda en el paquete (`schedules`). La vista previa dice cuántas trae.
-  ⚠️ Falta la parte de la base (guardarlas, devolverlas en la foto de la liga y pasarlas a Este mes
-  si un partido vuestro no tenía fecha): pendiente de reconectar Supabase.
+- Base: tabla `league_schedules` (una fecha por enfrentamiento y mes, hora de España; lectura
+  pública, escritura solo admin). `ingest_league` guarda las `schedules` del paquete y llama a
+  `apply_league_schedules`, que pone la fecha de la liga en los partidos de Este mes (rondas en
+  curso) **solo si no tenían una**. `get_league_snapshot` devuelve `schedules` de lo que falta por
+  jugar. Las funciones de disparador dejan de ser llamables desde la API.
 
 ### Added — Borrar un resultado
 - En Este mes, un partido con resultado tiene **«Borrar resultado»**: vuelve a pendiente.
