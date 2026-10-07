@@ -1083,3 +1083,18 @@ html[data-theme="light"] .court-photo{background:#dfe8ef}
 .gr-ms .prov{display:block;font-size:10px;color:var(--orange);text-transform:uppercase}
 .gr-months{display:flex;gap:6px}
 .gr-months .chip{flex:none;min-width:0;padding:7px 12px;font-size:13px;min-height:0}
+
+/* Grupos: la tabla de cada grupo cabe siempre en su tarjeta (sin el ancho mínimo ni los
+   rellenos de la clasificación general). */
+.lg .gr-card{min-width:0;overflow:hidden}
+.lg .gr-tbl{min-width:0;width:100%;table-layout:fixed;font-size:13px}
+.lg .gr-tbl thead th{padding:7px 2px;letter-spacing:.06em;text-align:center;background:transparent}
+.lg .gr-tbl thead th:nth-child(2){text-align:left}
+.lg .gr-tbl th:nth-child(1),.lg .gr-tbl td:nth-child(1){width:20px}
+.lg .gr-tbl th:nth-child(n+3),.lg .gr-tbl td:nth-child(n+3){width:30px}
+.lg .gr-tbl tbody td{padding:7px 2px;text-align:center;border-bottom:0;border-top:1px solid var(--line)}
+.lg .gr-tbl tbody td.nm{text-align:left;width:auto;overflow-wrap:anywhere;line-height:1.25}
+.lg .gr-tbl tbody tr:hover{background:transparent}
+.lg .gr-tbl tr.mine td,.lg .gr-tbl tr.mine td b{color:var(--orange)}
+.gr-ms .vs{flex:1}
+.gr-ms .vs span{overflow-wrap:anywhere}
