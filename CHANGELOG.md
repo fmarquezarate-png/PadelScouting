@@ -6,6 +6,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- **Al activar los avisos salía «Failed to execute 'json' on 'Response': Unexpected end of JSON
+  input»** (aunque se activaban). Las funciones de la base que no devuelven nada (guardar o borrar
+  el aparato, aviso de prueba) responden 204 sin contenido y la app intentaba leerlo como datos.
+  Ahora una respuesta vacía es un «hecho». La prueba de avisos responde igual que la base real.
 - **Alguien nuevo no veía los partidos de esta temporada**: la app abría por defecto en el
   semestre fijado en el código (2026 S1, febrero–julio). Además, cualquier cambio de semestre se
   quedaba guardado para siempre. Ahora, **al abrir la app siempre se ve el semestre más reciente

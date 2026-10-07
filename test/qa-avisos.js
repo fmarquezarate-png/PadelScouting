@@ -45,9 +45,11 @@ const J = (r, o, st) => r.fulfill({ status: st || 200, contentType: 'application
     await p.route('**/rest/v1/rpc/list_my_records', r => J(r, []));
     await p.route('**/rest/v1/rpc/get_my_round', r => r.abort());
     await p.route('**/rest/v1/rpc/vapid_public_key', r => J(r, 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'));
-    await p.route('**/rest/v1/rpc/save_push_subscription', r => { calls.save.push(JSON.parse(r.request().postData()).sub); J(r, null); });
-    await p.route('**/rest/v1/rpc/delete_push_subscription', r => { calls.del.push(JSON.parse(r.request().postData()).p_endpoint); J(r, null); });
-    await p.route('**/rest/v1/rpc/send_test_push', r => { calls.test++; J(r, null); });
+    /* Como la base de verdad: las funciones «void» responden 204 sin contenido. */
+    const done = r => r.fulfill({ status: 204, body: '' });
+    await p.route('**/rest/v1/rpc/save_push_subscription', r => { calls.save.push(JSON.parse(r.request().postData()).sub); done(r); });
+    await p.route('**/rest/v1/rpc/delete_push_subscription', r => { calls.del.push(JSON.parse(r.request().postData()).p_endpoint); done(r); });
+    await p.route('**/rest/v1/rpc/send_test_push', r => { calls.test++; done(r); });
     return { p, ctx };
   };
   const text = (p, s) => p.textContent(s).catch(() => '');
@@ -76,6 +78,7 @@ const J = (r, o, st) => r.fulfill({ status: st || 200, contentType: 'application
   check('Activar registra el receptor de avisos (sw.js)',
     await p.evaluate(() => navigator.serviceWorker.getRegistration().then(r => !!r && /sw\.js$/.test((r.active || r.installing || r.waiting).scriptURL))));
   card = await text(p, '#cfg-avisos');
+  check('Activar no enseña ningún error (la base responde 204 sin contenido)', !/Failed|JSON|Error/i.test(await text(p, '#toast')), await text(p, '#toast'));
   check('Tras activar: «Este aparato recibe avisos» y botón de prueba', card.includes('recibe avisos') && !!(await p.$('[data-av="test"]')));
   await p.click('[data-av="test"]'); await p.waitForTimeout(500);
   check('«Enviar aviso de prueba» lo pide a la base', calls.test === 1);
