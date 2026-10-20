@@ -184,7 +184,8 @@
   function busy() {
     var root = document.getElementById('modal-root');
     var dr = document.getElementById('drawer');
-    return !!((root && root.innerHTML.trim()) || (dr && !dr.hidden));
+    return !!((root && root.innerHTML.trim()) || (dr && !dr.hidden) || document.body.classList.contains('touring') ||
+      (global.PadelRecorrido && !lsGet('padel-scouting.tour.v1') && !navigator.webdriver));
   }
 
   function invite(html, key, onYes) {

@@ -641,9 +641,9 @@
     var live = {
       liga: total + ' parejas',
       temporada: a ? (a.w + '–' + a.l + ' · #' + a.posFin) : '',
-      registro: 'En 2 min',
-      historial: notes ? notes + (notes === 1 ? ' nota' : ' notas') : 'Tus partidos',
-      analisis: 'Y briefing',
+      registro: 'Cómo jugó el rival',
+      historial: notes ? notes + (notes === 1 ? ' partido' : ' partidos') : 'Repásalas',
+      analisis: 'Plan para jugar',
       cronica: global.PadelApp ? global.PadelApp.seasonName((m.season || {}).slug) : '',
       estemes: global.__NET_LABEL__ || (global.PadelEsteMes ? global.PadelEsteMes.netLabel() : '')
     };
@@ -678,11 +678,16 @@
         '<span class="hc form" title="Últimos cinco, el más reciente primero">' + form.map(function (w) {
           return '<i class="' + (w ? 'w' : 'l') + '" title="' + (w ? 'Victoria' : 'Derrota') + '"></i>';
         }).join('') + '</span></div>');
-      h.push('<p class="home-line">' + (climb > 0
-        ? 'Habéis subido <b>' + climb + ' puestos</b> desde el #' + a.posIni + '. '
-        : '') + 'Toca la pista para entrar.</p>');
+      if (climb > 0) h.push('<p class="home-line">Habéis subido <b>' + climb + ' puestos</b> desde el #' + a.posIni + '.</p>');
     }
-    h.push('</div></div>');
+    h.push('</div>');
+    /* ¿Qué hago ahora? Un solo paso, el que toca. */
+    var step = global.PadelEsteMes && global.PadelEsteMes.nextStep();
+    if (step) h.push('<div class="next-step" id="nextStep" role="button" tabindex="0" data-next-step><span class="ns-k">¿Qué hago ahora?</span>' +
+      '<p class="ns-long">' + step.text + '</p><p class="ns-short">' + esc(step.short || step.btn) + ' <i aria-hidden="true">›</i></p>' +
+      '<button type="button" class="btn primary ns-btn" tabindex="-1">' + esc(step.btn) + '</button></div>');
+    h.push('<p class="home-hint">O toca cualquier zona de la pista.</p>');
+    h.push('</div>');
     h.push('<div class="court-host" id="courtHost"></div>');
     h.push('</section>');
 
@@ -693,8 +698,15 @@
         else global.PadelApp.openPairPicker();
       });
     });
+    var nsb = view.querySelector('[data-next-step]');
+    if (nsb && step) {
+      nsb.addEventListener('click', function () { step.run(); });
+      nsb.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); step.run(); } });
+    }
     animateRank();
     global.PadelCourt.mount(document.getElementById('courtHost'), live, go);
+    /* La primera vez que se ve la pista: el recorrido guiado. */
+    if (global.PadelRecorrido) setTimeout(function () { global.PadelRecorrido.maybeStart(); }, 1200);
     bind();
   }
 

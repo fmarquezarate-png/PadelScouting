@@ -138,6 +138,42 @@
     return String(label || '').split('/').map(function (x) { return x.trim().split(' ')[0]; }).join('/');
   }
 
+  /* «¿Qué hago ahora?» en la pista: siempre UN paso, el siguiente que te toca.
+     Devuelve { text (HTML), btn, run } o null mientras no se sabe (cargando). */
+  function nextStep() {
+    var A = global.PadelApp, m = model();
+    var esc2 = function (x) { return PL().esc(x); };
+    var NAMES = global.PadelData.NAMES;
+    if (!user()) return { text: 'Crea tu cuenta (o entra) y la app lleva <b>tus partidos del mes</b>: rivales, fechas, resultados y un aviso la víspera.',
+      short: 'Crea tu cuenta o entra', btn: 'Crear cuenta o entrar', run: function () { A.go('perfil'); } };
+    var prof = DB().myPlayer();
+    if (!prof || !prof.label) return { text: 'Dinos <b>quién eres</b> en la liga: así encontramos tu pareja y tus partidos.',
+      short: 'Dinos quién eres en la liga', btn: 'Elegir quién soy', run: function () { if (global.PadelShell) global.PadelShell.openWelcome(prof || {}); } };
+    if (!m) return null;
+    if (!m.ownTeamId) return { text: 'No apareces en esta competición. Cámbiala arriba, junto al título, o mira cualquier pareja.',
+      short: 'No apareces aquí: elige una pareja', btn: 'Elegir una pareja', run: function () { A.openPairPicker(); } };
+    if (!state.known) return null;
+    if (needsNewRound()) return { text: 'Empieza el mes: <b>monta tu grupo</b> con tus rivales y ponles fecha.',
+      short: 'Monta tu grupo del mes', btn: 'Montar mi grupo del mes', run: function () { A.go('estemes'); } };
+    var pend = pendingResults();
+    if (pend.length) return { text: 'Jugasteis contra <b>' + esc2(pend[0].rivalLabel) + '</b>: apunta cómo fue.',
+      short: 'Apunta el resultado vs ' + shortRival(pend[0].rivalLabel), btn: 'Apuntar el resultado', run: function () { openResultModal(pend[0], false); } };
+    var r = state.round;
+    var sinFecha = r ? (r.fixtures || []).filter(function (f) { return f.status === 'pendiente' && !f.scheduledAt; }).length : 0;
+    if (sinFecha) return { text: (sinFecha === 1 ? 'Tienes <b>1 partido sin fecha</b>' : 'Tienes <b>' + sinFecha + ' partidos sin fecha</b>') +
+      ': pónsela y te aviso la víspera.', short: 'Pon fecha a tus partidos', btn: 'Poner fechas', run: function () { A.go('estemes'); } };
+    var nf = nextFixture();
+    if (nf) return { text: 'Próximo partido: <b>' + esc2(shortWhen(nf.scheduledAt)) + '</b> contra <b>' + esc2(nf.rivalLabel) + '</b>.',
+      short: shortWhen(nf.scheduledAt) + ' · estudia a ' + shortRival(nf.rivalLabel), btn: 'Estudiar a ' + shortRival(nf.rivalLabel), run: function () {
+        var mm = model();
+        if (mm && mm.ownTeamId && mm.myTeamId !== mm.ownTeamId) PL().setViewPair('own');
+        PL().state.rivalId = nf.rivalTeamId;
+        A.go('rival');
+      } };
+    return { text: 'Todo al día. Mira cómo van los grupos del mes en <b>' + esc2(NAMES.liga) + '</b>.',
+      short: 'Todo al día · mira los grupos', btn: 'Ver la clasificación', run: function () { A.go('liga'); } };
+  }
+
   /* Lo que se lee en la red de la pista. */
   function netLabel() {
     if (!user()) return 'Tu grupo del mes';
@@ -773,7 +809,7 @@
   }
 
   global.PadelEsteMes = {
-    state: state, load: load, boot: boot, render: render, netLabel: netLabel,
+    state: state, load: load, boot: boot, render: render, netLabel: netLabel, nextStep: nextStep,
     provisionalMatches: provisionalMatches, linkRecord: linkRecord, checkPrompts: checkPrompts,
     openRoundModal: openRoundModal, openResultModal: openResultModal, proposal: proposal,
     needsNewRound: needsNewRound, pendingResults: pendingResults, downloadIcs: downloadIcs

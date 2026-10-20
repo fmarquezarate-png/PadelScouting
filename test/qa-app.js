@@ -75,7 +75,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('La casa vuelve a la pista', await page.textContent('#page-title') === 'La pista');
   await page.focus('.court .zone[data-view="liga"]');
   await page.keyboard.press('Enter'); await page.waitForTimeout(1300);
-  check('Enter en una zona también navega', await page.textContent('#page-title') === 'La liga');
+  check('Enter en una zona también navega', await page.textContent('#page-title') === 'Clasificación');
 
   /* el menú ☰ */
   await page.click('#menu-btn'); await page.waitForTimeout(350);
@@ -186,7 +186,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
 
   /* Rival desde un partido de la tabla */
   await page.click('#rows [data-rival] >> nth=0'); await page.waitForTimeout(900);
-  check('Un rival de la tabla abre su informe', await page.textContent('#page-title') === 'El rival');
+  check('Un rival de la tabla abre su informe', await page.textContent('#page-title') === 'Estudiar un rival');
   t = await text();
   check('Rival: proyección', t.includes('probabilidad de que ganemos'));
   const nums = await page.evaluate(() => {
@@ -222,7 +222,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   const det = await page.textContent('#expDetail');
   check('08 · muestra la temporada de cualquiera', det.includes('Felipe') && /G\d+/.test(det));
   await page.click('#expDetail [data-rival]'); await page.waitForTimeout(900);
-  check('08 · analizar como rival desde el explorador', await page.textContent('#page-title') === 'El rival');
+  check('08 · analizar como rival desde el explorador', await page.textContent('#page-title') === 'Estudiar un rival');
 
   /* ---------------- 09-12 CRÓNICA ---------------- */
   await go('cronica'); await page.waitForTimeout(500);
@@ -242,7 +242,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('La liga no ofrece cargar a quien no es administrador', await page.locator('.lg [data-goto="config"]').count() === 0);
 
   /* ---------------- el resto sigue vivo ---------------- */
-  for (const [v, title] of [['registro', 'Registro rápido'], ['historial', 'Historial'], ['analisis', 'Análisis']]) {
+  for (const [v, title] of [['registro', 'Notas de un partido'], ['historial', 'Mis notas'], ['analisis', 'Preparar partido']]) {
     await go(v);
     check('Sigue funcionando: ' + title, await page.textContent('#page-title') === title);
   }

@@ -36,7 +36,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   // --- 1. arranque ---
   check('Arranca en la pista, no en Registro', await page.textContent('#page-title') === 'La pista');
   await page.evaluate(() => window.PadelApp.go('registro')); await page.waitForTimeout(300);
-  check('Registrar sigue a un toque', await page.textContent('#page-title') === 'Registro rápido');
+  check('Registrar sigue a un toque', await page.textContent('#page-title') === 'Notas de un partido');
   check('Registrar pregunta: carga masiva o detallada',
     await page.locator('[data-reg="masiva"]').count() === 1 && await page.locator('[data-reg="detallada"]').count() === 1);
   await page.click('[data-reg="detallada"]'); await page.waitForTimeout(200);

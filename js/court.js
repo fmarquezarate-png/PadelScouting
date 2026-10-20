@@ -105,13 +105,29 @@
      toca ahora; en vuestro lado, el scouting en el orden en que se usa
      (apuntas, repasas, sacas conclusiones). El rival espera en la puerta. */
   var ZONES = [
-    { id: 'liga', view: 'liga', col: 0, far: true, title: 'La liga' },
-    { id: 'temporada', view: 'temporada', col: 1, far: true, title: 'Temporada' },
-    { id: 'cronica', view: 'cronica', col: 2, far: true, title: 'Crónica' },
-    { id: 'registro', view: 'registro', col: 0, far: false, title: 'Registrar' },
-    { id: 'historial', view: 'historial', col: 1, far: false, title: 'Historial' },
-    { id: 'analisis', view: 'analisis', col: 2, far: false, title: 'Análisis' }
+    { id: 'liga', view: 'liga', col: 0, far: true },
+    { id: 'temporada', view: 'temporada', col: 1, far: true },
+    { id: 'cronica', view: 'cronica', col: 2, far: true },
+    { id: 'registro', view: 'registro', col: 0, far: false },
+    { id: 'historial', view: 'historial', col: 1, far: false },
+    { id: 'analisis', view: 'analisis', col: 2, far: false }
   ];
+  /* Los nombres son los mismos que en el menú y en el título (PadelData.NAMES). */
+  function NAME(id) { return (self.PadelData && self.PadelData.NAMES[id]) || id; }
+  ZONES.forEach(function (z) { z.title = NAME(z.id); });
+
+  /* Título en dos líneas equilibradas («NOTAS DE / UN PARTIDO»). */
+  function splitTitle(title) {
+    var words = String(title).toUpperCase().split(' ');
+    if (words.length < 2 || title.length <= 11) return [words.join(' ')];
+    var best = null;
+    for (var i = 1; i < words.length; i++) {
+      var a = words.slice(0, i).join(' '), b = words.slice(i).join(' ');
+      var w = Math.max(a.length, b.length);
+      if (!best || w < best.w) best = { w: w, lines: [a, b] };
+    }
+    return best.lines;
+  }
 
   function zoneQuad(z) {
     var c = COLS[z.col];
@@ -132,11 +148,11 @@
 
   /* Título en dos líneas si no cabe («Nuestra temporada»). */
   function titleText(x, y, title, size, cls) {
-    var words = String(title).toUpperCase().split(' ');
-    if (words.length > 1 && title.length > 11) {
-      return '<text class="' + cls + '" x="' + f(x) + '" y="' + f(y - size * 0.55) + '" font-size="' + size + '">' +
-        esc(words[0]) + '</text><text class="' + cls + '" x="' + f(x) + '" y="' + f(y + size * 0.55) +
-        '" font-size="' + size + '">' + esc(words.slice(1).join(' ')) + '</text>';
+    var lines = splitTitle(title);
+    if (lines.length > 1) {
+      return '<text class="' + cls + '" x="' + f(x) + '" y="' + f(y - size * 0.6) + '" font-size="' + size + '">' +
+        esc(lines[0]) + '</text><text class="' + cls + '" x="' + f(x) + '" y="' + f(y + size * 0.6) +
+        '" font-size="' + size + '">' + esc(lines[1]) + '</text>';
     }
     return '<text class="' + cls + '" x="' + f(x) + '" y="' + f(y) + '" font-size="' + size + '">' + esc(title.toUpperCase()) + '</text>';
   }
@@ -159,12 +175,13 @@
     /* Todo se dimensiona con el ancho real de la zona en pantalla. */
     var col = COLS[zn.col];
     var zw = P(cam, col[1], 0, c[2])[0] - P(cam, col[0], 0, c[2])[0];
-    var two = zn.title.length > 11;
-    var longest = two ? Math.max.apply(null, zn.title.split(' ').map(function (w) { return w.length; })) : zn.title.length;
+    var lines = splitTitle(zn.title), two = lines.length > 1;
+    var longest = Math.max.apply(null, lines.map(function (w) { return w.length; }));
     var sub = String(live[zn.id] || '');
     /* Botones grandes: el círculo ocupa casi un tercio del ancho de la zona. */
     var r = Math.min((tall ? 25 : 36) * k, zw * 0.28);
-    var ts = Math.min((tall ? 14 : 21) * k, zw * 0.8 / (longest * 0.72));
+    /* Una sola palabra larga («CLASIFICACIÓN») puede ocupar todo el ancho de su zona. */
+    var ts = Math.min((tall ? 14 : 21) * k, zw * (two ? 0.8 : 1.02) / (longest * 0.72));
     var ss = Math.min(ts * 0.66, zw * 0.88 / (Math.max(sub.length, 1) * 0.66));
     var off = (tall ? 6 : 10) * k;
     /* Si la foto se recorta por los lados, el botón y su rótulo no se acercan al borde. */
@@ -174,8 +191,8 @@
       px = Math.max(cam.safeX[0] + hw, Math.min(cam.safeX[1] - hw, px));
     }
     p = [px, p[1] - r * 0.55, p[2]];
-    var ty = p[1] + r + ts * (two ? 1.35 : 1.05);
-    var sy = ty + ts * (two ? 1.55 : 1.15);
+    var ty = p[1] + r + ts * (two ? 1.4 : 1.05);
+    var sy = ty + ts * (two ? 1.62 : 1.15);
     return '<g class="zone" data-zone="' + zn.id + '" data-view="' + zn.view + '" tabindex="0" role="button" ' +
       'aria-label="' + esc(zn.title) + (live[zn.id] ? ' · ' + esc(live[zn.id]) : '') + '" ' +
       'data-cx="' + c[0] + '" data-cz="' + c[2] + '">' +
@@ -193,11 +210,11 @@
     var top = Math.max(y + dr, ly);
     return '<circle cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(dr * 2.4) + '" fill="url(#cGlow)" class="c-doorglow"/>' +
       '<g class="zone door" data-zone="rival" data-view="rival" tabindex="0" role="button" ' +
-      'aria-label="El rival · busca y compara" data-cx="0" data-cz="-1.5">' +
+      'aria-label="' + esc(NAME('rival')) + ' · busca y compara" data-cx="0" data-cz="-1.5">' +
       '<rect class="zone-hit" x="' + f(x - dr * 3.2) + '" y="' + f(y - dr * 1.4) + '" width="' + f(dr * 6.4) + '" height="' +
       f(top - y + dr * 1.4 + dts * 2.6) + '" rx="10"/>' +
       badge(null, 'rival', x, y - dr * 0.1, dr) +
-      '<text class="zt" x="' + f(x) + '" y="' + f(top + dts * 1.1) + '" font-size="' + f(dts) + '">EL RIVAL</text>' +
+      '<text class="zt" x="' + f(x) + '" y="' + f(top + dts * 1.1) + '" font-size="' + f(dts) + '">' + esc(NAME('rival').toUpperCase()) + '</text>' +
       '<text class="zs" x="' + f(x) + '" y="' + f(top + dts * 2.2) + '" font-size="' + f(dts * 0.66) + '">BUSCA Y COMPARA</text>' +
       '</g>';
   }
@@ -212,16 +229,22 @@
 
   /* «Este mes» en la red: lo que separa tu campo del rival es el partido que toca. */
   function netMarkup(x, y, fs, label, maxW) {
+    fs *= 1.3;   /* el botón principal: más grande que el resto */
     var text = String(label || 'Tu grupo del mes').toUpperCase();
+    var kick = NAME('estemes').toUpperCase();
     /* Nunca más ancho que la pista a la altura de la red: se acorta el texto. */
     var room = maxW ? Math.floor((maxW - fs * 2) / (fs * 0.62)) : 40;
     if (text.length > room) text = text.slice(0, Math.max(8, room - 1)).trim() + '…';
-    var w = Math.max(text.length, 9) * fs * 0.62 + fs * 2, hgt = fs * 2.7;
+    /* el rótulo de arriba es más pequeño (0,62) pero muy espaciado: cuenta como 0,8 de una letra grande */
+    var w = Math.max(text.length, kick.length * 0.8, 9) * fs * 0.62 + fs * 2.4, hgt = fs * 2.9;
+    if (maxW) w = Math.min(w, maxW);
     return '<g class="zone net-btn" data-zone="estemes" data-view="estemes" tabindex="0" role="button" ' +
-      'aria-label="Este mes · ' + esc(label || '') + '">' +
+      'aria-label="' + esc(NAME('estemes')) + ' · ' + esc(label || '') + '">' +
+      '<rect class="nb-ring" x="' + f(x - w / 2 - fs * 0.35) + '" y="' + f(y - hgt / 2 - fs * 0.35) + '" width="' + f(w + fs * 0.7) +
+      '" height="' + f(hgt + fs * 0.7) + '" rx="' + f(hgt / 2 + fs * 0.35) + '"/>' +
       '<rect class="zone-hit nb-bg" x="' + f(x - w / 2) + '" y="' + f(y - hgt / 2) + '" width="' + f(w) + '" height="' + f(hgt) +
       '" rx="' + f(hgt / 2) + '"/>' +
-      '<text class="nb-k" x="' + f(x) + '" y="' + f(y - fs * 0.2) + '" font-size="' + f(fs * 0.62) + '">ESTE MES</text>' +
+      '<text class="nb-k" x="' + f(x) + '" y="' + f(y - fs * 0.2) + '" font-size="' + f(fs * 0.62) + '">' + esc(kick) + ' ›</text>' +
       '<text class="nb-t" x="' + f(x) + '" y="' + f(y + fs * 0.85) + '" font-size="' + f(fs) + '">' + esc(text) + '</text></g>';
   }
 
@@ -232,7 +255,7 @@
   var PHOTOS = {
     wide: { src: 'assets/pista-web.webp', W: 1672, H: 941, k: 1.6,
       pts: [[[-5, 20], [568, 247]], [[5, 20], [1102, 247]], [[-5, 3.05], [230, 585]], [[5, 3.05], [1441, 585]]],
-      door: [835, 728], label: 824, net: [835, 372], netFs: 8.5, farSub: false, nearK: 0.82,
+      door: [835, 728], label: 824, net: [835, 372], netFs: 11, farSub: false, nearK: 0.82,
       /* La mitad del fondo es muy estrecha en esta foto: botones menores, pegados
          al fondo sin tapar el escudo, y «Este mes» sentado en la cinta de la red. */
       farZ: 16.8, farK: 0.6, nearZ: 5.2 },
@@ -412,7 +435,7 @@
     var d = P(cam, 0, 0, -1.5);
     h.push(doorMarkup(d[0], d[1], tall ? 26 : 36, tall ? 14.5 : 20, d[1]));
     var nb = P(cam, 0, 0.9, 10);
-    h.push(netMarkup(nb[0], nb[1], tall ? 10 : 11.5, live.estemes, P(cam, 4.6, 0, 10)[0] - P(cam, -4.6, 0, 10)[0]));
+    h.push(netMarkup(nb[0], nb[1], tall ? 10 : 17, live.estemes, P(cam, 4.6, 0, 10)[0] - P(cam, -4.6, 0, 10)[0]));
     h.push(ballMarkup());
 
     h.push('</svg>');

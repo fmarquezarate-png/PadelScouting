@@ -14,16 +14,16 @@
   /* El mismo orden que la pista: portada; lo que toca ahora (la red y la
      puerta); la liga (el fondo); tu scouting (vuestro lado); tu cuenta. */
   var SECTIONS = [
-    { group: '', items: [['inicio', 'La pista', 'inicio']] },
-    { group: 'Ahora', items: [
-      ['estemes', 'Este mes', 'estemes'], ['rival', 'El rival', 'rival']] },
-    { group: 'La liga', items: [
-      ['liga', 'La liga', 'liga'], ['temporada', 'Nuestra temporada', 'temporada'], ['cronica', 'Crónica', 'cronica']] },
-    { group: 'Tu scouting', items: [
-      ['registro', 'Registrar partido', 'registro'], ['historial', 'Historial', 'historial'],
-      ['analisis', 'Análisis y briefing', 'analisis']] },
-    { group: 'Tu cuenta', items: [['perfil', 'Mi perfil', 'perfil'], ['config', 'Configuración', 'config']] }
+    { group: '', items: [['inicio', 'inicio']] },
+    { group: 'Ahora', items: [['estemes', 'estemes'], ['rival', 'rival']] },
+    { group: 'La liga', items: [['liga', 'liga'], ['temporada', 'temporada'], ['cronica', 'cronica']] },
+    { group: 'Tu libreta de scouting', items: [['registro', 'registro'], ['historial', 'historial'], ['analisis', 'analisis']] },
+    { group: 'Tu cuenta', items: [['perfil', 'perfil'], ['config', 'config']] }
   ];
+  /* El nombre de cada entrada sale de PadelData.NAMES: igual que en la pista y el título. */
+  SECTIONS.forEach(function (g) {
+    g.items = g.items.map(function (it) { return [it[0], global.PadelData.NAMES[it[0]], it[1]]; });
+  });
 
   var KIND = { masculina: 'Masculina', mixta: 'Mixta', femenina: 'Femenina' };
 
@@ -53,7 +53,10 @@
         }).join('') + '</div>';
     }).join('') + '<div class="dr-group"><button type="button" class="dr-item dr-install" data-shell="instalar">' +
       '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-      '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7M9 11.5l3 3 3-3M10 18.5h4"/></svg><span>Descarga la app</span></button></div>';
+      '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7M9 11.5l3 3 3-3M10 18.5h4"/></svg><span>Descarga la app</span></button>' +
+      '<button type="button" class="dr-item" data-shell="recorrido">' +
+      '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.6M12 16.8v.2"/></svg><span>¿Cómo funciona?</span></button></div>';
 
     document.addEventListener('click', function (ev) {
       var b = ev.target.closest('[data-shell]');
@@ -65,6 +68,7 @@
         if (a === 'config') { closeDrawer(); go('config'); return; }
         if (a === 'perfil') { closeDrawer(); go('perfil'); return; }
         if (a === 'instalar') { closeDrawer(); if (global.PadelInstalar) global.PadelInstalar.openWizard('menu'); return; }
+        if (a === 'recorrido') { closeDrawer(); if (global.PadelRecorrido) global.PadelRecorrido.replay(); return; }
       }
       var d = ev.target.closest('[data-drawer-go]');
       if (d) { closeDrawer(); go(d.getAttribute('data-drawer-go')); }
@@ -458,7 +462,7 @@
     h.push('<section class="card"><h3>Datos de la liga</h3>' + PL().sourceNote() + PL().loaderCard() + '</section>');
 
     h.push('<section class="card"><h3>Tu registro de scouting</h3>' +
-      '<p class="field-note">Tus notas de partido viven en este navegador. La copia de seguridad está en el Historial.</p>' +
+      '<p class="field-note">Tus notas de partido viven en este navegador. La copia de seguridad está en «Mis notas».</p>' +
       '<div class="btn-row"><button class="btn" data-goto="historial">Ir a la copia de seguridad</button></div></section>');
 
     h.push('<p class="note center">Padel Scouting · Club Tennis El Molí</p></div>');

@@ -6,6 +6,29 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- **El mixto de octubre salía con 7–8 parejas por grupo**: el 14 de octubre se cargó la clasificación
+  masculina con «Mixta» seleccionada y la base la aceptó. Limpieza: fuera 75 parejas masculinas,
+  13 partidos y 78 fechas del mixto de octubre, y los grupos 15–19 (solo tenían esas parejas). El
+  mixto vuelve a tener 14 grupos de 3 (13 y 14, de 4, como en la web).
+- **Blindaje** (`ingest_league`): si más de la mitad de las parejas del texto ya juegan en otra
+  competición, no se guarda nada: «Esto parece la clasificación masculina… elige la competición
+  correcta».
+
+### Changed — Que la app se entienda
+- **Mismos nombres en la pista, el menú y el título** (`PadelData.NAMES`): Mis partidos del mes ·
+  Clasificación · Nuestra temporada · Crónica · Notas de un partido · Mis notas · Preparar partido ·
+  Estudiar un rival. El menú agrupa «Tu libreta de scouting».
+- **Una frase bajo el título** de cada pantalla: para qué sirve y qué hacer (`PadelData.INTRO`).
+- **«¿Qué hago ahora?» en la pista**: un solo paso según dónde estés (crear cuenta → quién eres →
+  montar el grupo del mes → apuntar el resultado → poner fechas → estudiar al próximo rival → todo al
+  día). En móvil, una franja fina que se toca entera; en ordenador, texto y botón.
+- **El botón de la red, más grande y con halo**: es el principal.
+- **Recorrido guiado** de 5 paradas (la red, el fondo, tu lado, la puerta, la barra de arriba), la
+  primera vez que se abre la pista; «Saltar», «Atrás», Escape; se repite desde el menú
+  («¿Cómo funciona?»). Las invitaciones (descarga, avisos) esperan a que termine.
+- Pruebas: `test/qa-guia.js` (25); nombres actualizados en las demás.
+
+### Fixed
 - **Al activar los avisos salía «Failed to execute 'json' on 'Response': Unexpected end of JSON
   input»** (aunque se activaban). Las funciones de la base que no devuelven nada (guardar o borrar
   el aparato, aviso de prueba) responden 204 sin contenido y la app intentaba leerlo como datos.

@@ -100,7 +100,39 @@
     return item ? item.label : id;
   }
 
+  /* Nombres de cada parte de la app: los mismos en la pista, el menú y el título.
+     La historia de la pista: al fondo la liga (lo que ya pasó), en la red lo que
+     te toca ahora, en tu lado tu libreta de scouting y en la puerta el rival. */
+  var NAMES = {
+    inicio: 'La pista',
+    estemes: 'Mis partidos del mes',
+    liga: 'Clasificación',
+    temporada: 'Nuestra temporada',
+    cronica: 'Crónica',
+    registro: 'Notas de un partido',
+    historial: 'Mis notas',
+    analisis: 'Preparar partido',
+    rival: 'Estudiar un rival',
+    perfil: 'Mi perfil',
+    config: 'Configuración'
+  };
+  /* Una frase bajo el título: para qué sirve la pantalla y qué hacer en ella. */
+  var INTRO = {
+    estemes: 'Tu grupo de este mes: pon fecha a cada partido y, al acabar, apunta el resultado. Tu pareja lo ve igual.',
+    liga: 'Cómo va toda la liga: los grupos del mes con sus partidos y fechas, y la clasificación general.',
+    temporada: 'Vuestro semestre de un vistazo: puesto, grupo y resultados mes a mes.',
+    cronica: 'La temporada contada: rachas, mejores partidos y momentos clave.',
+    registro: 'Tus notas de scouting de un partido: cómo jugó el rival y qué os funcionó. El resultado se apunta en «Mis partidos del mes».',
+    historial: 'Todas tus notas de scouting, para repasarlas, buscarlas o corregirlas.',
+    analisis: 'Lo que dicen tus notas: cómo juegan los rivales y un plan corto para el próximo partido.',
+    rival: 'Elige una pareja de la liga: cómo juega, contra quién gana y cómo os comparáis.',
+    perfil: 'Tu cuenta: quién eres en la liga, tu foto y tu categoría.',
+    config: 'Avisos en el móvil, apariencia, competición y datos de la liga.'
+  };
+
   global.PadelData = {
+    NAMES: NAMES,
+    INTRO: INTRO,
     ARCHETYPES: ARCHETYPES,
     MATCH_STATUS: MATCH_STATUS,
     PATTERNS: PATTERNS,

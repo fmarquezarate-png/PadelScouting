@@ -1109,3 +1109,51 @@ html[data-theme="light"] .court-photo{background:#dfe8ef}
 .ins-later{margin-top:10px;justify-content:center}
 .ins-later .btn{flex:0 1 auto;min-width:0}
 .dr-install{color:var(--orange)}
+
+/* El botón de la red: el principal de la pista (más grande y con un halo que respira). */
+.net-btn .nb-ring{fill:none;stroke:var(--orange);stroke-width:2.5;opacity:.6;animation:nbRing 1.8s ease-in-out infinite;pointer-events:none}
+/* Solo luz, sin cambiar de tamaño: el botón no se mueve al tocarlo. */
+@keyframes nbRing{0%,100%{opacity:.15}50%{opacity:.85}}
+@media(prefers-reduced-motion:reduce){.net-btn .nb-ring{animation:none;opacity:.5}}
+/* Una frase bajo el título de cada pantalla. */
+.view-intro{max-width:760px;margin:14px auto 0;padding:0 18px;color:var(--mute);font-size:14px;line-height:1.45}
+.view-intro::before{content:"";display:inline-block;width:14px;height:2px;background:var(--orange);vertical-align:middle;margin-right:8px}
+body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[data-view="cronica"] .view-intro{max-width:1040px}
+@media(min-width:760px){.view-intro{padding:0 26px;font-size:15px}}
+.view-intro + .view{padding-top:12px}
+
+/* ¿Qué hago ahora? (pista) — un paso, con su botón */
+.next-step{margin-top:10px;background:rgba(12,16,10,.78);border:1px solid rgba(237,108,5,.55);border-radius:12px;
+  padding:10px 12px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.35);
+  display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.next-step .ns-k{grid-column:1/-1;font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+.next-step p{margin:0;color:#EDEBE3;font-size:13.5px;line-height:1.35}
+.next-step p b{color:#fff}
+.next-step .ns-btn{padding:9px 12px;font-size:12px;min-height:0;white-space:nowrap}
+@media(max-width:420px){.next-step{grid-template-columns:1fr}.next-step .ns-btn{justify-self:start}}
+.home-hint{margin:8px 2px 0;color:var(--mute);font-size:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.next-step{cursor:pointer}
+.next-step .ns-short{display:none}
+/* Móvil: una franja fina que se toca entera, para no tapar la pista. */
+@media(max-width:759px){
+  .next-step{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-top:8px}
+  .next-step .ns-k{flex:none;font-size:9.5px;letter-spacing:.1em}
+  .next-step .ns-long,.next-step .ns-btn{display:none}
+  .next-step .ns-short{display:block;flex:1;min-width:0;font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .next-step .ns-short i{font-style:normal;color:var(--orange);font-weight:700}
+  .home-hint{display:none}
+}
+@media(min-width:760px){.next-step{grid-template-columns:1fr}.next-step .ns-btn{justify-self:start;margin-top:4px}}
+
+/* Recorrido guiado */
+.tour{position:fixed;inset:0;z-index:200}
+.tour-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(4,6,4,.72);outline:2px solid var(--orange);outline-offset:2px;
+  transition:left .3s,top .3s,width .3s,height .3s;pointer-events:none}
+.tour-bubble{position:fixed;background:var(--panel);color:var(--bone);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);transition:left .3s,top .3s}
+.tour-bubble h3{margin:2px 0 6px;font:800 17px/1.2 var(--disp);text-transform:uppercase;letter-spacing:.02em}
+.tour-bubble p{margin:0 0 12px;font-size:14px;line-height:1.45;color:var(--bone)}
+.tour-n{font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+.tour-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.tour-btns .btn{flex:0 0 auto;min-width:0}
+@media(prefers-reduced-motion:reduce){.tour-hole,.tour-bubble{transition:none}}

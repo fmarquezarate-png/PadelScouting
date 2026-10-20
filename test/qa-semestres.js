@@ -81,7 +81,7 @@ const SNAPS = { '2026-s1': A, '2026-s2': B, '2026-s1-mixta': X };
   await page.evaluate(() => window.PadelApp.go('liga')); await page.waitForTimeout(800);
   await page.click('#pair-btn'); await page.waitForTimeout(300);
   await page.click('.pp-item >> nth=0'); await page.waitForTimeout(1200);
-  check('Elegir pareja: sigue en La liga', (await page.textContent('#page-title')) === 'La liga');
+  check('Elegir pareja: sigue en La liga', (await page.textContent('#page-title')) === 'Clasificación');
 
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();

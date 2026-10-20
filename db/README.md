@@ -179,3 +179,10 @@ temporada de la misma competición, rechaza la carga.
 - `apply_league_schedules(season)` (admin): pasa esas fechas a los `fixtures` pendientes y **sin
   fecha** de las rondas en curso. Una fecha puesta por la pareja no se pisa nunca.
 - `get_league_snapshot` devuelve `schedules` solo de los cruces que aún no tienen partido.
+
+## Competición equivocada
+
+`ingest_league` rechaza una carga si más de la mitad de sus parejas (y al menos 4) ya juegan en una
+temporada de **otra** competición: es la señal de haber pegado, por ejemplo, la masculina con «Mixta»
+seleccionada (pasó el 14/10/2026 y se limpió a mano). Una pareja son dos jugadores concretos, así que
+una mixta nunca coincide con una masculina.

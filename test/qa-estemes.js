@@ -86,7 +86,7 @@ async function mockApp(page, opts) {
   await p.click('[data-rm="ok"]'); await p.waitForTimeout(1500);
   check('Confirma y guarda la ronda', S.calls.includes('start_round') && S.lastStart.rivals.length === 3);
   check('Si cambias una pareja queda como «elegido por ti»', S.lastStart.source === 'manual');
-  check('Lleva a Este mes', (await p.textContent('#page-title')) === 'Este mes');
+  check('Lleva a Este mes', (await p.textContent('#page-title')) === 'Mis partidos del mes');
   check('Una tarjeta por rival', await p.locator('.em-card').count() === 3);
   const t1 = await text(p);
   check('Probabilidad de subir y bajar', t1.includes('Subes') && t1.includes('Bajas'));
@@ -164,7 +164,7 @@ async function mockApp(page, opts) {
   /* registro completo desde un partido */
   await p.evaluate(() => window.PadelApp.go('estemes')); await p.waitForTimeout(800);
   await p.click(`[data-fx-full="${fx}"]`); await p.waitForTimeout(800);
-  check('Registro completo: abre el formulario', (await p.textContent('#page-title')) === 'Registro rápido');
+  check('Registro completo: abre el formulario', (await p.textContent('#page-title')) === 'Notas de un partido');
   const r1 = await p.inputValue('#rival-0').catch(() => null) || await p.evaluate(() => window.PadelApp.state.form.rivals[0].name);
   check('Registro completo: rivales y sets ya puestos', !!r1 && (await p.evaluate(() => window.PadelApp.state.form.sets[2].own)) === 10, r1);
 
@@ -262,7 +262,7 @@ async function mockApp(page, opts) {
     check('Cocina: con el mes cerrado acierta los rivales reales', JSON.stringify(top.sort()) === JSON.stringify(real.sort()), top + ' vs ' + real);
     const firstRival = await q.getAttribute('.em-cocina [data-rival] >> nth=0', 'data-rival');
     await q.click('.em-cocina [data-rival] >> nth=0'); await q.waitForTimeout(900);
-    check('Comparar lleva a El rival con esa pareja frente a la nuestra', (await q.textContent('#page-title')) === 'El rival' &&
+    check('Comparar lleva a El rival con esa pareja frente a la nuestra', (await q.textContent('#page-title')) === 'Estudiar un rival' &&
       await q.evaluate(id => { const s = window.PadelLiga.state; return s.rivalId === +id && s.model.myTeamId === s.model.ownTeamId; }, firstRival));
     await q.evaluate(() => window.PadelApp.go('estemes')); await q.waitForTimeout(900);
     /* Sin clasificación del mes: explica qué falta */

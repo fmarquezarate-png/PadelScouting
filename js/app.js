@@ -13,18 +13,14 @@
   var R = D.RULES;
 
   var VIEWS = {
-    inicio:    { title: 'La pista' },
-    temporada: { title: 'Nuestra temporada' },
-    rival:     { title: 'El rival' },
-    liga:      { title: 'La liga' },
-    registro:  { title: 'Registro rápido' },
-    historial: { title: 'Historial' },
-    analisis:  { title: 'Análisis' },
-    cronica:   { title: 'Crónica' },
-    config:    { title: 'Configuración' },
-    perfil:    { title: 'Mi perfil' },
-    estemes:   { title: 'Este mes' }
+    inicio: {}, temporada: {}, rival: {}, liga: {}, registro: {}, historial: {},
+    analisis: {}, cronica: {}, config: {}, perfil: {}, estemes: {}
   };
+  /* Los nombres viven en PadelData.NAMES (los mismos en la pista, el menú y el título). */
+  Object.keys(VIEWS).forEach(function (k) {
+    VIEWS[k].title = global.PadelData.NAMES[k];
+    VIEWS[k].intro = global.PadelData.INTRO[k] || '';
+  });
 
   var state = {
     view: 'inicio',
@@ -1123,7 +1119,7 @@
     h.push('<div class="section"><div class="section-head"><h2>Briefing por arquetipo</h2>' +
       '<span class="hint">cuando no sabes quién te toca</span></div>');
     h.push('<p class="lede">Máximo 3 cosas, para leerlas en el coche antes de jugar. ' +
-      'Si ya sabes la pareja, usa <b>El rival</b>: ahí el plan sale de sus datos reales.</p>');
+      'Si ya sabes la pareja, usa <b>Estudiar un rival</b>: ahí el plan sale de sus datos reales.</p>');
     h.push(chipsHtml(D.ARCHETYPES, 'brief', state.briefArchetype, false, 'grid2 accent'));
 
     h.push('<div class="section" style="margin-top:22px">');
@@ -1179,7 +1175,8 @@
   }
 
   /* Pantallas personales: sin sesión llevan a iniciar sesión. */
-  var PRIVATE = { estemes: 'Este mes', registro: 'Registrar', historial: 'Historial', analisis: 'Análisis' };
+  var PRIVATE = {};
+  ['estemes', 'registro', 'historial', 'analisis'].forEach(function (k) { PRIVATE[k] = '«' + global.PadelData.NAMES[k] + '»'; });
 
   /* opts.keep: lo usan los filtros (competición, temporada, pareja). Se queda
      en la misma pantalla y a la misma altura; solo cambian los datos. */
@@ -1195,6 +1192,8 @@
     state.navSeq = (state.navSeq || 0) + 1;
     $title.textContent = VIEWS[view].title;
     fitTitle();
+    var intro = document.getElementById('view-intro');
+    if (intro) { intro.textContent = VIEWS[view].intro; intro.hidden = !VIEWS[view].intro; }
     if (!keep) global.scrollTo({ top: 0 });
     else restoreScroll(y);
     document.body.setAttribute('data-view', view);
@@ -1549,7 +1548,7 @@
       return la - lb;
     });
     var h = ['<div class="modal"><div class="modal-card pp-card"><h2>¿Qué pareja miras?</h2>',
-      '<p class="lede">Su temporada, su escalera, su crónica y sus rivales. Lo tuyo (Este mes, tus notas) sigue siendo tuyo.</p>',
+      '<p class="lede">Su temporada, su escalera, su crónica y sus rivales. Lo tuyo (tus partidos del mes, tus notas) sigue siendo tuyo.</p>',
       '<div class="btn-row">' + (m.ownTeamId ? '<button class="btn primary" data-pp="own">Mi pareja</button>' : '') +
       '<button class="btn ghost" data-pp="none">Vista general</button><button class="btn ghost" data-pp="close">Cerrar</button></div>',
       '<div class="field"><input type="search" id="pp-q" placeholder="Buscar pareja o jugador" value="' + esc(pp.q) + '" autocomplete="off"></div>',

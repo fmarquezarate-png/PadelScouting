@@ -100,7 +100,7 @@ const J = (r, o, st) => r.fulfill({ status: st || 200, contentType: 'application
   check('Un aviso con ./#temporada abre Nuestra temporada', (await text(p, '#page-title')) === 'Nuestra temporada');
   check('…y limpia la dirección', !(await p.evaluate(() => location.href)).includes('#'));
   await p.evaluate(() => { location.hash = 'estemes'; }); await p.waitForTimeout(900);
-  check('Con la app ya abierta, un aviso a ./#estemes lleva a Este mes', (await text(p, '#page-title')) === 'Este mes');
+  check('Con la app ya abierta, un aviso a ./#estemes lleva a Este mes', (await text(p, '#page-title')) === 'Mis partidos del mes');
   await p.goto('about:blank'); await p.goto(BASE + '/#loquesea'); await p.waitForTimeout(1200);
   check('Un # desconocido abre la pista normal', (await text(p, '#page-title')) === 'La pista', await text(p, '#page-title'));
   await ctx.close();
