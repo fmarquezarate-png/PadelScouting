@@ -659,7 +659,7 @@
         : x.sets.map(function (s) { return s[0] + '–' + s[1]; }).join(' · ');
       h.push('<button class="reg-match" data-reg-pick="' + i + '"><span class="rm-res ' + (x.won ? 'w' : 'l') + '">' +
         (x.won ? 'G' : 'P') + '</span><span class="rm-txt"><b>' + esc(x.rivalLabel) + '</b><small>' + esc(x.month) +
-        ' · ' + esc(res) + (x.provisional ? ' · provisional' : '') + (alreadyNoted(x) ? ' · ya registrado' : '') +
+        ' · ' + esc(res) + (x.provisional ? ' · provisional' : '') + (alreadyNoted(x) ? ' · ya anotado' : '') +
         '</small></span></button>');
     });
     h.push('<button class="btn ghost block" data-reg="blank" style="margin-top:10px">Otro partido (en blanco)</button></section></div>');
@@ -746,8 +746,8 @@
   function renderHistorial() {
     var all = A.decorateAll(records()).reverse();
     if (!all.length) {
-      $view.innerHTML = emptyState('—', 'Todavía no hay partidos registrados.',
-        'Registrar partido', 'registro') + dataCard();
+      $view.innerHTML = emptyState('—', 'Todavía no tienes notas de ningún partido.',
+        'Anotar un partido', 'registro') + dataCard();
       bindCommon();
       bindDataCard();
       return;
@@ -867,8 +867,8 @@
       '<p class="field-note" style="margin-bottom:14px">Los partidos viven en este navegador. ' +
       'Exporta de vez en cuando: si borras los datos del sitio, se van con ellos.</p>' +
       '<div class="btn-row">' +
-      '<button class="btn" data-action="export">Exportar JSON</button>' +
-      '<button class="btn" data-action="import">Importar JSON</button></div>' +
+      '<button class="btn" data-action="export">Guardar una copia</button>' +
+      '<button class="btn" data-action="import">Recuperar una copia</button></div>' +
       '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
       '<div class="btn-row" style="margin-top:10px">' +
       '<button class="btn ghost danger block" data-action="wipe">Borrar todos los partidos</button>' +
@@ -985,7 +985,7 @@
     if (!sum.total) {
       $view.innerHTML = emptyState('—',
         'Necesitamos más partidos para empezar a detectar patrones.',
-        'Registrar partido', 'registro') + briefingHtml();
+        'Anotar un partido', 'registro') + briefingHtml();
       bindBriefing();
       bindCommon();
       return;
@@ -1001,12 +1001,12 @@
         sum.level === 'insufficient' ? 'Datos insuficientes' : sum.note) +
       stat(sum.reading.average == null ? '—' : Math.round(sum.reading.average * 10) / 10,
         'Juego medio de lectura',
-        sum.reading.n ? sum.reading.n + ' observaciones' : 'Sin lecturas registradas') +
+        sum.reading.n ? sum.reading.n + ' observaciones' : 'Sin lecturas anotadas') +
       '</div>');
 
     /* win rate por arquetipo */
     h.push('<div class="section" style="margin-top:26px"><div class="section-head">' +
-      '<h2>Por arquetipo</h2><span class="hint">un partido cuenta una vez</span></div>');
+      '<h2>Por tipo de rival</h2><span class="hint">un partido cuenta una vez</span></div>');
     h.push('<div class="card">');
     D.ARCHETYPES.forEach(function (a) {
       var b = sum.byArchetype[a.id];
@@ -1034,7 +1034,7 @@
         (r.average == null ? 'sin lecturas' : 'juego ' + (Math.round(r.average * 10) / 10)) +
         ' · n=' + r.n + '</span></div>');
     });
-    if (!anyRead) h.push('<p class="field-note">Todavía no has registrado ninguna lectura.</p>');
+    if (!anyRead) h.push('<p class="field-note">Todavía no has anotado ninguna lectura.</p>');
     else if (sum.reading.n < R.minSample) {
       h.push('<p class="field-note">Con ' + sum.reading.n +
         ' observaciones la media todavía no dice mucho. A partir de ' + R.minSample + ' empieza a valer.</p>');
@@ -1045,7 +1045,7 @@
     h.push('<div class="section"><div class="section-head"><h2>Evolución</h2>' +
       '<span class="hint">mes a mes</span></div><div class="card">');
     if (sum.months.length < 2) {
-      h.push('<p class="field-note">Hace falta más de un mes registrado para ver evolución.</p>');
+      h.push('<p class="field-note">Hace falta más de un mes anotado para ver evolución.</p>');
     } else {
       var maxGames = Math.max.apply(null, sum.months.map(function (b) { return b.matches.length; }));
       h.push('<div class="spark">' + sum.months.map(function (b) {
@@ -1116,7 +1116,7 @@
     var brief = B.build(state.briefArchetype, matches);
     var h = [];
 
-    h.push('<div class="section"><div class="section-head"><h2>Briefing por arquetipo</h2>' +
+    h.push('<div class="section"><div class="section-head"><h2>Plan según el tipo de rival</h2>' +
       '<span class="hint">cuando no sabes quién te toca</span></div>');
     h.push('<p class="lede">Máximo 3 cosas, para leerlas en el coche antes de jugar. ' +
       'Si ya sabes la pareja, usa <b>Estudiar un rival</b>: ahí el plan sale de sus datos reales.</p>');
@@ -1134,11 +1134,11 @@
     h.push('</div>');
 
     if (brief.sample.played < R.minSample) {
-      h.push('<div class="notice warn">Este plan sale de las hipótesis de partida, no de datos: ' +
+      h.push('<div class="notice warn">Este plan sale de consejos generales, todavía no de tus datos: ' +
         'llevas ' + brief.sample.played +
         (brief.sample.played === 1 ? ' partido' : ' partidos') +
         ' contra este perfil. A partir de ' + R.minSample +
-        ' el briefing empieza a construirse con lo que registras.</div>');
+        ' el plan empieza a salir de lo que anotas.</div>');
     } else if (!brief.dataBullets) {
       h.push('<div class="notice">Hay ' + brief.sample.played + ' partidos contra este perfil, ' +
         'pero todavía no se repite nada lo bastante como para convertirlo en regla. ' +
@@ -1146,7 +1146,7 @@
     } else {
       h.push('<div class="notice good">' + brief.dataBullets +
         (brief.dataBullets === 1 ? ' punto sale' : ' puntos salen') +
-        ' de tus propios partidos, no de la hipótesis inicial.</div>');
+        ' de tus propios partidos, no de los consejos generales.</div>');
     }
 
     h.push('</div>');
@@ -1270,10 +1270,35 @@
   function fitTitle() {
     $title.style.fontSize = '';
     var size = parseFloat(global.getComputedStyle($title).fontSize);
-    while ($title.scrollWidth > $title.clientWidth + 1 && size > 11) {
+    /* El título puede ir en dos líneas: solo se achica si su palabra más larga no cabe en una. */
+    var longest = String($title.textContent || '').split(/\s+/).sort(function (a, b) { return b.length - a.length; })[0] || '';
+    var probe = document.createElement('span');
+    var cs = global.getComputedStyle($title);
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-family:' + cs.fontFamily +
+      ';font-weight:' + cs.fontWeight + ';letter-spacing:' + cs.letterSpacing + ';text-transform:' + cs.textTransform;
+    probe.textContent = longest;
+    document.body.appendChild(probe);
+    var room = $title.clientWidth;
+    /* Y el título entero, como mucho en las líneas que permite la barra (2 en el móvil, 1 en ordenador). */
+    var maxLines = global.matchMedia && global.matchMedia('(max-width:759px)').matches ? 2 : 1;
+    var whole = probe.cloneNode();
+    whole.style.whiteSpace = maxLines > 1 ? 'normal' : 'nowrap';
+    whole.style.width = maxLines > 1 ? room + 'px' : '';
+    whole.style.lineHeight = cs.lineHeight;
+    whole.textContent = $title.textContent;
+    document.body.appendChild(whole);
+    while (size > 11) {
+      probe.style.fontSize = size + 'px';
+      whole.style.fontSize = size + 'px';
+      var lh = parseFloat(global.getComputedStyle(whole).lineHeight) || size * 1.22;
+      var fitsWord = probe.offsetWidth <= room + 1;
+      var fitsLines = maxLines > 1 ? whole.offsetHeight <= lh * maxLines + 2 : whole.offsetWidth <= room + 1;
+      if (fitsWord && fitsLines) break;
       size -= 0.5;
-      $title.style.fontSize = size + 'px';
     }
+    document.body.removeChild(probe);
+    document.body.removeChild(whole);
+    if (size < parseFloat(cs.fontSize)) $title.style.fontSize = size + 'px';
   }
 
   function init() {
@@ -1518,7 +1543,7 @@
     if (!b) return;
     var m = global.PadelLiga.state.model;
     var id = m && m.myTeamId, t = id && m.teams[id];
-    b.innerHTML = '<i class="pc-dot" aria-hidden="true"></i>' + esc(t ? t.label : 'Escoger pareja') + ' <span aria-hidden="true">▾</span>';
+    b.innerHTML = '<i class="pc-dot" aria-hidden="true"></i><span class="pc-l">' + esc(t ? t.label : 'Escoger pareja') + '</span><span aria-hidden="true">▾</span>';
     b.title = t ? 'Miras a ' + t.label + ' · cambiar' : 'Escoger pareja';
     b.classList.toggle('other', !!(m && id && id !== m.ownTeamId));
     b.classList.toggle('mine', !!(m && id && id === m.ownTeamId));

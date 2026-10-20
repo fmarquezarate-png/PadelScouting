@@ -172,7 +172,7 @@
     var mineG = null;
     gs.forEach(function (G) { if (G.members.indexOf(m.myTeamId) >= 0) mineG = G.group; });
     var h = ['<section class="blk">' + PT.sectionHead('07', 'Grupos · ' + esc(mlabel),
-      'Cómo va cada grupo: la tabla y sus partidos. Lo pendiente lleva la fecha que puso la web de la liga.')];
+      'Lo que falta por jugar lleva la fecha que puso la web de la liga.')];
     if (m.months.length > 1) {
       h.push('<div class="chips tight gr-months" id="grMonths">' + m.months.map(function (x) {
         return '<button type="button" class="chip" data-grm="' + x.n + '" aria-pressed="' + (x.n === month) + '">' + esc(x.label) + '</button>';
@@ -641,9 +641,9 @@
     var live = {
       liga: total + ' parejas',
       temporada: a ? (a.w + '–' + a.l + ' · #' + a.posFin) : '',
-      registro: 'Cómo jugó el rival',
+      registro: 'Tras jugar',
       historial: notes ? notes + (notes === 1 ? ' partido' : ' partidos') : 'Repásalas',
-      analisis: 'Plan para jugar',
+      analisis: 'Plan de juego',
       cronica: global.PadelApp ? global.PadelApp.seasonName((m.season || {}).slug) : '',
       estemes: global.__NET_LABEL__ || (global.PadelEsteMes ? global.PadelEsteMes.netLabel() : '')
     };

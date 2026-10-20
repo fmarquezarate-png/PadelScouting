@@ -26,12 +26,12 @@
     'otro': [
       'Sin plan previo: los primeros juegos son para observar, no para resolver.',
       'Prueba las dos diagonales y mira cuál falla antes.',
-      'Si aparece un patrón claro, regístralo al acabar: el próximo briefing saldrá de ahí.'
+      'Si aparece un patrón claro, anótalo al acabar: el próximo plan saldrá de ahí.'
     ],
     'por-definir': [
       'Sin plan previo: los primeros juegos son para observar, no para resolver.',
       'Prueba las dos diagonales y mira cuál falla antes.',
-      'Clasifica al rival en cuanto lo veas jugar: eso es lo que hará útil el siguiente briefing.'
+      'Clasifica al rival en cuanto lo veas jugar: eso es lo que hará útil el siguiente plan.'
     ]
   };
 
@@ -68,7 +68,7 @@
       var g = Math.round(read.average);
       bullets.push(bullet(
         'De media lo lees sobre el juego ' + g + '. Hasta ahí, plan conservador: construir y observar.',
-        read.n + ' partidos con lectura registrada',
+        read.n + ' partidos con lectura anotada',
         true));
     }
 
@@ -80,7 +80,7 @@
         true));
     }
 
-    base.forEach(function (t) { bullets.push(bullet(t, 'hipótesis de partida', false)); });
+    base.forEach(function (t) { bullets.push(bullet(t, 'consejo general', false)); });
 
     return {
       archetype: D.findById(D.ARCHETYPES, archetypeId),

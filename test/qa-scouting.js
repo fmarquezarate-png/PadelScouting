@@ -203,7 +203,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   await page.evaluate(() => window.PadelApp.go('analisis')); await page.waitForTimeout(350);
   check('Briefing (dentro de Análisis): máximo 3 bullets', await page.locator('.brief-bullet').count() === 3,
     'bullets=' + await page.locator('.brief-bullet').count());
-  check('Briefing: avisa de que son hipótesis', (await page.textContent('#view')).includes('hipótesis'));
+  check('Plan: avisa de que son consejos generales (aún no tus datos)', (await page.textContent('#view')).includes('consejos generales'));
   for (const a of ['B', 'otro', 'por-definir']) {
     await page.click(`[data-chips="brief"] .chip[data-value="${a}"]`); await page.waitForTimeout(200);
     if (await page.locator('.brief-bullet').count() !== 3) check('Briefing ' + a + ' da 3 bullets', false);
@@ -235,7 +235,7 @@ function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' →
   await page.evaluate(() => { localStorage.removeItem('padel-scouting.v1'); });
   await page.reload(); await page.waitForTimeout(400);
   await page.evaluate(() => window.PadelApp.go('historial')); await page.waitForTimeout(200);
-  check('Historial vacío da acción', (await page.textContent('#view')).includes('Todavía no hay partidos'));
+  check('Mis notas vacío da acción', (await page.textContent('#view')).includes('Todavía no tienes notas') && (await page.textContent('#view')).includes('Anotar un partido'));
   await page.evaluate(() => window.PadelApp.go('analisis')); await page.waitForTimeout(200);
   check('Análisis vacío no muestra 0%', (await page.textContent('#view')).includes('Necesitamos más partidos'));
 

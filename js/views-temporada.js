@@ -177,7 +177,8 @@
   }
 
   function sectionHead(num, title, dek) {
-    return '<div class="shead"><span class="snum">' + num + '</span><h2>' + esc(title) + '</h2></div>' +
+    /* Sin número: cada pantalla tiene sus propias secciones y la numeración global confundía. */
+    return '<div class="shead"><h2>' + esc(title) + '</h2></div>' +
       (dek ? '<p class="sdek">' + dek + '</p>' : '');
   }
 

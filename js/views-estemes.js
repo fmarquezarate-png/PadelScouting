@@ -298,8 +298,7 @@
 
     h.push('<section class="blk em-head"><div class="eyebrow">Ronda de ' + esc(r.label) +
       (r.group ? ' · Grupo ' + r.group : '') + ' · ' + esc(srcTxt) + '</div>' +
-      '<p class="note em-shared">Compartido con tu pareja: lo que apunte cualquiera de los dos lo veis los dos ' +
-      '(si los dos cambiáis lo mismo, vale lo último). Tus notas de scouting siguen siendo solo tuyas.</p>');
+      '<p class="note em-shared">Compartido con tu pareja: si los dos cambiáis lo mismo, vale lo último. Tus notas de scouting son solo tuyas.</p>');
     if (out) {
       /* En grupos donde nadie se mantiene (masculino de 4) no se enseña esa casilla. */
       var canStay = out.moves.indexOf(0) >= 0;
@@ -307,7 +306,7 @@
         outCell(out.up, 'Subes', 'up') + (canStay ? outCell(out.stay, 'Te mantienes', 'stay') : '') +
         outCell(out.down, 'Bajas', 'down') +
         '</div><p class="note">Simulando ' + (out.remaining ? 'los ' + out.remaining + ' partidos que quedan del grupo' :
-        'el grupo, ya jugado entero') + ' con el motor · puntos de la liga (4 ganar, 2 perder en super tie-break, 1 en dos sets).</p>');
+        'el grupo, ya jugado entero') + ' según el nivel de cada pareja · puntos de la liga (4 ganar, 2 perder en super tie-break, 1 en dos sets).</p>');
     }
     h.push('</section>');
 
@@ -370,12 +369,13 @@
         '"><b>' + pct(g.p) + '</b><span>Grupo ' + g.group + '</span></div>';
     }).join('') + '</div>');
     var list = o.rivals.filter(function (x) { return x.p >= 0.03; }).slice(0, 12);
-    h.push('<table class="table em-table"><thead><tr><th>Pareja</th><th>Grupo ahora</th><th>Prob. de tocarte</th><th></th></tr></thead><tbody>');
+    h.push('<table class="table em-table"><thead><tr><th>Pareja</th><th>Grupo</th><th>Te toca</th><th></th></tr></thead><tbody>');
     list.forEach(function (x) {
       var t = m.teams[x.id], cur = m.ladder[mo][x.id];
       h.push('<tr data-team="' + x.id + '"><td>' + esc(t ? t.label : '—') + '</td><td>' + (cur ? cur.group : '—') +
         '</td><td><span class="em-bar"><i style="width:' + Math.round(x.p * 100) + '%"></i></span> <b>' + pct(x.p) + '</b></td>' +
-        '<td class="em-cmp"><button class="btn ghost small" data-rival="' + x.id + '" title="Comparar con nosotros">Comparar</button></td></tr>');
+        '<td class="em-cmp"><button class="btn ghost small" data-rival="' + x.id + '" title="Comparar con nosotros" aria-label="Comparar con ' +
+          esc(t ? t.label : '') + '"><span class="cmp-t">Comparar</span><span class="cmp-i" aria-hidden="true">›</span></button></td></tr>');
     });
     h.push('</tbody></table><p class="note">Cambia cada vez que se apunta un resultado. Solo salen las parejas con 3% o más.</p></section>');
     return h.join('');

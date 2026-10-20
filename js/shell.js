@@ -462,8 +462,8 @@
     h.push('<section class="card"><h3>Datos de la liga</h3>' + PL().sourceNote() + PL().loaderCard() + '</section>');
 
     h.push('<section class="card"><h3>Tu registro de scouting</h3>' +
-      '<p class="field-note">Tus notas de partido viven en este navegador. La copia de seguridad está en «Mis notas».</p>' +
-      '<div class="btn-row"><button class="btn" data-goto="historial">Ir a la copia de seguridad</button></div></section>');
+      '<p class="field-note">Tus notas de partido se guardan con tu cuenta. Si quieres una copia en un archivo, está en «Mis notas».</p>' +
+      '<div class="btn-row"><button class="btn" data-goto="historial">Ir a Mis notas</button></div></section>');
 
     h.push('<p class="note center">Padel Scouting · Club Tennis El Molí</p></div>');
     view.innerHTML = h.join('');

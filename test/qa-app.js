@@ -268,6 +268,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
         const r = e.getBoundingClientRect(); if (r.width) boxes.push({ id: g.getAttribute('data-zone'), r });
       }));
       const sb = document.querySelector('.scoreboard'); if (sb) boxes.push({ id: 'marcador', r: sb.getBoundingClientRect() });
+      const ns = document.getElementById('nextStep'); if (ns) boxes.push({ id: 'que-hago', r: ns.getBoundingClientRect() });
       let n = 0;
       for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
         const a = boxes[i].r, c = boxes[j].r; if (boxes[i].id === boxes[j].id) continue;
@@ -275,7 +276,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
       }
       return n;
     });
-    check(w + '×' + h + ': ningún botón, rótulo, «Este mes» ni el marcador se pisan', hits === 0, hits + ' solapes');
+    check(w + '×' + h + ': ningún botón, rótulo, la red, el marcador ni «¿Qué hago ahora?» se pisan', hits === 0, hits + ' solapes');
     await vp.close();
   }
 

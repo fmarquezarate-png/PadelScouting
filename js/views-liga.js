@@ -691,8 +691,6 @@
       bind(); return;
     }
 
-    h.push('<p class="lede">Elige la pareja que te toca. Verás cómo va, cómo le ha ido ' +
-      '<b>contra nosotros</b> y qué dice el motor que puede pasar.</p>');
     h.push('<div class="field"><input type="text" id="rival-search" placeholder="Buscar pareja o jugador" ' +
       'autocomplete="off" value="' + esc(state.rivalQuery) + '"></div>');
 

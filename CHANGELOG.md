@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed — Repaso de diseño y UX
+- **Títulos completos**: en el móvil van en dos líneas equilibradas y solo se achican lo justo
+  para caber; la tilde de «CLASIFICACIÓN» ya no se corta.
+- **Nada se sale de lado**: en «Mis partidos del mes», la tabla «Cómo se cocina el próximo mes»
+  cabe en la pantalla (en el móvil, «Comparar» es una flecha › de 40 px).
+- **Textos coherentes**: fuera nombres viejos y palabras técnicas («Anotar un partido», «Guardar una
+  copia» en vez de «Exportar JSON», «Plan según el tipo de rival» en vez de «Briefing por
+  arquetipo», «consejos generales» en vez de «hipótesis»); sin explicaciones repetidas con la frase
+  de cada pantalla; sin números de sección (01, 07, 09…).
+- **Tamaños**: ninguna letra por debajo de 11 px; los botones pequeños de arriba (competición,
+  pareja) y el enlace «actualizar» tienen una zona de toque invisible más grande; botones pequeños
+  de 38 px de alto.
+- **Orden**: la frase de cada pantalla va justo debajo del título, antes del selector de semestre.
+- **Pista en móviles bajos y tableta vertical**: el marcador se compacta y «¿Qué hago ahora?» va en
+  franja fina, para no tapar el fondo de la pista. La prueba de solapes también vigila esa franja.
+
 ### Fixed
 - **El mixto de octubre salía con 7–8 parejas por grupo**: el 14 de octubre se cargó la clasificación
   masculina con «Mixta» seleccionada y la base la aceptó. Limpieza: fuera 75 parejas masculinas,
