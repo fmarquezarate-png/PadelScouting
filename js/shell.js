@@ -66,7 +66,14 @@
         if (a === 'close') { closeDrawer(); return; }
         if (a === 'home') { closeDrawer(); go('inicio'); return; }
         if (a === 'config') { closeDrawer(); go('config'); return; }
-        if (a === 'perfil') { closeDrawer(); go('perfil'); return; }
+        if (a === 'perfil') {
+          closeDrawer();
+          /* Sin sesión, el «?» de arriba ofrece las dos cosas: aprender a usarla o entrar. */
+          if (b.id === 'avatar-btn' && !user()) { openHelp(); return; }
+          go('perfil'); return;
+        }
+        if (a === 'help-tour') { closeModal(); if (global.PadelRecorrido) global.PadelRecorrido.replay(); return; }
+        if (a === 'help-login') { closeModal(); go('perfil'); return; }
         if (a === 'instalar') { closeDrawer(); if (global.PadelInstalar) global.PadelInstalar.openWizard('menu'); return; }
         if (a === 'recorrido') { closeDrawer(); if (global.PadelRecorrido) global.PadelRecorrido.replay(); return; }
       }
@@ -305,6 +312,17 @@
       });
   }
 
+  function openHelp() {
+    var root = document.getElementById('modal-root');
+    root.innerHTML = '<div class="modal"><div class="modal-card help-card" role="dialog" aria-modal="true" aria-labelledby="help-t">' +
+      '<h2 id="help-t">¿En qué te ayudo?</h2>' +
+      '<div class="btn-row"><button type="button" class="btn primary" data-shell="help-tour">¿Cómo funciona?</button>' +
+      '<button type="button" class="btn" data-shell="help-login">Entrar o crear cuenta</button></div>' +
+      '<div class="btn-row tight"><button type="button" class="btn small ghost" data-shell="help-close">Cerrar</button></div></div></div>';
+    document.body.classList.add('has-modal');
+    root.querySelector('[data-shell="help-close"]').addEventListener('click', closeModal);
+  }
+
   function closeModal() {
     wz = null;
     document.getElementById('modal-root').innerHTML = '';
@@ -441,6 +459,9 @@
         return '<button type="button" class="chip" data-theme-set="' + o[0] + '" aria-pressed="' + (th === o[0]) + '">' + o[1] + '</button>';
       }).join('') + '</div><p class="field-note">«Como el móvil» cambia solo cuando tu móvil pasa a modo claro u oscuro. ' +
       'En claro, la pista de inicio se ve de día; en oscuro, de noche.</p></section>');
+
+    h.push('<section class="card"><h3>Ayuda</h3><p class="field-note">Un paseo de un minuto por la pista: para qué sirve cada parte.</p>' +
+      '<div class="btn-row"><button type="button" class="btn" data-shell="help-tour">Ver el tutorial otra vez</button></div></section>');
 
     h.push(avisosCard(u, p));
 

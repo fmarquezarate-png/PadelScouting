@@ -34,11 +34,11 @@
       { sel: '.net-btn', title: 'La red: ' + N('estemes'),
         text: 'Lo que te toca <b>ahora</b>: tu grupo de este mes, la fecha de cada partido y su resultado. Es el botón principal: empieza siempre por aquí.' },
       { sel: '.zone[data-zone="liga"] .zb, .zone[data-zone="temporada"] .zb, .zone[data-zone="cronica"] .zb, .zone[data-zone="liga"] .zt, .zone[data-zone="cronica"] .zt',
-        title: 'Al fondo: la liga',
+        title: 'Tu lado: la liga',
         text: '<b>' + esc(N('liga')) + '</b>: todos los grupos del mes y la general. <b>' + esc(N('temporada')) + '</b>: vuestro semestre. <b>' +
           esc(N('cronica')) + '</b>: la temporada contada.' },
       { sel: '.zone[data-zone="registro"] .zb, .zone[data-zone="historial"] .zb, .zone[data-zone="analisis"] .zb, .zone[data-zone="registro"] .zt, .zone[data-zone="analisis"] .zt',
-        title: 'Tu lado: tu libreta de scouting',
+        title: 'Al fondo: tu libreta de scouting',
         text: '<b>' + esc(N('registro')) + '</b>: cómo jugó el rival y qué os funcionó. <b>' + esc(N('historial')) + '</b>: todas tus notas. <b>' +
           esc(N('analisis')) + '</b>: un plan corto para el próximo partido. (El resultado no va aquí: va en ' + esc(N('estemes')) + '.)' },
       { sel: '.zone.door .zb, .zone.door .zt', title: 'La puerta: ' + N('rival'),

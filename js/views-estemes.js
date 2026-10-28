@@ -362,7 +362,7 @@
     }
     var o = state.cocina.o;
     if (!o) return '';
-    h.push('<p class="lede">Provisional: se juega ' + o.simulations + ' veces lo que falta del mes en todos los grupos ' +
+    h.push('<p class="lede">Estimación: se juega ' + o.simulations + ' veces lo que falta del mes en todos los grupos ' +
       '(lo ya jugado cuenta tal cual) y se aplican las subidas y bajadas.</p>');
     h.push('<div class="em-grp">' + o.groups.slice(0, 4).map(function (g) {
       return '<div class="em-o' + (g.group < m.ladder[mo][me].group ? ' up' : g.group > m.ladder[mo][me].group ? ' down' : ' stay') +
@@ -440,14 +440,19 @@
     return h.join('');
   }
 
+  /* Resultado de la liga (carga masiva) = Confirmado; apuntado a mano = Provisional. */
+  function trust(f) {
+    return f.confirmed ? '<span class="em-trust ok" title="Lo trae la clasificación oficial">✓ Confirmado</span>'
+      : '<span class="em-trust prov" title="Apuntado en la app; la liga aún no lo ha publicado">Provisional</span>';
+  }
   function statusChip(f) {
     if (f.status === 'jugado' && f.sets) {
       var w = f.sets.filter(function (s) { return s[0] > s[1]; }).length >= 2;
-      return '<span class="em-chip ' + (w ? 'w' : 'l') + '">' + (w ? 'Ganado' : 'Perdido') + ' · ' +
-        f.sets.map(function (s) { return s[0] + '–' + s[1]; }).join(' ') + '</span>';
+      return '<span class="em-chips"><span class="em-chip ' + (w ? 'w' : 'l') + '">' + (w ? 'Ganado' : 'Perdido') + ' · ' +
+        f.sets.map(function (s) { return s[0] + '–' + s[1]; }).join(' ') + '</span>' + trust(f) + '</span>';
     }
-    if (f.status === 'wo_favor') return '<span class="em-chip w">WO a favor</span>';
-    if (f.status === 'wo_contra') return '<span class="em-chip l">WO en contra</span>';
+    if (f.status === 'wo_favor') return '<span class="em-chips"><span class="em-chip w">WO a favor</span>' + trust(f) + '</span>';
+    if (f.status === 'wo_contra') return '<span class="em-chips"><span class="em-chip l">WO en contra</span>' + trust(f) + '</span>';
     if (f.scheduledAt) return '<span class="em-chip">' + esc(shortWhen(f.scheduledAt)) + '</span>';
     return '<span class="em-chip muted">Sin fecha</span>';
   }
@@ -519,7 +524,7 @@
       touched();
       var f = fixtureById(id);
       if (f && row) {
-        f.scheduledAt = row.scheduled_at; f.status = row.status; f.sets = row.sets; f.recordId = row.record_id;
+        f.scheduledAt = row.scheduled_at; f.status = row.status; f.sets = row.sets; f.recordId = row.record_id; f.confirmed = !!row.confirmed;
       }
       cacheWrite(state.round);
       PL().rebuild();

@@ -28,7 +28,7 @@ mx.matches.forEach(m => {
 });
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: require('./chrome-path') });
   const page = await browser.newPage({ viewport: { width: 390, height: 900 } });
   await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });
   const errors = [];
@@ -159,8 +159,10 @@ mx.matches.forEach(m => {
 
   // --- quién soy: avatar → entrar → bienvenida de 3 datos ---
   check('Sin sesión el avatar es un interrogante', (await page.textContent('#avatar-btn')).trim() === '?');
-  await page.click('#avatar-btn'); await page.waitForTimeout(500);
-  check('El avatar lleva a entrar', (await page.textContent('#page-title')) === 'Mi perfil' && await page.locator('#au-email').count() === 1);
+  await page.click('#avatar-btn'); await page.waitForTimeout(300);
+  check('El «?» pregunta: tutorial o entrar', (await page.textContent('#modal-root')).includes('Entrar o crear cuenta'));
+  await page.click('[data-shell="help-login"]'); await page.waitForTimeout(500);
+  check('«Entrar o crear cuenta» lleva a entrar', (await page.textContent('#page-title')) === 'Mi perfil' && await page.locator('#au-email').count() === 1);
   await page.fill('#au-email', 'fmarquezarate@gmail.com'); await page.fill('#au-pass', 'x');
   await page.click('[data-action="auth-go"]'); await page.waitForTimeout(900);
   check('Cuenta nueva: sale la bienvenida', await page.locator('.modal #wz-title').count() === 1);

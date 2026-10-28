@@ -3,7 +3,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8111';
-const EXE = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXE = require('./chrome-path');
 const SNAP = JSON.parse(fs.readFileSync(__dirname + '/fixtures/league-snapshot.json', 'utf8'));
 const ok = [], bad = [];
 const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''));
@@ -17,7 +17,7 @@ const ME = SNAP.teams.find(t => t[4]);
   const errors = [];
   async function open(opts) {
     opts = opts || {};
-    const ctx = await browser.newContext({ viewport: { width: opts.w || 390, height: 844 } });
+    const ctx = await browser.newContext({ viewport: { width: opts.w || 390, height: opts.w ? 1000 : 844 } });
     const p = await ctx.newPage();
     p.on('pageerror', e => errors.push(String(e)));
     await p.addInitScript(o => {
@@ -115,6 +115,42 @@ const ME = SNAP.teams.find(t => t[4]);
   await p.evaluate(() => window.PadelApp.go('liga')); await p.waitForTimeout(300);
   await p.keyboard.press('Escape'); await p.waitForTimeout(200);
   check('Escape cierra el recorrido', !(await p.$('#tour')));
+  await ctx.close();
+
+  /* ---------- Confirmado / Provisional ---------- */
+  {
+    const f1 = Object.assign(fx(1, 'jugado', '2026-10-18T18:00:00Z'), { sets: [[6, 3], [6, 4]], confirmed: true });
+    const f2 = Object.assign(fx(2, 'jugado', '2026-10-19T18:00:00Z'), { sets: [[3, 6], [4, 6]], confirmed: false });
+    ({ p, ctx } = await open({ session: true, now: '2026-10-20T12:00:00Z', round: round([f1, f2, fx(3, 'pendiente', '2026-10-24T17:00:00Z')]), wait: 2500 }));
+    await p.evaluate(() => { document.getElementById('modal-root').innerHTML = ''; document.body.classList.remove('has-modal'); window.PadelApp.go('estemes'); });
+    await p.waitForTimeout(900);
+    const c1 = await p.textContent('[data-fx="1"]').catch(() => ''), c2 = await p.textContent('[data-fx="2"]').catch(() => '');
+    check('Resultado de la liga: «Confirmado»', /Confirmado/i.test(c1) && !/Provisional/i.test(c1), c1.slice(0, 120));
+    check('Resultado apuntado a mano: «Provisional»', /Provisional/i.test(c2) && !/Confirmado/i.test(c2), c2.slice(0, 120));
+    await ctx.close();
+  }
+
+  /* ---------- la pista: la liga delante ---------- */
+  ({ p, ctx } = await open({ wait: 1800 }));
+  const ys = await p.evaluate(() => ['liga', 'temporada', 'cronica', 'registro', 'historial', 'analisis'].map(z =>
+    document.querySelector('.zone[data-zone="' + z + '"] .zb').getBoundingClientRect()));
+  check('Clasificación, Nuestra temporada y Crónica van delante (más abajo y más grandes que el scouting)',
+    ys.slice(0, 3).every(a => ys.slice(3).every(b => a.top > b.top && a.width > b.width)), ys.map(r => Math.round(r.top) + '/' + Math.round(r.width)).join(' '));
+
+  /* ---------- tutorial: desde «?» y desde Configuración ---------- */
+  await p.evaluate(() => localStorage.setItem('padel-scouting.tour.v1', 'done'));
+  await p.click('#avatar-btn'); await p.waitForTimeout(300);
+  const help = await p.textContent('#modal-root');
+  check('Sin sesión, «?» ofrece «¿Cómo funciona?» y «Entrar o crear cuenta»', help.includes('¿Cómo funciona?') && help.includes('Entrar o crear cuenta'), help);
+  await p.click('[data-shell="help-tour"]'); await p.waitForSelector('#tour', { timeout: 5000 }).catch(() => {});
+  check('…«¿Cómo funciona?» abre el tutorial', !!(await p.$('#tour')));
+  await p.click('[data-tour="skip"]'); await p.waitForTimeout(200);
+  await p.click('#avatar-btn'); await p.waitForTimeout(300);
+  await p.click('[data-shell="help-login"]'); await p.waitForTimeout(300);
+  check('…«Entrar o crear cuenta» lleva a Mi perfil', (await p.textContent('#page-title')) === 'Mi perfil');
+  await p.evaluate(() => window.PadelApp.go('config')); await p.waitForTimeout(500);
+  await p.click('#view [data-shell="help-tour"]'); await p.waitForSelector('#tour', { timeout: 5000 }).catch(() => {});
+  check('Configuración → «Ver el tutorial otra vez» lo abre (sobre la pista)', !!(await p.$('#tour')) && (await p.textContent('#page-title')) === 'La pista');
   await ctx.close();
 
   check('Sin errores de JavaScript', errors.length === 0, errors.slice(0, 3).join(' | '));

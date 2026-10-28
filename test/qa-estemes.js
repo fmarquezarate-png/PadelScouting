@@ -40,7 +40,7 @@ async function mockApp(page, opts) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: require('./chrome-path') });
   const errors = [];
   const newPage = async () => {
     const p = await browser.newPage({ viewport: { width: 390, height: 844 } });

@@ -101,16 +101,17 @@
 
   /* ---------- zonas ---------- */
   var COLS = [[-5, -5 / 3], [-5 / 3, 5 / 3], [5 / 3, 5]];
-  /* Orden lógico: al fondo, la liga (lo que ya pasó); en la red, lo que
-     toca ahora; en vuestro lado, el scouting en el orden en que se usa
-     (apuntas, repasas, sacas conclusiones). El rival espera en la puerta. */
+  /* Orden por uso: en vuestro lado (delante, grande) la liga; en la red, lo que
+     toca ahora; al fondo, el scouting (apuntas, repasas, preparas). El rival
+     espera en la puerta. */
   var ZONES = [
-    { id: 'liga', view: 'liga', col: 0, far: true },
-    { id: 'temporada', view: 'temporada', col: 1, far: true },
-    { id: 'cronica', view: 'cronica', col: 2, far: true },
-    { id: 'registro', view: 'registro', col: 0, far: false },
-    { id: 'historial', view: 'historial', col: 1, far: false },
-    { id: 'analisis', view: 'analisis', col: 2, far: false }
+    /* Delante (botones grandes) lo que más se usa: la liga. Al fondo, el scouting. */
+    { id: 'liga', view: 'liga', col: 0, far: false },
+    { id: 'temporada', view: 'temporada', col: 1, far: false },
+    { id: 'cronica', view: 'cronica', col: 2, far: false },
+    { id: 'registro', view: 'registro', col: 0, far: true },
+    { id: 'historial', view: 'historial', col: 1, far: true },
+    { id: 'analisis', view: 'analisis', col: 2, far: true }
   ];
   /* Los nombres son los mismos que en el menú y en el título (PadelData.NAMES). */
   function NAME(id) { return (self.PadelData && self.PadelData.NAMES[id]) || id; }
@@ -181,7 +182,7 @@
     /* Botones grandes: el círculo ocupa casi un tercio del ancho de la zona. */
     var r = Math.min((tall ? 25 : 36) * k, zw * 0.28);
     /* Una sola palabra larga («CLASIFICACIÓN») puede ocupar todo el ancho de su zona. */
-    var ts = Math.min((tall ? 14 : 21) * k, zw * (two ? 0.8 : 1.02) / (longest * 0.72));
+    var ts = Math.min((tall ? 14 : 21) * k, zw * (two ? 0.8 : 0.84) / (longest * 0.72));
     var ss = Math.min(ts * 0.66, zw * 0.88 / (Math.max(sub.length, 1) * 0.66));
     var off = (tall ? 6 : 10) * k;
     /* Si la foto se recorta por los lados, el botón y su rótulo no se acercan al borde. */

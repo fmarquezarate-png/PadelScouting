@@ -685,7 +685,7 @@ body[data-view="inicio"] .view{max-width:none;padding:0}
   .hr-n{font-size:3.2rem}
   .court-host{padding:10px 20px 20px}
 }
-@media(min-width:900px) and (max-width:1180px){
+@media(min-width:900px) and (max-width:1380px){
   .home-side{width:240px}
   .court-3d.wide{margin-left:120px}
 }
@@ -1135,7 +1135,7 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
 .next-step{cursor:pointer}
 .next-step .ns-short{display:none}
 /* Móvil y tableta en vertical: una franja fina que se toca entera, para no tapar la pista. */
-@media(max-width:759px),(orientation:portrait) and (max-width:1100px){
+@media(max-width:759px),(orientation:portrait) and (max-width:1100px),(min-width:760px) and (max-height:860px){
   .next-step{display:flex;align-items:center;gap:10px;padding:9px 12px;margin-top:8px}
   .next-step .ns-k{flex:none;font-size:11px;letter-spacing:.1em}
   .next-step .ns-long,.next-step .ns-btn{display:none}
@@ -1193,3 +1193,9 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
   .home-names{font-size:1.25rem}
   .next-step{margin-top:6px;padding:7px 10px}
 }
+
+/* Resultado confirmado por la liga / provisional (apuntado en la app) */
+.em-chips{display:inline-flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.em-trust{font:700 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:5px}
+.em-trust.ok{color:var(--sage);border:1px solid var(--sage)}
+.em-trust.prov{color:var(--orange);border:1px dashed var(--orange)}

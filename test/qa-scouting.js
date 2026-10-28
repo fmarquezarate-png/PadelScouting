@@ -5,7 +5,7 @@ const blur = p => p.evaluate(() => document.activeElement && document.activeElem
 function check(name, cond, extra) { (cond ? ok : bad).push(name + (extra ? ' → ' + extra : '')); }
 
 (async () => {
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const browser = await chromium.launch({ executablePath: require('./chrome-path') });
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   /* Entras como Francisco (lo que hace Mi perfil). Sin esto la app no enseña ninguna pareja. */
   await page.addInitScript(() => { if (!localStorage.getItem('padel-scouting.me.v1')) localStorage.setItem('padel-scouting.me.v1', JSON.stringify({ label: 'Francisco' })); });

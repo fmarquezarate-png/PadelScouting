@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8111';
-const EXE = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXE = require('./chrome-path');
 const SNAP = fs.readFileSync(__dirname + '/fixtures/league-snapshot.json', 'utf8');
 const L = require('../js/liga.js');
 const ok = [], bad = [];

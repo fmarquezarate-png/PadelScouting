@@ -5,6 +5,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **La pista, por uso**: Clasificación, Nuestra temporada y Crónica pasan delante (botones grandes);
+  Notas de un partido, Mis notas y Preparar partido, al fondo. El recorrido guiado lo cuenta igual.
+- **«Confirmado» / «Provisional»** en cada resultado de «Mis partidos del mes»: confirmado = lo trae la
+  liga; provisional = apuntado en la app. Cambiar a mano un resultado confirmado lo vuelve provisional.
+  Base: `fixtures.confirmed`; `get_my_round` lo devuelve; `update_fixture` lo pone a falso; los
+  resultados confirmados no mandan el aviso «tu pareja apuntó un resultado».
+  ⏳ Pendiente de aprobar en Supabase: `sync_month_from_league` (cada carga actualiza «Mis partidos del
+  mes» de todas las parejas con cuenta: grupo, rivales, fechas y resultados de la liga encima de lo manual).
+- **Tutorial a mano**: Configuración → Ayuda → «Ver el tutorial otra vez»; sin sesión, el «?» de arriba
+  pregunta «¿Cómo funciona?» o «Entrar o crear cuenta».
+- «Cómo se cocina el próximo mes»: «Estimación» en vez de «Provisional» (no confundir).
+- Pruebas: buscan solas el navegador instalado (`test/chrome-path.js`); `qa-guia` +7.
+
 ### Changed — Repaso de diseño y UX
 - **Títulos completos**: en el móvil van en dos líneas equilibradas y solo se achican lo justo
   para caber; la tilde de «CLASIFICACIÓN» ya no se corta.

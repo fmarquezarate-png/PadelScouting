@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const BASE = process.env.BASE || 'http://127.0.0.1:8111';
-const EXE = process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+const EXE = require('./chrome-path');
 const ok = [], bad = [];
 const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''));
 const J = (r, o) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(o) });
