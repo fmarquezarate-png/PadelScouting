@@ -260,7 +260,7 @@
     if (!r) return '';
     return [r.id, r.group, r.leagueMonth].concat((r.fixtures || []).map(function (f) {
       var t = f.scheduledAt ? new Date(f.scheduledAt).getTime() : 0;
-      return [f.id, f.rivalTeamId, f.status, JSON.stringify(f.sets || null), t].join(':');
+      return [f.id, f.rivalTeamId, f.status, JSON.stringify(f.sets || null), f.confirmed ? 1 : 0, t].join(':');
     })).join('|');
   }
 

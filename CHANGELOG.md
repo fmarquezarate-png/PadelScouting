@@ -12,8 +12,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   liga; provisional = apuntado en la app. Cambiar a mano un resultado confirmado lo vuelve provisional.
   Base: `fixtures.confirmed`; `get_my_round` lo devuelve; `update_fixture` lo pone a falso; los
   resultados confirmados no mandan el aviso «tu pareja apuntó un resultado».
-  ⏳ Pendiente de aprobar en Supabase: `sync_month_from_league` (cada carga actualiza «Mis partidos del
-  mes» de todas las parejas con cuenta: grupo, rivales, fechas y resultados de la liga encima de lo manual).
+- **Cada carga masiva actualiza «Mis partidos del mes»** (`sync_month_from_league`, al final de
+  `ingest_league`): para cada pareja con cuenta del último mes, se crea su grupo si no lo tenía, los
+  rivales son los de la liga y las fechas y resultados de la liga pisan lo manual («Confirmado»). No se
+  elimina nada: si un grupo tenía rivales que no son los de la liga, se cierra y se abre otro copiando
+  lo apuntado para los rivales que coinciden. Los meses pasados no se tocan. Aplicado ya sobre octubre:
+  8 resultados confirmados y 7 fechas corregidas.
 - **Tutorial a mano**: Configuración → Ayuda → «Ver el tutorial otra vez»; sin sesión, el «?» de arriba
   pregunta «¿Cómo funciona?» o «Entrar o crear cuenta».
 - «Cómo se cocina el próximo mes»: «Estimación» en vez de «Provisional» (no confundir).

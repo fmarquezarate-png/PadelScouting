@@ -186,3 +186,13 @@ temporada de la misma competición, rechaza la carga.
 temporada de **otra** competición: es la señal de haber pegado, por ejemplo, la masculina con «Mixta»
 seleccionada (pasó el 14/10/2026 y se limpió a mano). Una pareja son dos jugadores concretos, así que
 una mixta nunca coincide con una masculina.
+
+## La carga manda sobre «Mis partidos del mes»
+
+`sync_month_from_league(season)` corre al final de cada `ingest_league` (resultado en `sync`). Toma
+el último mes de la temporada (solo si es el mes en curso o el anterior) y, para cada pareja de ese mes
+con al menos una cuenta: busca su ronda en curso de ese mes o la crea (`source = 'liga'`); si tenía
+rivales que no son los del grupo, la cierra y abre otra copiando lo apuntado de los que coinciden (no
+se elimina nada); añade los rivales que falten; pone los resultados de la liga (`confirmed = true`) y
+sus fechas encima de lo manual. `update_fixture` vuelve `confirmed` a falso si alguien cambia un
+resultado a mano. Los confirmados no disparan el aviso de resultado (la carga ya avisa).
