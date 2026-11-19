@@ -51,7 +51,7 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
-  const db = {}; const imports = []; let oldDb = false;
+  const db = {}; const imports = []; let oldDb = false, failDb = false;
   await page.route('**/rest/v1/rpc/get_league_snapshot', r => J(r, SN[JSON.parse(r.request().postData()).season_slug]));
   await page.route('**/rest/v1/rpc/list_seasons', r => J(r, [{ slug: '2026-s1', name: 'S1', kind: 'masculina' }, { slug: '2026-s1-mixta', name: 'Mixta', kind: 'mixta' }]));
   await page.route('**/rest/v1/rpc/get_my_profile', r => J(r, { label: 'Francisco', category: 'masculina', playsMixed: true, defaultKind: 'masculina' }));
@@ -61,6 +61,7 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   await page.route('**/rest/v1/rpc/import_club_levels', r => {
     const a = JSON.parse(r.request().postData()); imports.push(a);
     /* Base sin la migración 19b: la versión con p_to aún no existe → la app reintenta sin él. */
+    if (failDb) return r.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ message: 'fallo de prueba' }) });
     if (a.p_to && oldDb) return r.fulfill({ status: 404, contentType: 'application/json',
       body: JSON.stringify({ code: 'PGRST202', message: 'Could not find the function public.import_club_levels(p_name, p_ranking, p_rows, p_to, p_who) in the schema cache' }) });
     /* Como la base: el nombre lo pone el jugador (la pareja de masculino es Cristian). */
@@ -111,6 +112,18 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   check('Base sin actualizar: reintenta sin p_to y guarda igual', imports.length === 4 && imports[2].p_to && !('p_to' in imports[3]) &&
     !(await page.textContent('.modal')).includes('schema cache'), imports.length);
   oldDb = false;
+  /* Si la base da error, el aviso se ve (antes la ventana saltaba arriba y quedaba fuera de la pantalla). */
+  failDb = true;
+  await page.click('[data-ci="again"]'); await page.waitForTimeout(150);
+  await page.fill('#ci-text', fs.readFileSync(__dirname + '/fixtures/club-historico-correcciones.txt', 'utf8')); await page.waitForTimeout(300);
+  await page.fill('#ci-rank', '412'); await page.click('[data-ci="save"]'); await page.waitForTimeout(600);
+  const vis = await page.evaluate(() => { const b = document.querySelector('.notice.bad'); if (!b) return null;
+    const r = b.getBoundingClientRect(); return [b.textContent, r.top >= 0 && r.bottom <= innerHeight]; });
+  check('Error al guardar: el aviso se ve sin tener que bajar', vis && vis[1] && vis[0].includes('fallo de prueba'), JSON.stringify(vis));
+  check('…y no se pierde el ranking escrito', (await page.inputValue('#ci-rank')) === '412');
+  failDb = false;
+  await page.click('[data-ci="save"]'); await page.waitForTimeout(600);
+  check('…y al reintentar guarda y lo confirma', (await page.textContent('.modal')).includes('✓ Hecho'));
   /* Lo de abajo comprueba la gráfica con el primer histórico: se deja como estaba. */
   db.me = { ranking: imports[0].p_ranking, name: null, rows: imports[0].p_rows };
   await page.click('[data-ci="close"]'); await page.waitForTimeout(1200);

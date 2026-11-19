@@ -941,7 +941,10 @@
       h.push('<p class="lede">Hace falta tu cuenta: entra primero.</p><div class="btn-row">' +
         '<button class="btn primary" data-ci="login">Entrar</button><button class="btn ghost" data-ci="close">Cerrar</button></div>');
     } else if (ci.result) {
-      h.push('<p class="lede">Hecho: <b>' + ci.result.added + '</b> partidos nuevos' +
+      h.push(ci.result.total == null ? '<p class="lede">✓ Guardado.</p>' +
+        '<div class="btn-row"><button class="btn primary" data-ci="close">Ver la escalera</button>' +
+        '<button class="btn ghost" data-ci="again">Importar otro</button></div>' :
+        '<p class="lede">✓ Hecho: <b>' + ci.result.added + '</b> partidos nuevos' +
         (ci.result.hidden ? ', ' + ci.result.hidden + (ci.result.hidden === 1 ? ' apunte erróneo de antes quitado' : ' apuntes erróneos de antes quitados') : '') +
         (ci.result.updated ? ', ' + ci.result.updated + ' corregidos' : '') + '. Total guardado: <b>' + ci.result.total + '</b>.</p>' +
         '<div class="btn-row"><button class="btn primary" data-ci="close">Ver la escalera</button>' +
@@ -981,8 +984,18 @@
         (ci.busy ? 'Guardando…' : 'Guardar') + '</button><button class="btn ghost" data-ci="close">Cancelar</button></div>');
     }
     h.push('</div></div>');
+    /* Al repintar (Guardando…, error) no se vuelve arriba del todo: en el móvil el botón
+       y el aviso quedaban fuera de la pantalla y parecía que no pasaba nada. */
+    var oldBox = root.querySelector('.modal'), keep = oldBox ? oldBox.scrollTop : 0;
     root.innerHTML = h.join('');
     document.body.classList.add('has-modal');
+    var box = root.querySelector('.modal');
+    if (oldBox && box) {
+      var card = box.querySelector('.modal-card'); if (card) card.style.animation = 'none';
+      if (!ci.result) box.scrollTop = keep;
+    }
+    var bad = root.querySelector('.notice.bad');
+    if (bad && bad.scrollIntoView) bad.scrollIntoView({ block: 'center' });
 
     root.querySelectorAll('[data-ci="close"]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -1028,7 +1041,7 @@
         throw err;
       }).then(function (res) {
         if (!ci) return;
-        ci.busy = false; ci.result = res; paintClubImport();
+        ci.busy = false; ci.result = res && typeof res === 'object' ? res : { added: null, total: null }; paintClubImport();
       }).catch(function (err) {
         if (!ci) return;
         ci.busy = false; ci.error = 'No se pudo guardar: ' + err.message; paintClubImport();

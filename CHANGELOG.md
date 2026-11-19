@@ -6,6 +6,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- Importar histórico (móvil): al tocar «Guardar» la ventana saltaba arriba y el «Guardando…» o el aviso de error
+  quedaban fuera de la pantalla, sin ninguna confirmación a la vista. Ahora se queda donde estabas, el error se
+  ve sin bajar y lo guardado se confirma con «✓ Hecho» (también si la base responde vacío).
 - **Histórico del nivel del club, lectura inteligente** (`js/club.js`): cuando el club corrige un resultado
   («Restaurar nivel… por corrección»), se quita también el apunte erróneo de antes y el bueno conserva la fecha
   del partido. Ya no salen puntos falsos en la gráfica. Lee horas de una cifra (8:49), da igual el orden en que
