@@ -31,7 +31,9 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
+          # Opcional: sin el secreto la acción no hace nada (las migraciones se aplican a mano en el SQL Editor).
           if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::error::Falta el secreto SUPABASE_DB_URL (Settings → Secrets and variables → Actions)."; exit 1
+            echo "::notice::Acción sin configurar (falta SUPABASE_DB_URL): no se aplica nada. Aplica la migración a mano en el SQL Editor de Supabase."
+            exit 0
           fi
           tools/apply-migrations.sh ${{ inputs.plan && '--plan' || '' }}

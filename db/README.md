@@ -212,7 +212,7 @@ Archivo: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`.
 ## Cómo se aplican las migraciones
 
 - Cada cambio en la base es un archivo `db/migrations/AAAA-MM-DD_descripcion.sql`.
-- Al subirlo a `main`, la acción de GitHub **«Base de datos · migraciones»** lo aplica en Supabase
+- **Hoy se aplican a mano** (SQL Editor de Supabase). Opcional y sin configurar: al subirlo a `main`, la acción de GitHub **«Base de datos · migraciones»** lo aplicaría en Supabase
   (`tools/apply-migrations.sh`): solo los archivos que aún no estén en `public.app_migrations`, cada uno en
   una sola transacción (si falla, no entra nada de él y la acción sale en rojo).
 - También se lanza a mano: GitHub → Actions → «Base de datos · migraciones» → Run workflow (con la casilla
