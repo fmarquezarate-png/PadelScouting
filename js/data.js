@@ -114,7 +114,8 @@
     analisis: 'Preparar partido',
     rival: 'Estudiar un rival',
     perfil: 'Mi perfil',
-    config: 'Configuración'
+    config: 'Configuración',
+    club: 'El club'
   };
   /* Una frase bajo el título: para qué sirve la pantalla y qué hacer en ella. */
   var INTRO = {
@@ -127,7 +128,8 @@
     analisis: 'Lo que dicen tus notas: cómo juegan los rivales y un plan corto para el próximo partido.',
     rival: 'Elige una pareja de la liga: cómo juega, contra quién gana y cómo os comparáis.',
     perfil: 'Tu cuenta: quién eres en la liga, tu foto y tu categoría.',
-    config: 'Avisos en el móvil, apariencia, competición y datos de la liga.'
+    config: 'Avisos en el móvil, apariencia, competición y datos de la liga.',
+    club: 'Los enlaces del club: web, reservas y lo que sea útil tener a mano.'
   };
 
   global.PadelData = {

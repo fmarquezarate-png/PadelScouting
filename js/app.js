@@ -14,7 +14,7 @@
 
   var VIEWS = {
     inicio: {}, temporada: {}, rival: {}, liga: {}, registro: {}, historial: {},
-    analisis: {}, cronica: {}, config: {}, perfil: {}, estemes: {}
+    analisis: {}, cronica: {}, config: {}, perfil: {}, estemes: {}, club: {}
   };
   /* Los nombres viven en PadelData.NAMES (los mismos en la pista, el menú y el título). */
   Object.keys(VIEWS).forEach(function (k) {
@@ -1212,6 +1212,7 @@
     else if (view === 'cronica') global.PadelGeneral.renderCronica($view, bindLiga);
     else if (view === 'rival') global.PadelLiga.renderRival($view, bindLiga);
     else if (view === 'config') global.PadelShell.renderConfig($view, bindLiga);
+    else if (view === 'club') global.PadelEnlaces.render($view);
     else if (view === 'estemes') global.PadelEsteMes.render($view, bindLiga);
     else if (view === 'perfil') global.PadelShell.renderPerfil($view, bindLiga);
     else if (view === 'registro') renderRegistro();

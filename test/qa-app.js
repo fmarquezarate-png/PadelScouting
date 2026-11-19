@@ -81,7 +81,7 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   await page.click('#menu-btn'); await page.waitForTimeout(350);
   check('☰ abre el panel', await page.locator('#drawer').isVisible() &&
     (await page.getAttribute('#menu-btn', 'aria-expanded')) === 'true');
-  check('El panel tiene todas las secciones', await page.locator('[data-drawer-go]').count() === 11);
+  check('El panel tiene todas las secciones', await page.locator('[data-drawer-go]').count() === 12 && await page.locator('#dr-club [data-drawer-go="club"]').count() === 1);
   check('Marca dónde estás', (await page.getAttribute('[data-drawer-go="liga"]', 'aria-current')) === 'page');
   await page.keyboard.press('Escape'); await page.waitForTimeout(350);
   check('Escape cierra el panel', await page.locator('#drawer').isHidden());

@@ -1199,3 +1199,28 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
 .em-trust{font:700 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:5px}
 .em-trust.ok{color:var(--sage);border:1px solid var(--sage)}
 .em-trust.prov{color:var(--orange);border:1px dashed var(--orange)}
+
+/* ---------- El club: enlaces ---------- */
+.club-page{display:flex;flex-direction:column;gap:14px}
+.club-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.club-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.club-card.lead{grid-column:1/-1}}
+.club-card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  transition:border-color .15s,transform .15s}
+.club-card:hover{border-color:var(--orange)}
+.club-card.lead{background:linear-gradient(135deg,rgba(237,108,5,.16),transparent 60%),var(--panel);border-color:rgba(237,108,5,.55)}
+.club-hit{display:flex;align-items:center;gap:14px;padding:16px;color:var(--bone);text-decoration:none;min-height:76px}
+.club-ico{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--panel2);
+  border:1px solid var(--line);color:var(--orange)}
+.club-card.lead .club-ico{width:58px;height:58px;background:var(--orange);color:var(--ink);border-color:var(--orange)}
+.club-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.club-txt b{font:800 17px/1.15 var(--disp);text-transform:uppercase;letter-spacing:.02em}
+.club-card.lead .club-txt b{font-size:21px}
+.club-note{color:var(--mute);font-size:14px;line-height:1.35}
+.club-host{font:500 11px/1 var(--mono);letter-spacing:.06em;color:var(--sage);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.club-admin{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}
+.club-admin .btn{flex:0 0 auto}
+.club-icons .chip{display:inline-flex;align-items:center;gap:6px}
+.club-empty{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--mute);text-align:center;padding:30px 10px}
+.club-add .btn{flex:0 1 auto}
+.dr-link{text-decoration:none}
+.dr-link .dr-ext{margin-left:auto;font-style:normal;color:var(--mute)}

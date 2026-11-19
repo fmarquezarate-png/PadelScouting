@@ -834,9 +834,27 @@
   /* Histórico de nivel del club: de tu cuenta si lo has importado; si no,
      el que venía con la app (solo Francisco y Cristian, 1.er semestre).
      El nivel del club es uno solo: la misma línea en masculino y en mixto. */
+  /* De quién es el nivel que hay cargado: tu pareja, o (admin) la pareja que miras. */
+  function clubKey() {
+    var m = PL.state.model;
+    if (m && m.myTeamId && m.myTeamId !== m.ownTeamId && global.PadelDB.isAdmin()) return 'team:' + m.myTeamId;
+    return 'own';
+  }
   function loadClub(done) {
+    var key = clubKey();
+    if (ui.clubKey !== key) { ui.club = null; ui.clubSrc = null; }
     if ((ui.club && ui.clubSrc) || ui.clubLoading) { done(); return; }
     ui.clubLoading = true;
+    if (key !== 'own') {
+      var m = PL.state.model, kind = (m.season && m.season.kind) || 'masculina';
+      global.PadelDB.callAuthed('get_team_club', { p_team: m.myTeamId }).catch(function () { return null; }).then(function (r) {
+        var src = {};
+        if (r) { src.me = r.a || {}; src['partner:' + kind] = r.b || {}; }
+        ui.club = {}; ui.clubSrc = src; ui.clubKey = key; ui.clubLoading = false;
+        renderMetricsIfPresent(); done();
+      });
+      return;
+    }
     var legacy = global.fetch('legacy/club-nivel.json').then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
     var remote = global.PadelAuth && global.PadelAuth.user()
@@ -845,6 +863,7 @@
       ui.club = r[0] || {};
       /* Lo importado manda; lo que falte (p. ej. tu pareja) sale del histórico de la app. */
       ui.clubSrc = Object.assign(legacySrc(ui.club), r[1] || {});
+      ui.clubKey = 'own';
       ui.clubLoading = false; renderMetricsIfPresent(); done();
     });
   }
@@ -863,8 +882,8 @@
 
   function club() {
     var m = PL.state.model, src = ui.clubSrc || {};
-    /* El nivel del club es de tu cuenta: solo se enseña mirando tu pareja. */
-    if (!m || !m.myTeamId || m.myTeamId !== m.ownTeamId) src = {};
+    /* El nivel del club es de cada jugador y solo lo ven él y su pareja (y el admin). */
+    if (!m || !m.myTeamId || (m.myTeamId !== m.ownTeamId && !(global.PadelDB.isAdmin() && ui.clubKey === 'team:' + m.myTeamId))) src = {};
     var range = global.PadelClub.seasonRange(m);
     var kind = (m && m.season && m.season.kind) || 'masculina';
     var me = src.me || {}, pa = src['partner:' + kind] || {};
@@ -900,6 +919,12 @@
   function openClubImport() {
     var cd = club();
     ci = { who: 'me', text: '', name: '', parsed: null, busy: false, error: null, result: null, kind: cd.kind, cd: cd };
+    /* Admin mirando otra pareja: se sube al jugador que elijas de esa pareja. */
+    var m = PL.state.model;
+    if (clubKey() !== 'own' && m && m.teams[m.myTeamId]) {
+      var t = m.teams[m.myTeamId];
+      ci.admin = { a: t.playerA, b: t.playerB };
+    }
     paintClubImport();
   }
   function closeClubImport() {
@@ -913,7 +938,7 @@
     var KIND = (global.PadelApp && global.PadelApp.KIND) || {};
     var h = ['<div class="modal"><div class="modal-card"><h2 id="ci-t">Importar histórico de juego</h2>'];
     if (!u) {
-      h.push('<p class="lede">Se guarda en tu cuenta: entra primero.</p><div class="btn-row">' +
+      h.push('<p class="lede">Hace falta tu cuenta: entra primero.</p><div class="btn-row">' +
         '<button class="btn primary" data-ci="login">Entrar</button><button class="btn ghost" data-ci="close">Cerrar</button></div>');
     } else if (ci.result) {
       h.push('<p class="lede">Hecho: <b>' + ci.result.added + '</b> partidos nuevos' +
@@ -924,13 +949,13 @@
       h.push('<p class="lede">En la web del club, abre «Histórico del nivel de juego», selecciona toda la tabla ' +
         '(con el «Ranking» de arriba) y pégala aquí. Lo que ya estaba no se duplica.</p>');
       h.push('<span class="field-label">¿De quién es?</span><div class="chips tight">' +
-        '<button class="chip" aria-pressed="' + (ci.who === 'me') + '" data-ci-who="me">Mío</button>' +
-        '<button class="chip" aria-pressed="' + (ci.who !== 'me') + '" data-ci-who="partner">De mi pareja de ' +
-        esc((KIND[ci.kind] || ci.kind).toLowerCase()) + '</button></div>');
-      if (ci.who !== 'me') {
-        h.push('<div class="field"><label for="ci-name">Nombre de tu pareja</label><input id="ci-name" type="text" value="' +
-          esc(ci.name || ci.cd.partnerName) + '"></div>');
-      }
+        (ci.admin
+          ? '<button class="chip" aria-pressed="' + (ci.who === 'me') + '" data-ci-who="me">' + esc(ci.admin.a) + '</button>' +
+            '<button class="chip" aria-pressed="' + (ci.who !== 'me') + '" data-ci-who="partner">' + esc(ci.admin.b) + '</button>'
+          : '<button class="chip" aria-pressed="' + (ci.who === 'me') + '" data-ci-who="me">Mío</button>' +
+            '<button class="chip" aria-pressed="' + (ci.who !== 'me') + '" data-ci-who="partner">De mi pareja de ' +
+            esc((KIND[ci.kind] || ci.kind).toLowerCase()) + '</button>') + '</div>' +
+        '<p class="field-note">Se guarda en el jugador: lo veis él y su pareja' + (ci.admin ? ' (y tú, como administrador).' : '.') + '</p>');
       h.push('<div class="field"><label for="ci-text">Histórico</label><textarea id="ci-text" rows="8" ' +
         'placeholder="Ranking: 280&#10;12/03/2026 21:03:58  Ganado    0,18">' + esc(ci.text) + '</textarea></div>');
       var p = ci.parsed;
@@ -979,10 +1004,13 @@
       if (!ci.parsed || !ci.parsed.rows.length) return;
       ci.busy = true; ci.error = null; paintClubImport();
       var who = ci.who === 'me' ? 'me' : 'partner:' + ci.kind;
-      global.PadelDB.callAuthed('import_club_levels', {
-        p_who: who, p_ranking: ci.parsed.ranking, p_name: ci.who === 'me' ? null : (ci.name || ci.cd.partnerName),
-        p_rows: ci.parsed.rows.map(function (r) { return [r.at, r.won, r.level]; })
-      }).then(function (res) {
+      var rows = ci.parsed.rows.map(function (r) { return [r.at, r.won, r.level]; });
+      (ci.admin
+        ? global.PadelDB.callAuthed('import_player_club_by_label', {
+            p_label: ci.who === 'me' ? ci.admin.a : ci.admin.b, p_ranking: ci.parsed.ranking, p_rows: rows })
+        : global.PadelDB.callAuthed('import_club_levels', {
+            p_who: who, p_ranking: ci.parsed.ranking, p_name: null, p_rows: rows })
+      ).then(function (res) {
         if (!ci) return;
         ci.busy = false; ci.result = res; paintClubImport();
       }).catch(function (err) {

@@ -229,6 +229,6 @@
     callAuthed: callAuthed, clearCache: clearCache,
     currentSeason: currentSeason, setSeason: setSeason, hasChosenSeason: hasChosenSeason, listSeasons: listSeasons,
     myPlayer: myPlayer, rememberMe: rememberMe, isAdmin: isAdmin, fetchProfile: fetchProfile, saveProfile: saveProfile,
-    updateProfile: updateProfile, listPlayers: listPlayers
+    updateProfile: updateProfile, listPlayers: listPlayers, rpcPublic: rpcPublic
   };
 })(window);

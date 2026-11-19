@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **El club**: pantalla con los enlaces oficiales y de interés (tarjetas grandes; el primero destaca)
+  y grupo «El club» en el menú ☰. Solo el admin añade, edita, ordena y quita (quitar = ocultar).
+  Solo se aceptan direcciones web (https://; si falta, se añade). `js/enlaces.js`.
+- **Ranking y nivel del club, del jugador**: se guarda en el jugador, no en la cuenta; lo ven él y su
+  pareja (y el admin). El admin, mirando cualquier pareja en «Nuestra temporada», ve su nivel y puede
+  subir el histórico de cualquiera de sus dos jugadores.
+- Pruebas: `test/qa-enlaces.js` (20).
+
+⏳ **Pendiente de aplicar en la base** (el conector de Supabase estaba caído):
+`db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`. Sin ella la app no falla: El club sale
+vacío, tu ranking se sigue guardando como antes y el de otras parejas no se ve.
+
 ### Changed
 - **La pista, por uso**: Clasificación, Nuestra temporada y Crónica pasan delante (botones grandes);
   Notas de un partido, Mis notas y Preparar partido, al fondo. El recorrido guiado lo cuenta igual.

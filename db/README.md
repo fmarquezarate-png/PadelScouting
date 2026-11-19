@@ -196,3 +196,15 @@ rivales que no son los del grupo, la cierra y abre otra copiando lo apuntado de 
 se elimina nada); añade los rivales que falten; pone los resultados de la liga (`confirmed = true`) y
 sus fechas encima de lo manual. `update_fixture` vuelve `confirmed` a falso si alguien cambia un
 resultado a mano. Los confirmados no disparan el aviso de resultado (la carga ya avisa).
+
+## Ranking del club por jugador · Enlaces del club (2026-11)
+
+Archivo: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`.
+- `player_club_levels (player_id, played_at, won, level)` y `player_club_rankings (player_id, ranking)`:
+  sin políticas de lectura; solo por funciones. `can_see_player_club(p)` = admin, tú o alguien con quien
+  formas pareja. `get_my_club_levels()` y `import_club_levels()` mantienen su forma para la app, pero
+  leen y escriben en el jugador (`partner_of(jugador, competición)` = la pareja más reciente).
+  `get_team_club(team)` y `import_player_club_by_label(label, ranking, rows)` para el admin.
+  Lo ya subido por cuenta (`club_levels`, `club_rankings`) se copia; esas tablas se quedan.
+- `club_links (title, url, note, icon, position, active)`: lectura pública de los activos;
+  `save_club_link`, `hide_club_link` (ocultar, no eliminar) y `order_club_links`, solo admin.

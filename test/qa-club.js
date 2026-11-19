@@ -46,7 +46,8 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   await page.route('**/rest/v1/rpc/get_my_club_levels', r => J(r, db));
   await page.route('**/rest/v1/rpc/import_club_levels', r => {
     const a = JSON.parse(r.request().postData()); imports.push(a);
-    db[a.p_who] = { ranking: a.p_ranking, name: a.p_name, rows: a.p_rows };
+    /* Como la base: el nombre lo pone el jugador (la pareja de masculino es Cristian). */
+    db[a.p_who] = { ranking: a.p_ranking, name: a.p_who === 'me' ? null : 'Cristian', rows: a.p_rows };
     J(r, { added: a.p_rows.length, updated: 0, total: a.p_rows.length });
   });
   /* Reloj fijo: el aviso de «nuevo mes» no depende del día en que se pase la prueba. */
@@ -70,11 +71,12 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   check('Guarda lo tuyo en tu cuenta', imports[0] && imports[0].p_who === 'me' && imports[0].p_ranking === 280 && imports[0].p_rows.length === 5);
   await page.click('[data-ci="again"]'); await page.waitForTimeout(150);
   await page.click('[data-ci-who="partner"]'); await page.waitForTimeout(150);
-  check('Pareja: propone el nombre de tu pareja de esta competición', (await page.inputValue('#ci-name')) === 'Cristian');
+  check('Pareja: sin pedir nombre (lo pone el jugador) y avisa de quién lo ve', await page.locator('#ci-name').count() === 0 &&
+    (await page.textContent('.modal')).includes('Se guarda en el jugador'));
   await page.fill('#ci-text', 'Ranking: 350\n12/03/2026 21:03:58\tGanado\t\t0,18\n21/03/2026 20:00:00\tPerdido\t\t0,16');
   await page.waitForTimeout(250);
   await page.click('[data-ci="save"]'); await page.waitForTimeout(500);
-  check('La pareja se guarda por competición', imports[1] && imports[1].p_who === 'partner:masculina' && imports[1].p_name === 'Cristian');
+  check('La pareja se guarda por competición', imports[1] && imports[1].p_who === 'partner:masculina');
   await page.click('[data-ci="close"]'); await page.waitForTimeout(1200);
   const cd = await page.evaluate(() => window.PadelTemporada.club());
   check('Masculino S1: solo feb–jul', cd.fran.length === 3 && cd.fran.every(x => x.at >= '2026-02' && x.at < '2026-08'), cd.fran.map(x => x.fecha).join(','));
