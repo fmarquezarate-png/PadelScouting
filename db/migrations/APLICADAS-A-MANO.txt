@@ -1,0 +1,4 @@
+# Migraciones que ya se aplicaron a mano en Supabase (SQL Editor).
+# La acción de GitHub las registra como aplicadas sin volver a ejecutarlas.
+# Una por línea, solo el nombre del archivo.
+2026-11-19_ranking_por_jugador_y_enlaces.sql

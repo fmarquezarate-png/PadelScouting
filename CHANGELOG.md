@@ -6,6 +6,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Acción de GitHub para la base de datos** (`.github/workflows/db-migrations.yml` +
+  `tools/apply-migrations.sh`): aplica en Supabase las migraciones nuevas de `db/migrations/` al subirlas
+  a `main` (o a mano, con modo «solo mirar»). Probada contra un PostgreSQL 16 local: registrar lo aplicado
+  a mano, aplicar, migración que falla (no entra nada y sale en rojo), archivo cambiado tras aplicarse
+  (avisa y no lo repite), repetir sin cambios y «solo mirar» sin tocar nada.
+- `CLAUDE.md`: cómo trabajar en el proyecto (y usar la acción si el conector de Supabase falla).
+
+### Changed
+- La migración del 19/11 (ranking por jugador y enlaces) la aplicó Fran a mano: queda en
+  `db/migrations/APLICADAS-A-MANO.txt`.
+
+### Added
 - **El club**: pantalla con los enlaces oficiales y de interés (tarjetas grandes; el primero destaca)
   y grupo «El club» en el menú ☰. Solo el admin añade, edita, ordena y quita (quitar = ocultar).
   Solo se aceptan direcciones web (https://; si falta, se añade). `js/enlaces.js`.
@@ -14,9 +26,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   subir el histórico de cualquiera de sus dos jugadores.
 - Pruebas: `test/qa-enlaces.js` (20).
 
-⏳ **Pendiente de aplicar en la base** (el conector de Supabase estaba caído):
-`db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`. Sin ella la app no falla: El club sale
-vacío, tu ranking se sigue guardando como antes y el de otras parejas no se ve.
+Base: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql` (aplicada a mano por Fran).
 
 ### Changed
 - **La pista, por uso**: Clasificación, Nuestra temporada y Crónica pasan delante (botones grandes);

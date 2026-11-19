@@ -208,3 +208,16 @@ Archivo: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`.
   Lo ya subido por cuenta (`club_levels`, `club_rankings`) se copia; esas tablas se quedan.
 - `club_links (title, url, note, icon, position, active)`: lectura pública de los activos;
   `save_club_link`, `hide_club_link` (ocultar, no eliminar) y `order_club_links`, solo admin.
+
+## Cómo se aplican las migraciones
+
+- Cada cambio en la base es un archivo `db/migrations/AAAA-MM-DD_descripcion.sql`.
+- Al subirlo a `main`, la acción de GitHub **«Base de datos · migraciones»** lo aplica en Supabase
+  (`tools/apply-migrations.sh`): solo los archivos que aún no estén en `public.app_migrations`, cada uno en
+  una sola transacción (si falla, no entra nada de él y la acción sale en rojo).
+- También se lanza a mano: GitHub → Actions → «Base de datos · migraciones» → Run workflow (con la casilla
+  «Solo mirar» enseña qué aplicaría sin tocar nada).
+- Lo aplicado a mano en el SQL Editor se apunta en `db/migrations/APLICADAS-A-MANO.txt`: se registra sin
+  volver a ejecutarse. Un archivo ya aplicado no se edita (la acción avisa y no lo repite).
+- Necesita el secreto de GitHub **`SUPABASE_DB_URL`**: la cadena de conexión de Supabase en modo
+  *Session pooler* (Supabase → Connect → Session pooler), con la contraseña de la base dentro.
