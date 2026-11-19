@@ -10,6 +10,34 @@ cd "$(dirname "$0")/.."
 : "${SUPABASE_DB_URL:?Falta SUPABASE_DB_URL (secreto de GitHub)}"
 PLAN=0; [ "${1:-}" = "--plan" ] && PLAN=1
 export PGOPTIONS='-c client_min_messages=warning'
+
+# La conexión «directa» de Supabase (db.<proyecto>.supabase.co) solo va por IPv6 y GitHub no lo
+# tiene: se prueba primero el «pooler» del mismo proyecto (misma contraseña). Nada de esto se imprime.
+pick_url() {
+  python3 - "$SUPABASE_DB_URL" <<'PY'
+import sys
+from urllib.parse import urlsplit, urlunsplit, quote, unquote
+u = urlsplit(sys.argv[1]); host = u.hostname or ''
+out = []
+if host.startswith('db.') and host.endswith('.supabase.co'):
+    ref = host.split('.')[1]
+    pw = quote(unquote(u.password or ''), safe='')
+    for pre in ('aws-0', 'aws-1'):
+        for region in ('eu-central-1', 'eu-west-1', 'eu-west-2', 'eu-west-3', 'us-east-1'):
+            out.append(urlunsplit((u.scheme, 'postgres.%s:%s@%s-%s.pooler.supabase.com:5432' % (ref, pw, pre, region), u.path or '/postgres', u.query, '')))
+out.append(sys.argv[1])
+print('\n'.join(out))
+PY
+}
+FOUND=""
+while IFS= read -r cand; do
+  if PGCONNECT_TIMEOUT=8 psql "$cand" -X -q -At --no-psqlrc -c 'select 1' >/dev/null 2>&1; then FOUND="$cand"; break; fi
+done < <(pick_url)
+if [ -z "$FOUND" ]; then
+  echo "::error::No consigo conectar con la base. Revisa el secreto SUPABASE_DB_URL (contraseña y dirección)."; exit 1
+fi
+if [ "$FOUND" != "$SUPABASE_DB_URL" ]; then echo "· Conectado por el pooler de Supabase."; fi
+SUPABASE_DB_URL="$FOUND"
 PSQL=(psql "$SUPABASE_DB_URL" -X -q -v ON_ERROR_STOP=1 --no-psqlrc)
 
 if [ $PLAN -eq 0 ]; then

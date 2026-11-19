@@ -219,5 +219,7 @@ Archivo: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`.
   «Solo mirar» enseña qué aplicaría sin tocar nada).
 - Lo aplicado a mano en el SQL Editor se apunta en `db/migrations/APLICADAS-A-MANO.txt`: se registra sin
   volver a ejecutarse. Un archivo ya aplicado no se edita (la acción avisa y no lo repite).
-- Necesita el secreto de GitHub **`SUPABASE_DB_URL`**: la cadena de conexión de Supabase en modo
-  *Session pooler* (Supabase → Connect → Session pooler), con la contraseña de la base dentro.
+- Necesita el secreto de GitHub **`SUPABASE_DB_URL`**: la cadena de conexión de Supabase (Connect), con
+  la contraseña de la base dentro (codificada si lleva símbolos). Sirve la «directa»
+  (`db.<proyecto>.supabase.co`): como GitHub no llega por IPv6, el script prueba antes el *pooler* del
+  mismo proyecto con la misma contraseña.
