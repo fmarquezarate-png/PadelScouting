@@ -348,6 +348,10 @@
   var METRICS = [
     { id: 'pos', label: 'Puesto en la liga', get: function (r) { return r.pos; },
       fmt: function (v) { return '#' + Math.round(v); }, invert: true, step: true },
+    /* El grupo de cada mes (1 = el de arriba): así funciona el ranking de la liga. */
+    { id: 'grupo', label: 'Grupo', get: function (r) { return r.grupo; },
+      fmt: function (v) { return 'G' + Math.round(v); }, tip: function (v) { return String(Math.round(v)); },
+      invert: true, step: true, integer: true },
     { id: 'elo', label: 'Nivel', get: function (r) { return r.post; },
       fmt: function (v) { return Math.round(v); }, mid: 1500 },
     { id: 'games', label: '% de juegos', get: function (r) { return r.rollGames; },
@@ -493,8 +497,11 @@
       svg.appendChild(bt);
     }
 
-    for (var g = 0; g <= 4; g++) {
-      var v = lo + (hi - lo) * g / 4, y = Y(v);
+    var ticks = [];
+    if (mt.integer) for (var iv = Math.max(1, Math.ceil(lo)); iv <= Math.floor(hi) && ticks.length < 12; iv++) ticks.push(iv);
+    else for (var g0 = 0; g0 <= 4; g0++) ticks.push(lo + (hi - lo) * g0 / 4);
+    for (var g = 0; g < ticks.length; g++) {
+      var v = ticks[g], y = Y(v);
       svg.appendChild(mk('line', { x1: LO.PL, y1: y, x2: W - LO.PR, y2: y, stroke: '#2C3423', 'stroke-width': 1 }));
       var t = mk('text', { x: LO.PL - 12, y: y + 4, fill: '#9AA48C', 'text-anchor': 'end',
         'font-family': 'IBM Plex Mono', 'font-size': LO.fY });
@@ -558,7 +565,7 @@
         tip.style.opacity = 1;
         tip.innerHTML = '<div class="t-h">' + esc(p.lab) + (p.mesnom ? ' · ' + esc(p.mesnom) : '') + '</div>' +
           '<div class="t-r"><b>' + esc(p.sub) + '</b></div>' +
-          '<div class="t-r" style="margin-top:5px">' + esc(mt.label) + ': <b>' + mt.fmt(p.v) + '</b></div>';
+          '<div class="t-r" style="margin-top:5px">' + esc(mt.label) + ': <b>' + (mt.tip || mt.fmt)(p.v) + '</b></div>';
         var r = svg.getBoundingClientRect(), box = svg.parentElement.getBoundingClientRect();
         var px = (cx / W) * r.width + (r.left - box.left), py = (cy / H) * r.height + (r.top - box.top);
         tip.style.left = Math.max(6, Math.min(px - 90, box.width - 196)) + 'px';

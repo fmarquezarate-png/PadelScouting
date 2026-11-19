@@ -5,6 +5,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Escalera: métrica «Grupo»** junto a «Puesto en la liga»: en qué grupo estabais en cada partido (el 1 arriba,
+  en escalones; el eje solo marca grupos enteros).
+
 ### Fixed
 - Importar histórico: lee también el formato americano de la web del club (`10/22/2026 2:54:26 PM`, nivel
   `2.99`) y las observaciones partidas en dos líneas; antes decía «No encuentro filas». Mismo resultado

@@ -124,7 +124,8 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   check('01 · nivel final 1360', await tileVal('Nivel final') === '1360', await tileVal('Nivel final'));
 
   /* ---------------- 02 ESCALERA ---------------- */
-  check('02 · 5 métricas', await page.locator('#metrics button').count() === 5);
+  check('02 · 6 métricas (con «Grupo»)', await page.locator('#metrics button').count() === 6 &&
+    (await page.textContent('#metrics [data-metric="grupo"]')) === 'Grupo');
   check('02 · un punto por partido', await page.locator('#chart circle[r]').count() >= 17);
   check('02 · el mes clutch se calcula solo', (await page.textContent('#chart')).includes('ABRIL · 4–0, 4 EN SUPER TB'),
     (await page.textContent('#chart')).match(/[A-Z]+ · [^A-Z]*SUPER TB/)?.[0]);
@@ -142,6 +143,17 @@ const check = (n, c, e) => (c ? ok : bad).push(n + (e != null ? ' → ' + e : ''
   const axElo = await axis();
   check('02 · cambiar a nivel redibuja el eje', axPos.includes('#') && /\b1[2-5]\d\d\b/.test(axElo) && !axElo.includes('#'),
     axElo.slice(0, 40));
+  await page.click('#metrics [data-metric="grupo"]'); await page.waitForTimeout(300);
+  const gr = await page.evaluate(() => {
+    const rows = window.PadelTemporada.mine(window.PadelLiga.state.model).map(r => r.grupo).filter(g => g != null);
+    const ys = [...document.querySelectorAll('#chart text')].filter(t => /^G\d+$/.test(t.textContent))
+      .map(t => [+t.textContent.slice(1), +t.getAttribute('y')]);
+    return { rows, ys };
+  });
+  const gMin = Math.min(...gr.rows), gMax = Math.max(...gr.rows), labs = gr.ys.map(x => x[0]);
+  check('02 · grupo: el eje marca grupos enteros (sin repetir) y cubre los tuyos', labs.length === new Set(labs).size &&
+    labs.includes(gMin) && labs.includes(gMax) && labs.every(g => g >= 1), JSON.stringify(gr));
+  check('02 · grupo: el 1 (el de arriba) arriba en la gráfica', gr.ys.every(a => gr.ys.every(b => a[0] >= b[0] || a[1] < b[1])));
   await page.click('#metrics [data-metric="club"]'); await page.waitForTimeout(400);
   const chartTxt = await page.textContent('#chart');
   check('02 · nivel del club: Francisco y Cristian', chartTxt.includes('Francisco') && chartTxt.includes('Cristian'));
