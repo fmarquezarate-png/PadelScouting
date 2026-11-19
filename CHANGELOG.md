@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **Histórico del nivel del club, lectura inteligente** (`js/club.js`): cuando el club corrige un resultado
+  («Restaurar nivel… por corrección»), se quita también el apunte erróneo de antes y el bueno conserva la fecha
+  del partido. Ya no salen puntos falsos en la gráfica. Lee horas de una cifra (8:49), da igual el orden en que
+  se pegue y sin «Ranking:» en el texto deja escribirlo a mano. Con el histórico real de Fran: 39 partidos,
+  5 correcciones.
+- Al volver a subir el histórico, los apuntes erróneos guardados antes se ocultan (migración
+  `2026-11-19b_nivel_club_correcciones.sql`, sin eliminar nada). Con la base sin actualizar, la app sigue guardando.
+
 ### Added
 - **Acción de GitHub para la base de datos** (`.github/workflows/db-migrations.yml` +
   `tools/apply-migrations.sh`): aplica en Supabase las migraciones nuevas de `db/migrations/` al subirlas

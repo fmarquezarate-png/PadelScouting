@@ -942,6 +942,7 @@
         '<button class="btn primary" data-ci="login">Entrar</button><button class="btn ghost" data-ci="close">Cerrar</button></div>');
     } else if (ci.result) {
       h.push('<p class="lede">Hecho: <b>' + ci.result.added + '</b> partidos nuevos' +
+        (ci.result.hidden ? ', ' + ci.result.hidden + (ci.result.hidden === 1 ? ' apunte erróneo de antes quitado' : ' apuntes erróneos de antes quitados') : '') +
         (ci.result.updated ? ', ' + ci.result.updated + ' corregidos' : '') + '. Total guardado: <b>' + ci.result.total + '</b>.</p>' +
         '<div class="btn-row"><button class="btn primary" data-ci="close">Ver la escalera</button>' +
         '<button class="btn ghost" data-ci="again">Importar otro</button></div>');
@@ -964,10 +965,16 @@
           (p.rows.length ? ' (del ' + p.rows[0].at.slice(8, 10) + '/' + p.rows[0].at.slice(5, 7) + '/' + p.rows[0].at.slice(0, 4) +
             ' al ' + p.rows[p.rows.length - 1].at.slice(8, 10) + '/' + p.rows[p.rows.length - 1].at.slice(5, 7) + '/' +
             p.rows[p.rows.length - 1].at.slice(0, 4) + ')' : '') +
-          (p.ranking ? ' · ranking <b>' + p.ranking + '</b>' : '') +
-          (p.dropped ? ' · ' + p.dropped + ' «restaurar por corrección» fuera' : '') +
+          (p.corrections ? ' · ' + p.corrections + (p.corrections === 1 ? ' corrección del club aplicada' : ' correcciones del club aplicadas') +
+            (p.removed ? ' (fuera ' + p.removed + (p.removed === 1 ? ' apunte erróneo)' : ' apuntes erróneos)') : '') : '') +
           (p.duplicates ? ' · ' + p.duplicates + ' repetidas fuera' : '')
           : 'No encuentro filas con fecha, resultado y nivel.') + '</p>');
+      }
+      if (p && p.rows.length) {
+        h.push('<div class="field"><label for="ci-rank">Ranking del club <span class="opt">· ' +
+          (p.ranking ? 'leído del texto' : 'opcional: si no venía en el texto, escríbelo') + '</span></label>' +
+          '<input id="ci-rank" type="number" inputmode="numeric" min="1" max="9999" placeholder="280" value="' +
+          esc(ci.rank != null ? ci.rank : (p.ranking || '')) + '"></div>');
       }
       if (ci.error) h.push('<div class="notice bad">' + esc(ci.error) + '</div>');
       h.push('<div class="btn-row"><button class="btn primary" data-ci="save"' + (p && p.rows.length && !ci.busy ? '' : ' disabled') + '>' +
@@ -987,7 +994,7 @@
     var lg = root.querySelector('[data-ci="login"]');
     if (lg) lg.addEventListener('click', function () { closeClubImport(); global.PadelApp.go('perfil'); });
     var ag = root.querySelector('[data-ci="again"]');
-    if (ag) ag.addEventListener('click', function () { ci.result = null; ci.text = ''; ci.parsed = null; paintClubImport(); });
+    if (ag) ag.addEventListener('click', function () { ci.result = null; ci.text = ''; ci.parsed = null; ci.rank = null; paintClubImport(); });
     root.querySelectorAll('[data-ci-who]').forEach(function (b) {
       b.addEventListener('click', function () { ci.who = b.getAttribute('data-ci-who'); paintClubImport(); });
     });
@@ -999,18 +1006,27 @@
       var pos = ta.selectionStart; paintClubImport();
       var t2 = document.getElementById('ci-text'); t2.focus(); t2.selectionStart = t2.selectionEnd = pos;
     });
+    var rk = root.querySelector('#ci-rank');
+    if (rk) rk.addEventListener('input', function () { ci.rank = rk.value; });
     var sv = root.querySelector('[data-ci="save"]');
     if (sv) sv.addEventListener('click', function () {
       if (!ci.parsed || !ci.parsed.rows.length) return;
       ci.busy = true; ci.error = null; paintClubImport();
       var who = ci.who === 'me' ? 'me' : 'partner:' + ci.kind;
       var rows = ci.parsed.rows.map(function (r) { return [r.at, r.won, r.level]; });
-      (ci.admin
-        ? global.PadelDB.callAuthed('import_player_club_by_label', {
-            p_label: ci.who === 'me' ? ci.admin.a : ci.admin.b, p_ranking: ci.parsed.ranking, p_rows: rows })
-        : global.PadelDB.callAuthed('import_club_levels', {
-            p_who: who, p_ranking: ci.parsed.ranking, p_name: null, p_rows: rows })
-      ).then(function (res) {
+      var rank = ci.rank != null && String(ci.rank).trim() !== '' ? Math.round(+ci.rank) : ci.parsed.ranking;
+      if (!(rank > 0)) rank = null;
+      var to = ci.parsed.span ? ci.parsed.span.to : null;
+      var fn = ci.admin ? 'import_player_club_by_label' : 'import_club_levels';
+      var args = ci.admin
+        ? { p_label: ci.who === 'me' ? ci.admin.a : ci.admin.b, p_ranking: rank, p_rows: rows }
+        : { p_who: who, p_ranking: rank, p_name: null, p_rows: rows };
+      /* Con «hasta dónde llega el texto» la base oculta los apuntes erróneos de antes;
+         si la base aún no lo admite, se guarda como siempre. */
+      global.PadelDB.callAuthed(fn, Object.assign({ p_to: to }, args)).catch(function (err) {
+        if (/function|PGRST202|schema cache/i.test(err.message)) return global.PadelDB.callAuthed(fn, args);
+        throw err;
+      }).then(function (res) {
         if (!ci) return;
         ci.busy = false; ci.result = res; paintClubImport();
       }).catch(function (err) {

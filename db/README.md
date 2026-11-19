@@ -209,6 +209,15 @@ Archivo: `db/migrations/2026-11-19_ranking_por_jugador_y_enlaces.sql`.
 - `club_links (title, url, note, icon, position, active)`: lectura pública de los activos;
   `save_club_link`, `hide_club_link` (ocultar, no eliminar) y `order_club_links`, solo admin.
 
+## Nivel del club: correcciones (2026-11-19b)
+
+Archivo: `db/migrations/2026-11-19b_nivel_club_correcciones.sql`.
+- `player_club_levels.hidden`: los apuntes erróneos se **ocultan**, no se eliminan; `player_club_json` solo da los visibles.
+- `import_player_club(player, ranking, rows, p_to)`: guarda lo pegado (y vuelve a mostrar lo que estuviera oculto) y
+  oculta lo guardado entre la primera fecha pegada y `p_to` (hasta dónde llega el texto) que ya no está en él.
+  Devuelve `{added, updated, hidden, total, playerId}`. Subir un trozo antiguo no oculta nada fuera de sus fechas.
+- `import_club_levels(…, p_to)` e `import_player_club_by_label(…, p_to)`: versiones con `p_to`; las de siempre siguen.
+
 ## Cómo se aplican las migraciones
 
 - Cada cambio en la base es un archivo `db/migrations/AAAA-MM-DD_descripcion.sql`.

@@ -1,0 +1,50 @@
+Fecha	Resultado	Observaciones	Nivel
+12/03/2026 21:03:58	Ganado		0,18
+18/03/2026 21:14:39	Ganado		0,38
+21/03/2026 10:01:02	Perdido		0,36
+27/03/2026 19:37:10	Ganado		0,56
+30/03/2026 18:37:19	Perdido		0,52
+09/04/2026 18:22:16	Ganado		0,72
+16/04/2026 21:02:46	Ganado		0,68
+16/04/2026 21:02:57	Ganado	Restaurar por corrección de resultados de la reserva 228156	0,72
+16/04/2026 21:02:57	Ganado		0,72
+16/04/2026 21:05:32	Ganado		0,86
+20/04/2026 20:01:32	Perdido		0,84
+24/04/2026 19:55:04	Ganado		0,98
+27/04/2026 19:55:19	Ganado		1,18
+28/04/2026 20:06:35	Ganado		1,26
+14/05/2026 19:28:14	Ganado		1,51
+20/05/2026 18:42:39	Ganado		1,69
+27/05/2026 17:24:34	Perdido		1,59
+27/05/2026 19:42:11	Ganado		1,71
+28/05/2026 19:50:45	Ganado		1,83
+11/06/2026 19:47:30	Perdido		1,73
+26/06/2026 17:10:01	Perdido		1,70
+27/06/2026 12:05:47	Ganado		1,95
+29/06/2026 21:06:34	Ganado		2,13
+29/06/2026 21:10:36	Ganado	Restaurar por corrección de resultados de la reserva 231883	1,95
+29/06/2026 21:10:36	Ganado		2,13
+30/06/2026 19:31:23	Ganado		2,31
+21/07/2026 20:48:22	Ganado		2,43
+27/07/2026 20:04:35	Perdido		2,39
+30/07/2026 19:59:07	Ganado		2,51
+04/08/2026 19:16:49	Perdido		2,48
+14/09/2026 19:45:38	Ganado		2,56
+22/09/2026 20:02:34	Ganado		2,76
+23/09/2026 19:41:59	Ganado		2,90
+27/09/2026 18:28:12	Ganado		3,10
+29/09/2026 20:03:14	Perdido		2,98
+15/10/2026 20:02:28	Ganado		3,10
+16/10/2026 20:30:31	Perdido		3,07
+21/10/2026 21:40:44	Perdido		3,15
+22/10/2026 14:53:50	Perdido	Restaurar por corrección de resultados de la reserva 243716	3,07
+22/10/2026 14:53:50	Perdido		3,02
+22/10/2026 14:54:26	Perdido	Restaurar por corrección de resultados de la reserva 243716	3,07
+22/10/2026 14:54:26	Perdido		2,99
+23/10/2026 19:04:45	Perdido		2,91
+27/10/2026 22:52:22	Ganado		3,09
+10/11/2026 20:44:03	Perdido		3,06
+12/11/2026 21:03:09	Perdido		3,03
+17/11/2026 8:49:09	Ganado		3,09
+17/11/2026 14:56:16	Ganado	Restaurar por corrección de resultados de la reserva 245965	3,03
+17/11/2026 14:56:16	Ganado		3,09

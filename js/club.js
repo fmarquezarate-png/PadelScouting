@@ -16,23 +16,55 @@
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
-  /* Devuelve { ranking, rows: [{ at, won, level }], dropped, duplicates } en orden de fecha.
-     «at» es la hora de la web tal cual (se guarda como si fuera UTC para no moverla). */
+  /* Devuelve { ranking, rows: [{ at, won, level }], corrections, removed, duplicates } en orden de fecha.
+     «at» es la hora de la web tal cual (se guarda como si fuera UTC para no moverla).
+     Correcciones del club: «Restaurar por corrección… nivel X» devuelve tu nivel a como estaba antes
+     de un partido mal apuntado, y la línea siguiente lo vuelve a apuntar bien. Así que:
+       · se quitan los apuntes hechos desde que tenías X (el resultado erróneo), y
+       · el apunte corregido se queda con la FECHA del partido original (no la de la corrección). */
   function parse(text) {
-    var out = { ranking: null, rows: [], dropped: 0, duplicates: 0 };
+    var out = { ranking: null, rows: [], dropped: 0, duplicates: 0, corrections: 0, removed: 0 };
     var rk = /ranking\s*:?\s*(\d+)/i.exec(text || '');
     if (rk) out.ranking = +rk[1];
-    var seen = {};
+    var lines = [];
     String(text || '').split(/\r?\n/).forEach(function (line) {
       var m = LINE.exec(line.trim());
       if (!m) return;
-      if (/restaurar|correcci[oó]n/i.test(m[8])) { out.dropped++; return; }
-      var at = m[3] + '-' + pad(m[2]) + '-' + pad(m[1]) + 'T' + pad(m[4]) + ':' + m[5] + ':' + (m[6] || '00') + 'Z';
-      if (seen[at]) { out.duplicates++; return; }
-      seen[at] = true;
-      out.rows.push({ at: at, won: /ganado/i.test(m[7]), level: +m[9].replace(',', '.') });
+      lines.push({
+        at: m[3] + '-' + pad(m[2]) + '-' + pad(m[1]) + 'T' + pad(m[4]) + ':' + m[5] + ':' + (m[6] || '00') + 'Z',
+        won: /ganado/i.test(m[7]), level: +m[9].replace(',', '.'),
+        restore: /restaurar|correcci[oó]n/i.test(m[8])
+      });
     });
-    out.rows.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+    /* La web lista de más antiguo a más nuevo; si viniera al revés, se le da la vuelta
+       (dentro de la misma hora, la línea «Restaurar» va antes que su corrección). */
+    if (lines.length > 1 && lines[0].at > lines[lines.length - 1].at) lines.reverse();
+    /* Y por fecha (orden estable: a la misma hora se respeta el orden de la web). */
+    lines.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+    /* Lo que abarca el texto (con las correcciones): al guardar, lo que sobre dentro se oculta. */
+    if (lines.length) out.span = { from: lines[0].at, to: lines[lines.length - 1].at };
+    var rows = [], redate = null;
+    lines.forEach(function (x) {
+      if (x.restore) {
+        out.dropped++; out.corrections++;
+        /* Hasta 4 apuntes atrás: el último en el que tenías ese nivel. */
+        var k = -1;
+        for (var i = rows.length - 1; i >= Math.max(0, rows.length - 5); i--) {
+          if (Math.abs(rows[i].level - x.level) < 0.005) { k = i; break; }
+        }
+        if (k >= 0 && k < rows.length - 1) {
+          var gone = rows.splice(k + 1);
+          out.removed += gone.length;
+          redate = gone[0].at;          /* el partido corregido es el primero que se quitó */
+        } else redate = null;
+        return;
+      }
+      var row = { at: redate || x.at, won: x.won, level: x.level };
+      redate = null;
+      if (rows.some(function (r) { return r.at === row.at; })) { out.duplicates++; return; }
+      rows.push(row);
+    });
+    out.rows = rows.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
     return out;
   }
 

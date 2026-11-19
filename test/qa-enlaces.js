@@ -118,7 +118,8 @@ const ME = SNAP.teams.find(t => t[4]);
   await p.fill('#ci-text', 'Ranking: 350\n12/03/2026 21:03:58\tGanado\t\t0,18\n21/03/2026 20:00:00\tPerdido\t\t0,16'); await p.waitForTimeout(250);
   await p.click('[data-ci="save"]'); await p.waitForTimeout(500);
   const im = S.calls.find(c => c[0] === 'import');
-  check('…y lo guarda en ese jugador (por su nombre en la liga)', im && im[1].p_label === other[3] && im[1].p_ranking === 350 && im[1].p_rows.length === 2,
+  check('…y lo guarda en ese jugador (por su nombre en la liga)', im && im[1].p_label === other[3] && im[1].p_ranking === 350 && im[1].p_rows.length === 2 &&
+    im[1].p_to === '2026-03-21T20:00:00Z',
     JSON.stringify(im));
   await ctx.close();
 
