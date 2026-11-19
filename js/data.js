@@ -132,7 +132,11 @@
     club: 'Los enlaces del club: web, reservas y lo que sea útil tener a mano.'
   };
 
+  /* Versión a la vista (Configuración y ventanas de importar): se cambia en cada subida. */
+  var VERSION = '19/11 · v4';
+
   global.PadelData = {
+    VERSION: VERSION,
     NAMES: NAMES,
     INTRO: INTRO,
     ARCHETYPES: ARCHETYPES,

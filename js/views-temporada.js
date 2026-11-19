@@ -932,8 +932,7 @@
     document.body.classList.remove('has-modal');
     ci = null;
   }
-  function paintClubImport() {
-    var root = document.getElementById('modal-root');
+  function clubImportHtml() {
     var u = global.PadelAuth && global.PadelAuth.user();
     var KIND = (global.PadelApp && global.PadelApp.KIND) || {};
     var h = ['<div class="modal"><div class="modal-card"><h2 id="ci-t">Importar histórico de juego</h2>'];
@@ -962,6 +961,17 @@
         '<p class="field-note">Se guarda en el jugador: lo veis él y su pareja' + (ci.admin ? ' (y tú, como administrador).' : '.') + '</p>');
       h.push('<div class="field"><label for="ci-text">Histórico</label><textarea id="ci-text" rows="8" ' +
         'placeholder="Ranking: 280&#10;12/03/2026 21:03:58  Ganado    0,18">' + esc(ci.text) + '</textarea></div>');
+      h.push('<div id="ci-prev">' + clubPreview() + '</div>');
+      if (ci.error) h.push('<div class="notice bad">' + esc(ci.error) + '</div>');
+      h.push('<div class="btn-row"><button class="btn primary" data-ci="save"' + (ci.parsed && ci.parsed.rows.length && !ci.busy ? '' : ' disabled') + '>' +
+        (ci.busy ? 'Guardando…' : 'Guardar') + '</button><button class="btn ghost" data-ci="close">Cancelar</button></div>' +
+        '<p class="field-note">Versión de la app: ' + esc((global.PadelData && global.PadelData.VERSION) || '—') + '</p>');
+    }
+    h.push('</div></div>');
+    return h;
+  }
+  function clubPreview() {
+      var h = [];
       var p = ci.parsed;
       if (p) {
         h.push('<p class="note">' + (p.rows.length ? '<b>' + p.rows.length + '</b> partidos' +
@@ -979,11 +989,11 @@
           '<input id="ci-rank" type="number" inputmode="numeric" min="1" max="9999" placeholder="280" value="' +
           esc(ci.rank != null ? ci.rank : (p.ranking || '')) + '"></div>');
       }
-      if (ci.error) h.push('<div class="notice bad">' + esc(ci.error) + '</div>');
-      h.push('<div class="btn-row"><button class="btn primary" data-ci="save"' + (p && p.rows.length && !ci.busy ? '' : ' disabled') + '>' +
-        (ci.busy ? 'Guardando…' : 'Guardar') + '</button><button class="btn ghost" data-ci="close">Cancelar</button></div>');
-    }
-    h.push('</div></div>');
+      return h.join('');
+  }
+  function paintClubImport() {
+    var root = document.getElementById('modal-root');
+    var h = clubImportHtml();
     /* Al repintar (Guardando…, error) no se vuelve arriba del todo: en el móvil el botón
        y el aviso quedaban fuera de la pantalla y parecía que no pasaba nada. */
     var oldBox = root.querySelector('.modal'), keep = oldBox ? oldBox.scrollTop : 0;
@@ -1016,11 +1026,15 @@
     var ta = root.querySelector('#ci-text');
     if (ta) ta.addEventListener('input', function () {
       ci.text = ta.value; ci.parsed = ta.value.trim() ? global.PadelClub.parse(ta.value) : null;
-      var pos = ta.selectionStart; paintClubImport();
-      var t2 = document.getElementById('ci-text'); t2.focus(); t2.selectionStart = t2.selectionEnd = pos;
+      /* Solo la vista previa: el resto (y el botón Guardar) no se rehace mientras escribes. */
+      root.querySelector('#ci-prev').innerHTML = clubPreview(); bindRank();
+      var s2 = root.querySelector('[data-ci="save"]'); if (s2) s2.disabled = !(ci.parsed && ci.parsed.rows.length) || ci.busy;
     });
-    var rk = root.querySelector('#ci-rank');
-    if (rk) rk.addEventListener('input', function () { ci.rank = rk.value; });
+    function bindRank() {
+      var rk = root.querySelector('#ci-rank');
+      if (rk) rk.addEventListener('input', function () { ci.rank = rk.value; });
+    }
+    bindRank();
     var sv = root.querySelector('[data-ci="save"]');
     if (sv) sv.addEventListener('click', function () {
       if (!ci.parsed || !ci.parsed.rows.length) return;

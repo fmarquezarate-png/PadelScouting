@@ -82,7 +82,11 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   check('Botón «Importar histórico de juego»', await page.locator('[data-action="club-import"]').count() === 1);
 
   await page.click('[data-action="club-import"]'); await page.waitForTimeout(200);
+  await page.evaluate(() => { window.__btn = document.querySelector('[data-ci="save"]'); });
   await page.fill('#ci-text', PASTE); await page.waitForTimeout(300);
+  check('Escribir/pegar no rehace el botón Guardar (en el móvil el toque se perdía)', await page.evaluate(() =>
+    window.__btn === document.querySelector('[data-ci="save"]') && !window.__btn.disabled));
+  check('La ventana dice qué versión de la app tienes', /Versión de la app: \S/.test(await page.textContent('.modal')));
   check('Vista previa: partidos y correcciones del club', /5 partidos.*corrección del club aplicada/s.test(await page.textContent('.modal .note')),
     await page.textContent('.modal .note'));
   check('Vista previa: el ranking leído queda en su casilla (editable)', (await page.inputValue('#ci-rank')) === '280');

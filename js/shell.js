@@ -461,7 +461,8 @@
       'En claro, la pista de inicio se ve de día; en oscuro, de noche.</p></section>');
 
     h.push('<section class="card"><h3>Ayuda</h3><p class="field-note">Un paseo de un minuto por la pista: para qué sirve cada parte.</p>' +
-      '<div class="btn-row"><button type="button" class="btn" data-shell="help-tour">Ver el tutorial otra vez</button></div></section>');
+      '<div class="btn-row"><button type="button" class="btn" data-shell="help-tour">Ver el tutorial otra vez</button></div>' +
+      '<p class="field-note" id="app-version">Versión de la app: ' + ((global.PadelData && global.PadelData.VERSION) || '—') + '</p></section>');
 
     h.push(avisosCard(u, p));
 

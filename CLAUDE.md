@@ -16,5 +16,9 @@ Se trabaja y se sube directamente a `main` (Vercel publica solo).
 - Escribir migraciones que se puedan repetir sin romper (`if not exists`, `create or replace`, `drop policy if exists`).
 - Cambios que eliminan o pisan datos: confirmarlo con Fran antes de subirlos.
 
+## Versión visible
+En cada subida a `main` con cambios de la app, subir `VERSION` en `js/data.js` (se ve en Configuración → Ayuda
+y en la ventana de importar): así Fran comprueba si su móvil tiene la última.
+
 ## Pruebas
 `test/run-all.sh` (o cada `test/qa-*.js` con `node`); buscan solas el navegador (`test/chrome-path.js`).

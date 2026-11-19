@@ -6,6 +6,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- Importar histórico: pegar o escribir ya no rehace toda la ventana (solo la vista previa), así el botón
+  «Guardar» no cambia bajo el dedo. La versión de la app se ve en la ventana y en Configuración → Ayuda
+  (`PadelData.VERSION`, se sube en cada cambio).
 - Importar histórico (móvil): al tocar «Guardar» la ventana saltaba arriba y el «Guardando…» o el aviso de error
   quedaban fuera de la pantalla, sin ninguna confirmación a la vista. Ahora se queda donde estabas, el error se
   ve sin bajar y lo guardado se confirma con «✓ Hecho» (también si la base responde vacío).
