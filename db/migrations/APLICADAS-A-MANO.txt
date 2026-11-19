@@ -2,3 +2,4 @@
 # La acción de GitHub las registra como aplicadas sin volver a ejecutarlas.
 # Una por línea, solo el nombre del archivo.
 2026-11-19_ranking_por_jugador_y_enlaces.sql
+2026-11-19b_nivel_club_correcciones.sql
