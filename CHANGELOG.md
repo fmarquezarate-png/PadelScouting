@@ -6,6 +6,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 ## [Unreleased]
 
 ### Fixed
+- Importar histórico: lee también el formato americano de la web del club (`10/22/2026 2:54:26 PM`, nivel
+  `2.99`) y las observaciones partidas en dos líneas; antes decía «No encuentro filas». Mismo resultado
+  que con el formato de siempre (39 partidos, 5 correcciones con el histórico de Fran).
+- Los botones desactivados se ven apagados (antes «Guardar» parecía activo y no hacía nada).
 - Importar histórico: pegar o escribir ya no rehace toda la ventana (solo la vista previa), así el botón
   «Guardar» no cambia bajo el dedo. La versión de la app se ve en la ventana y en Configuración → Ayuda
   (`PadelData.VERSION`, se sube en cada cambio).

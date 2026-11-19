@@ -133,7 +133,7 @@
   };
 
   /* Versión a la vista (Configuración y ventanas de importar): se cambia en cada subida. */
-  var VERSION = '19/11 · v4';
+  var VERSION = '19/11 · v5';
 
   global.PadelData = {
     VERSION: VERSION,

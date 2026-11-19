@@ -32,6 +32,15 @@ check('Real: sin puntos repetidos el 16/04, 29/06 y 17/11', lv('2026-04-16').joi
 check('Real: sabe hasta dónde llega el texto (para ocultar lo erróneo guardado antes)', REAL.span && REAL.span.to === '2026-11-17T14:56:16Z');
 check('Real: hora de una cifra (8:49) bien leída', lv('2026-11-17').length === 1 && REAL.rows.some(r => r.at === '2026-11-17T08:49:09Z'));
 check('Real: sin «Ranking:» en el texto, el ranking queda vacío (se escribe a mano)', REAL.ranking === null);
+/* La web del club en formato americano (19/11/2026): 10/22/2026 2:54:26 PM y nivel con punto. */
+const US = C.parse(fs.readFileSync(__dirname + '/fixtures/club-historico-ingles.txt', 'utf8'));
+check('Formato americano (mes/día, AM/PM, punto): mismos 39 partidos y 5 correcciones', US.format === 'mm/dd' &&
+  JSON.stringify(US.rows) === JSON.stringify(REAL.rows) && US.corrections === 5 && US.span.to === REAL.span.to, US.rows.length + ' ' + US.format);
+const AMPM = C.parse('1/5/2026 12:15:00 AM Ganado 1.00\n1/5/2026 12:30:00 PM Perdido 0.90');
+check('12 AM es medianoche y 12 PM mediodía', AMPM.rows.map(r => r.at.slice(11, 16)).join() === '00:15,12:30', AMPM.rows.map(r => r.at).join());
+const SPLIT = C.parse('11/17/2026 8:49:09 AM Ganado 3.06\n11/17/2026 2:56:16 PM Ganado Restaurar por corrección de\nresultados de la reserva 245965  3.03\n11/17/2026 2:56:16 PM Ganado 3.09');
+check('Observación partida en dos líneas: se junta', SPLIT.corrections === 1 && SPLIT.rows.length === 2, JSON.stringify(SPLIT));
+check('Día/mes de siempre sigue igual', REAL.format === 'dd/mm');
 const REV = C.parse(fs.readFileSync(__dirname + '/fixtures/club-historico-correcciones.txt', 'utf8').split('\n').reverse().join('\n'));
 check('Pegado al revés (lo más nuevo arriba): da lo mismo', REV.rows.length === 39 && REV.rows.map(r => r.level).join() === REAL.rows.map(r => r.level).join());
 const r1 = C.seasonRange({ season: { slug: '2026-s1' }, months: [{ label: 'Febrero' }, { label: 'Julio' }] });
@@ -107,6 +116,10 @@ check('Todo el recorrido: sin filtro', C.seasonRange({ season: { slug: 'all:masc
   await page.click('[data-ci-who="me"]'); await page.waitForTimeout(150);
   await page.fill('#ci-text', fs.readFileSync(__dirname + '/fixtures/club-historico-correcciones.txt', 'utf8')); await page.waitForTimeout(300);
   const nt = await page.textContent('.modal .note');
+  await page.fill('#ci-text', 'texto cualquiera'); await page.waitForTimeout(400);
+  check('Sin filas válidas, Guardar se ve apagado', await page.evaluate(() => {
+    const b = document.querySelector('[data-ci="save"]'); return b.disabled && +getComputedStyle(b).opacity < 0.5; }));
+  await page.fill('#ci-text', fs.readFileSync(__dirname + '/fixtures/club-historico-correcciones.txt', 'utf8')); await page.waitForTimeout(300);
   check('Real: la vista previa cuenta 39 partidos y 5 correcciones', /39 partidos.*5 correcciones del club aplicadas.*5 apuntes erróneos/s.test(nt), nt);
   check('Real: casilla de ranking vacía para escribirlo', (await page.inputValue('#ci-rank')) === '');
   await page.fill('#ci-rank', '412'); await page.waitForTimeout(100);

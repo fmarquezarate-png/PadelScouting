@@ -12,7 +12,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var LINE = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s+(ganado|perdido)\b(.*?)(-?\d+(?:[.,]\d+)?)\s*$/i;
+  /* Fecha en cualquiera de los dos formatos de la web: 22/10/2026 14:54:26 o 10/22/2026 2:54:26 PM. */
+  var LINE = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(?:([ap])\.?\s?m\.?)?\s+(ganado|perdido)\b(.*?)(-?\d+(?:[.,]\d+)?)\s*$/i;
+  var STARTS = /^\s*\d{1,2}\/\d{1,2}\/\d{4}\s/;
 
   function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -26,15 +28,29 @@
     var out = { ranking: null, rows: [], dropped: 0, duplicates: 0, corrections: 0, removed: 0 };
     var rk = /ranking\s*:?\s*(\d+)/i.exec(text || '');
     if (rk) out.ranking = +rk[1];
-    var lines = [];
-    String(text || '').split(/\r?\n/).forEach(function (line) {
-      var m = LINE.exec(line.trim());
-      if (!m) return;
-      lines.push({
-        at: m[3] + '-' + pad(m[2]) + '-' + pad(m[1]) + 'T' + pad(m[4]) + ':' + m[5] + ':' + (m[6] || '00') + 'Z',
-        won: /ganado/i.test(m[7]), level: +m[9].replace(',', '.'),
-        restore: /restaurar|correcci[oó]n/i.test(m[8])
-      });
+    var raw = [], src = String(text || '').split(/\r?\n/);
+    for (var li = 0; li < src.length; li++) {
+      var line = src[li].trim(), m = LINE.exec(line);
+      /* Una observación larga puede venir partida en dos líneas: se junta con la siguiente. */
+      if (!m && STARTS.test(line) && li + 1 < src.length && !STARTS.test(src[li + 1])) {
+        m = LINE.exec(line + ' ' + src[li + 1].trim());
+        if (m) li++;
+      }
+      if (m) raw.push(m);
+    }
+    /* ¿Día/mes o mes/día? Si algún número pasa de 12 se sabe; si no, con AM/PM es el formato americano. */
+    var us = raw.some(function (m) { return +m[2] > 12; }) ? true
+      : raw.some(function (m) { return +m[1] > 12; }) ? false
+      : raw.some(function (m) { return m[7]; });
+    out.format = us ? 'mm/dd' : 'dd/mm';
+    var lines = raw.map(function (m) {
+      var d = us ? m[2] : m[1], mo = us ? m[1] : m[2], hh = +m[4];
+      if (m[7]) { hh = hh % 12; if (/p/i.test(m[7])) hh += 12; }
+      return {
+        at: m[3] + '-' + pad(mo) + '-' + pad(d) + 'T' + pad(hh) + ':' + m[5] + ':' + (m[6] || '00') + 'Z',
+        won: /ganado/i.test(m[8]), level: +m[10].replace(',', '.'),
+        restore: /restaurar|correcci[oó]n/i.test(m[9])
+      };
     });
     /* La web lista de más antiguo a más nuevo; si viniera al revés, se le da la vuelta
        (dentro de la misma hora, la línea «Restaurar» va antes que su corrección). */

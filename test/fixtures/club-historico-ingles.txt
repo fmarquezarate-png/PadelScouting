@@ -1,0 +1,50 @@
+Fecha	Resultado	Observaciones	Nivel
+3/12/2026 9:03:58 PM	Ganado		0.18
+3/18/2026 9:14:39 PM	Ganado		0.38
+3/21/2026 10:01:02 AM	Perdido		0.36
+3/27/2026 7:37:10 PM	Ganado		0.56
+3/30/2026 6:37:19 PM	Perdido		0.52
+4/9/2026 6:22:16 PM	Ganado		0.72
+4/16/2026 9:02:46 PM	Ganado		0.68
+4/16/2026 9:02:57 PM	Ganado	Restaurar por corrección de resultados de la reserva 228156	0.72
+4/16/2026 9:02:57 PM	Ganado		0.72
+4/16/2026 9:05:32 PM	Ganado		0.86
+4/20/2026 8:01:32 PM	Perdido		0.84
+4/24/2026 7:55:04 PM	Ganado		0.98
+4/27/2026 7:55:19 PM	Ganado		1.18
+4/28/2026 8:06:35 PM	Ganado		1.26
+5/14/2026 7:28:14 PM	Ganado		1.51
+5/20/2026 6:42:39 PM	Ganado		1.69
+5/27/2026 5:24:34 PM	Perdido		1.59
+5/27/2026 7:42:11 PM	Ganado		1.71
+5/28/2026 7:50:45 PM	Ganado		1.83
+6/11/2026 7:47:30 PM	Perdido		1.73
+6/26/2026 5:10:01 PM	Perdido		1.70
+6/27/2026 12:05:47 PM	Ganado		1.95
+6/29/2026 9:06:34 PM	Ganado		2.13
+6/29/2026 9:10:36 PM	Ganado	Restaurar por corrección de resultados de la reserva 231883	1.95
+6/29/2026 9:10:36 PM	Ganado		2.13
+6/30/2026 7:31:23 PM	Ganado		2.31
+7/21/2026 8:48:22 PM	Ganado		2.43
+7/27/2026 8:04:35 PM	Perdido		2.39
+7/30/2026 7:59:07 PM	Ganado		2.51
+8/4/2026 7:16:49 PM	Perdido		2.48
+9/14/2026 7:45:38 PM	Ganado		2.56
+9/22/2026 8:02:34 PM	Ganado		2.76
+9/23/2026 7:41:59 PM	Ganado		2.90
+9/27/2026 6:28:12 PM	Ganado		3.10
+9/29/2026 8:03:14 PM	Perdido		2.98
+10/15/2026 8:02:28 PM	Ganado		3.10
+10/16/2026 8:30:31 PM	Perdido		3.07
+10/21/2026 9:40:44 PM	Perdido		3.15
+10/22/2026 2:53:50 PM	Perdido	Restaurar por corrección de resultados de la reserva 243716	3.07
+10/22/2026 2:53:50 PM	Perdido		3.02
+10/22/2026 2:54:26 PM	Perdido	Restaurar por corrección de resultados de la reserva 243716	3.07
+10/22/2026 2:54:26 PM	Perdido		2.99
+10/23/2026 7:04:45 PM	Perdido		2.91
+10/27/2026 10:52:22 PM	Ganado		3.09
+11/10/2026 8:44:03 PM	Perdido		3.06
+11/12/2026 9:03:09 PM	Perdido		3.03
+11/17/2026 8:49:09 AM	Ganado		3.09
+11/17/2026 2:56:16 PM	Ganado	Restaurar por corrección de resultados de la reserva 245965	3.03
+11/17/2026 2:56:16 PM	Ganado		3.09
