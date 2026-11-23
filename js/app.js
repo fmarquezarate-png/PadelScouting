@@ -1314,6 +1314,7 @@
     if (global.PadelAuth.consumeRedirect) {
       global.PadelAuth.consumeRedirect().then(function (r) {
         if (!r) return;
+        if (r.ok && r.type === 'recovery') { showNewPassword(); return; }
         if (r.ok) {
           toast('¡Cuenta confirmada! Ya estás dentro.');
           global.PadelDB.fetchProfile().then(function (p) {
@@ -1352,19 +1353,62 @@
 
   /* El enlace del correo falló (caducado o ya usado). La cuenta suele existir:
      se explica y se ofrece entrar o pedir otro correo. */
+  /* Vuelta del correo «¿Olvidaste la contraseña?»: ya estás dentro; falta poner la nueva. */
+  function showNewPassword() {
+    var root = document.getElementById('modal-root');
+    root.innerHTML = '<div class="modal"><div class="modal-card"><h2>Contraseña nueva</h2>' +
+      '<p class="lede">Elige tu contraseña nueva: al menos 8 caracteres.</p>' +
+      '<div class="field"><label for="np-pass">Contraseña nueva</label><input type="password" id="np-pass" autocomplete="new-password"></div>' +
+      '<div class="field"><label for="np-pass2">Repítela</label><input type="password" id="np-pass2" autocomplete="new-password"></div>' +
+      '<div id="np-msg"></div>' +
+      '<div class="btn-row"><button class="btn primary" data-np="save">Guardar contraseña</button>' +
+      '<button class="btn ghost" data-np="later">Ahora no</button></div></div></div>';
+    document.body.classList.add('has-modal');
+    function close() { root.innerHTML = ''; document.body.classList.remove('has-modal'); }
+    var msg = root.querySelector('#np-msg'), save = root.querySelector('[data-np="save"]');
+    function say(t) { msg.innerHTML = t ? '<div class="notice bad">' + escHtml(t) + '</div>' : ''; }
+    root.querySelector('[data-np="later"]').addEventListener('click', function () {
+      close(); toast('Ya estás dentro. Puedes cambiar la contraseña cuando quieras en Mi perfil.');
+    });
+    save.addEventListener('click', function () {
+      var a = root.querySelector('#np-pass').value, b = root.querySelector('#np-pass2').value;
+      var bad = global.PadelAuth.checkNewPassword(a, b);
+      if (bad) { say(bad); return; }
+      say(''); save.disabled = true; save.textContent = 'Guardando…';
+      global.PadelAuth.setPassword(a).then(function () {
+        close(); toast('Contraseña cambiada. Ya estás dentro.');
+        global.PadelDB.fetchProfile().then(function (p) {
+          if (global.PadelShell) global.PadelShell.onProfile(p);
+          go(state.view);
+        }).catch(function () {});
+      }).catch(function (err) { save.disabled = false; save.textContent = 'Guardar contraseña'; say(err.message); });
+    });
+  }
+  function escHtml(t) {
+    return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+
   function showLinkProblem(r) {
     var expired = /expired|otp/i.test(r.code + ' ' + r.error);
     var root = document.getElementById('modal-root');
     root.innerHTML = '<div class="modal"><div class="modal-card"><h2>' + (expired ? 'El enlace ha caducado' : 'Ese enlace ya no vale') + '</h2>' +
-      '<p class="lede">Tranquilo: tu cuenta está creada. ' + (expired
-        ? 'Los enlaces de confirmación duran poco. Pide uno nuevo o, si ya confirmaste antes, entra directamente.'
+      '<p class="lede">Tranquilo: tu cuenta sigue ahí. ' + (expired
+        ? 'Los enlaces de los correos duran poco. Pide uno nuevo o, si ya confirmaste antes, entra directamente.'
         : 'Seguramente ya lo usaste. Entra con tu email y contraseña.') + '</p>' +
       '<div class="field"><label for="lp-email">Tu email</label><input type="email" id="lp-email" autocomplete="username"></div>' +
       '<div class="btn-row"><button class="btn primary" data-lp="resend">Enviarme otro correo</button>' +
-      '<button class="btn ghost" data-lp="login">Entrar</button></div><p class="note" id="lp-msg"></p></div></div>';
+      '<button class="btn ghost" data-lp="login">Entrar</button></div>' +
+      '<p class="field-note">¿Venías de cambiar la contraseña? <button class="linkish" data-lp="forgot">Pedir otro enlace para la contraseña</button></p>' +
+      '<p class="note" id="lp-msg"></p></div></div>';
     document.body.classList.add('has-modal');
     function close() { root.innerHTML = ''; document.body.classList.remove('has-modal'); }
     root.querySelector('[data-lp="login"]').addEventListener('click', function () { close(); go('perfil'); });
+    root.querySelector('[data-lp="forgot"]').addEventListener('click', function () {
+      var au = global.PadelLiga.state.auth;
+      au.mode = 'forgot'; au.error = null; au.message = null;
+      au.email = root.querySelector('#lp-email').value.trim() || au.email;
+      close(); go('perfil');
+    });
     root.querySelector('[data-lp="resend"]').addEventListener('click', function () {
       var em = root.querySelector('#lp-email').value.trim(), msg = root.querySelector('#lp-msg');
       if (!em) { msg.textContent = 'Escribe tu email.'; return; }

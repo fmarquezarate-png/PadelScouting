@@ -333,6 +333,7 @@
      MI PERFIL
      ============================================================ */
   var photo = { busy: false, error: null };
+  var pw = { open: false, busy: false, error: null, ok: false };
 
   function renderPerfil(view, bind) {
     function redraw() { renderPerfil(view, bind); }
@@ -340,6 +341,7 @@
     var h = ['<div class="page-narrow">'];
 
     if (!u) {
+      pw.open = false; pw.ok = false; pw.error = null;
       h.push('<section class="card profile-card"><div class="pf-head">' +
         '<span class="avatar big guest"><span>?</span></span><div><h2>Entra en tu cuenta</h2>' +
         '<p class="field-note">Con cuenta, la app sabe quién eres y guarda en la nube tu grupo del mes, tus partidos y tus notas.</p></div></div>' +
@@ -371,8 +373,37 @@
       '<dt>Mano</dt><dd>' + esc(handLabel(p.hand)) + '</dd></dl>' +
       '<div class="btn-row"><button class="btn" data-pf="edit">Editar mis datos</button>' +
       '<button class="btn ghost" data-action="sign-out">Cerrar sesión</button></div></section>');
+    /* Seguridad: cambiar la contraseña (pide la actual). */
+    h.push('<section class="card" id="pf-security"><h3>Seguridad</h3>' +
+      (pw.ok ? '<div class="notice good">Contraseña cambiada.</div>' : '') +
+      (pw.open
+        ? '<div class="field"><label for="pw-cur">Contraseña actual</label><input type="password" id="pw-cur" autocomplete="current-password"></div>' +
+          '<div class="field"><label for="pw-new">Contraseña nueva</label><input type="password" id="pw-new" autocomplete="new-password">' +
+          '<p class="field-note">Al menos 8 caracteres. Mejor una frase o mezcla de letras y números.</p></div>' +
+          '<div class="field"><label for="pw-new2">Repite la nueva</label><input type="password" id="pw-new2" autocomplete="new-password"></div>' +
+          (pw.error ? '<div class="notice bad">' + esc(pw.error) + '</div>' : '') +
+          '<div class="btn-row"><button class="btn primary" data-pw="save"' + (pw.busy ? ' disabled' : '') + '>' +
+          (pw.busy ? 'Guardando…' : 'Cambiar contraseña') + '</button><button class="btn ghost" data-pw="cancel">Cancelar</button></div>'
+        : '<p class="field-note">Tu contraseña protege tus notas y tu scouting. Si crees que alguien la sabe, cámbiala.</p>' +
+          '<div class="btn-row"><button class="btn" data-pw="open">Cambiar contraseña</button></div>') +
+      '</section>');
     h.push('</div>');
     view.innerHTML = h.join('');
+
+    view.querySelectorAll('[data-pw]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var a = b.getAttribute('data-pw');
+        if (a === 'open') { pw.open = true; pw.ok = false; pw.error = null; redraw(); return; }
+        if (a === 'cancel') { pw.open = false; pw.error = null; redraw(); return; }
+        var cur = view.querySelector('#pw-cur').value, nx = view.querySelector('#pw-new').value, rp = view.querySelector('#pw-new2').value;
+        var bad = !cur ? 'Escribe tu contraseña actual.' : global.PadelAuth.checkNewPassword(nx, rp, cur);
+        if (bad) { pw.error = bad; redraw(); return; }
+        pw.busy = true; pw.error = null; redraw();
+        global.PadelAuth.changePassword(cur, nx).then(function () {
+          pw.busy = false; pw.open = false; pw.ok = true; redraw();
+        }).catch(function (err) { pw.busy = false; pw.error = err.message; redraw(); });
+      });
+    });
 
     var file = document.getElementById('pf-file');
     view.querySelectorAll('[data-pf]').forEach(function (b) {

@@ -392,6 +392,17 @@
   function authForm() {
     var a = state.auth;
     var up = a.mode === 'up';
+    if (a.mode === 'forgot') {
+      return '<p class="field-note" style="margin-bottom:14px">Escribe el email de tu cuenta y te mandamos un enlace ' +
+        'para poner una contraseña nueva.</p>' +
+        (a.error ? '<div class="notice bad">' + esc(a.error) + '</div>' : '') +
+        (a.message ? '<div class="notice good">' + esc(a.message) + '</div>' : '') +
+        '<div class="field"><label for="au-email">Email</label>' +
+        '<input type="email" id="au-email" autocomplete="username" value="' + esc(a.email) + '"></div>' +
+        '<div class="btn-row"><button class="btn primary" data-action="auth-recover"' + (a.busy ? ' disabled' : '') + '>' +
+        (a.busy ? 'Un momento…' : 'Enviarme el enlace') + '</button>' +
+        '<button class="btn ghost" data-action="auth-back">Volver a entrar</button></div>';
+    }
     return '<p class="field-note" style="margin-bottom:14px">Leer la liga no pide nada. ' +
       'Para <b>escribir</b> sí hace falta tu cuenta: así puedes enseñar el enlace a quien quieras ' +
       'sin que nadie pueda tocar los datos.</p>' +
@@ -402,7 +413,8 @@
       '<div class="field"><label for="au-email">Email</label>' +
       '<input type="email" id="au-email" autocomplete="username" value="' + esc(a.email) + '"></div>' +
       '<div class="field"><label for="au-pass">Contraseña</label>' +
-      '<input type="password" id="au-pass" autocomplete="current-password" value="' + esc(a.password) + '"></div>' +
+      '<input type="password" id="au-pass" autocomplete="' + (up ? 'new-password' : 'current-password') + '" value="' + esc(a.password) + '">' +
+      (up ? '' : '<p class="field-note"><button class="linkish" data-action="auth-forgot">¿Olvidaste la contraseña?</button></p>') + '</div>' +
       '<div class="btn-row"><button class="btn primary" data-action="auth-go"' +
       (a.busy ? ' disabled' : '') + '>' +
       (a.busy ? 'Un momento…' : (up ? 'Crear cuenta' : 'Entrar')) + '</button>' +
@@ -433,6 +445,23 @@
       a.mode = a.mode === 'in' ? 'up' : 'in';
       a.error = null; a.message = null;
       redraw();
+    });
+
+    var fg = view.querySelector('[data-action="auth-forgot"]');
+    if (fg) fg.addEventListener('click', function () { a.mode = 'forgot'; a.error = null; a.message = null; a.password = ''; redraw(); });
+    var bk = view.querySelector('[data-action="auth-back"]');
+    if (bk) bk.addEventListener('click', function () { a.mode = 'in'; a.error = null; a.message = null; redraw(); });
+    var rc = view.querySelector('[data-action="auth-recover"]');
+    if (rc) rc.addEventListener('click', function () {
+      var to = String(a.email || '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) { a.error = 'Escribe bien tu email.'; a.message = null; redraw(); return; }
+      a.busy = true; a.error = null; a.message = null; redraw();
+      global.PadelAuth.recover(to).then(function () {
+        a.busy = false;
+        a.message = 'Si ' + to + ' tiene cuenta, te llegará un correo con un enlace para poner una contraseña nueva. ' +
+          'Ábrelo en este mismo aparato. Si no lo ves en unos minutos, mira en spam o promociones.';
+        redraw();
+      }).catch(function (err) { a.busy = false; a.error = err.message; redraw(); });
     });
 
     var rs = view.querySelector('[data-action="auth-resend"]');

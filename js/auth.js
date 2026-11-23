@@ -66,7 +66,13 @@
     if (m.indexOf('signups not allowed') >= 0 || m.indexOf('signup is disabled') >= 0) {
       return 'El registro está desactivado en el proyecto. Créate la cuenta desde el panel de Supabase.';
     }
-    if (status === 429) return 'Demasiados intentos seguidos. Espera un minuto.';
+    if (m.indexOf('different from the old') >= 0 || m.indexOf('same_password') >= 0) return 'La nueva contraseña tiene que ser distinta de la actual.';
+    if (m.indexOf('reauthenticat') >= 0) return 'Por seguridad, vuelve a entrar con tu contraseña y repite el cambio.';
+    if (m.indexOf('weak') >= 0 || (m.indexOf('password') >= 0 && m.indexOf('at least') >= 0)) {
+      return 'Esa contraseña es demasiado débil: usa una más larga, con letras y números.';
+    }
+    if (m.indexOf('jwt') >= 0 || status === 401) return 'Tu sesión ha caducado. Vuelve a entrar.';
+    if (status === 429 || m.indexOf('rate limit') >= 0) return 'Demasiados intentos seguidos. Espera un minuto.';
     return msg || 'No he podido completar la operación.';
   }
 
@@ -121,6 +127,53 @@
       });
   }
 
+  /* ¿Olvidaste la contraseña? Supabase manda un enlace; al volver con él se pide la nueva.
+     La respuesta es la misma exista o no la cuenta: no se revela quién está registrado. */
+  function recover(email) {
+    return authFetch('recover?redirect_to=' + encodeURIComponent(homeUrl()), { email: email });
+  }
+
+  /* Poner contraseña nueva con la sesión abierta (PUT /user). */
+  function setPassword(newPassword) {
+    return token().then(function (tok) {
+      if (!tok) throw new Error('Tu sesión ha caducado. Vuelve a entrar.');
+      return global.fetch(CFG.url + '/auth/v1/user', {
+        method: 'PUT',
+        headers: { 'apikey': CFG.key, 'Authorization': 'Bearer ' + tok, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword })
+      });
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) { var e = new Error(friendly(data, res.status)); e.data = data; throw e; }
+        var s = readSession();
+        if (s && data && data.id) { s.user = data; writeSession(s); }
+        return data;
+      });
+    });
+  }
+
+  /* Cambiar la contraseña desde Mi perfil: primero se comprueba la actual (que nadie con
+     tu móvil desbloqueado te la cambie sin saberla) y luego se pone la nueva. */
+  function changePassword(current, next) {
+    var u = user();
+    if (!u || !u.email) return Promise.reject(new Error('Tu sesión ha caducado. Vuelve a entrar.'));
+    return authFetch('token?grant_type=password', { email: u.email, password: current }).catch(function (err) {
+      if (/incorrectos/.test(err.message)) throw new Error('La contraseña actual no es correcta.');
+      throw err;
+    }).then(function (data) {
+      writeSession(data);
+      return setPassword(next);
+    });
+  }
+
+  /* Reglas mínimas, iguales en los dos sitios donde se pone una contraseña. */
+  function checkNewPassword(next, repeat, current) {
+    if (!next || next.length < 8) return 'La nueva contraseña necesita al menos 8 caracteres.';
+    if (repeat != null && next !== repeat) return 'Las dos contraseñas nuevas no coinciden.';
+    if (current != null && next === current) return 'La nueva contraseña tiene que ser distinta de la actual.';
+    return null;
+  }
+
   function refresh() {
     var s = readSession();
     if (!s || !s.refresh_token) return Promise.resolve(null);
@@ -154,6 +207,7 @@
 
   global.PadelAuth = {
     signIn: signIn, signUp: signUp, signOut: signOut, resend: resend, consumeRedirect: consumeRedirect, homeUrl: homeUrl,
+    recover: recover, setPassword: setPassword, changePassword: changePassword, checkNewPassword: checkNewPassword,
     token: token, user: user, session: readSession
   };
 })(window);

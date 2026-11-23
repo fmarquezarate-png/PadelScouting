@@ -59,7 +59,7 @@ const J = (r, o, st) => r.fulfill({ status: st || 200, contentType: 'application
   await e.goto(BASE + '/#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired');
   await e.waitForTimeout(1500);
   const mt = await e.textContent('#modal-root');
-  check('Enlace caducado: lo explica y tranquiliza (la cuenta existe)', mt.includes('ha caducado') && mt.includes('tu cuenta está creada'));
+  check('Enlace caducado: lo explica y tranquiliza (la cuenta existe)', mt.includes('ha caducado') && mt.includes('tu cuenta sigue ahí'));
   await e.fill('#lp-email', 'nuevo@x.com'); await e.click('[data-lp="resend"]'); await e.waitForTimeout(500);
   check('Enlace caducado: deja pedir otro correo', resent2 && resent2.email === 'nuevo@x.com');
   check('Enlace caducado: limpia la dirección', !(await e.evaluate(() => location.href)).includes('error'));

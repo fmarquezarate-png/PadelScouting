@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+- **¿Olvidaste la contraseña?** en el formulario de entrar: correo con enlace → ventana «Contraseña nueva». No revela
+  si un email tiene cuenta. Si el enlace caducó, ofrece pedir otro.
+- **Mi perfil → Seguridad → Cambiar contraseña**: pide la actual, la nueva dos veces (mínimo 8 caracteres, distinta).
+- **Cabeceras de seguridad** (`vercel.json`): CSP estricta (solo código propio; el script del tema por su huella),
+  no se puede meter en otra web, HSTS, nosniff, Referrer-Policy, Permissions-Policy, COOP.
+- `docs/seguridad.md`: qué control de la ISO 27001 cubre cada cosa y qué queda fuera de la app.
+- `test/qa-seguridad.js` + `test/serve-headers.py` (sirve en local con las cabeceras de Vercel).
+
 ### Added
 - **Escalera: métrica «Grupo»** junto a «Puesto en la liga»: en qué grupo estabais en cada partido (el 1 arriba,
   en escalones; el eje solo marca grupos enteros).
