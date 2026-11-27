@@ -1178,23 +1178,81 @@
   var PRIVATE = {};
   ['estemes', 'registro', 'historial', 'analisis'].forEach(function (k) { PRIVATE[k] = '«' + global.PadelData.NAMES[k] + '»'; });
 
+  /* ---------- historial: «atrás» del móvil y botón «Volver» ----------
+     Cada cambio de pantalla deja una entrada en el historial del navegador
+     (con la altura a la que estabas y, en «El rival», qué pareja mirabas).
+     «Atrás» vuelve a la pantalla anterior; si hay una ventana o el menú
+     abiertos, primero los cierra. */
+  function navEntry() {
+    var h = global.history && global.history.state;
+    return h && h.padel ? h : null;
+  }
+  function rivalOf(view) {
+    return view === 'rival' && global.PadelLiga ? global.PadelLiga.state.rivalId : null;
+  }
+  function navRecord(view, push) {
+    try {
+      var cur = navEntry();
+      if (push && cur) {
+        global.history.replaceState(Object.assign({}, cur, { y: global.scrollY || 0, rival: rivalOf(cur.view) }), '');
+        global.history.pushState({ padel: true, view: view, depth: (cur.depth || 0) + 1 }, '');
+      } else {
+        global.history.replaceState({ padel: true, view: view, depth: cur ? (cur.depth || 0) : 0 }, '');
+      }
+    } catch (e) {}
+  }
+  function paintBack(view) {
+    var b = document.getElementById('back-btn');
+    if (b) b.hidden = view === 'inicio';
+  }
+  /* Botón «Volver»: a la pantalla anterior; si no la hay (abriste un aviso), a la pista. */
+  function goBack() {
+    var cur = navEntry();
+    if (cur && cur.depth > 0) global.history.back();
+    else go('inicio', { replaceNav: true });
+  }
+  function onPopState(e) {
+    var s = e.state && e.state.padel ? e.state : null;
+    var root = document.getElementById('modal-root');
+    var drawer = document.getElementById('drawer');
+    var modalOpen = !!(root && root.firstElementChild), drawerOpen = !!(drawer && !drawer.hidden);
+    if (modalOpen || drawerOpen) {
+      /* «Atrás» con una ventana abierta: se cierra y te quedas donde estabas. */
+      if (modalOpen) {
+        root.innerHTML = ''; document.body.classList.remove('has-modal');
+        if (global.PadelEsteMes) global.PadelEsteMes.state.prompting = false;
+      }
+      if (drawerOpen && global.PadelShell) global.PadelShell.closeDrawer();
+      try { global.history.pushState({ padel: true, view: state.view, depth: (s ? s.depth || 0 : 0) + 1 }, ''); } catch (x) {}
+      return;
+    }
+    if (!s) { go('inicio', { fromHistory: true }); navRecord('inicio', false); return; }
+    if (s.view === 'rival' && s.rival != null && global.PadelLiga) global.PadelLiga.state.rivalId = s.rival;
+    go(s.view, { fromHistory: true, y: s.y || 0 });
+  }
+
   /* opts.keep: lo usan los filtros (competición, temporada, pareja). Se queda
-     en la misma pantalla y a la misma altura; solo cambian los datos. */
+     en la misma pantalla y a la misma altura; solo cambian los datos.
+     opts.fromHistory: viene de «atrás» (no deja otra entrada y recupera la altura). */
   function go(view, opts) {
     if (!VIEWS[view]) view = 'registro';
-    var keep = !!(opts && opts.keep);
+    var keep = !!(opts && opts.keep), back = !!(opts && opts.fromHistory);
     if (PRIVATE[view] && !(global.PadelAuth && global.PadelAuth.user())) {
       toast(PRIVATE[view] + ' es personal: inicia sesión para verlo');
       view = 'perfil'; keep = false;
     }
     var y = opts && opts.y != null ? opts.y : (global.scrollY || 0);
+    var prev = state.view;
+    if (!back) navRecord(view, !keep && !(opts && opts.replaceNav) && prev !== view);
+    paintBack(view);
     state.view = view;
     state.navSeq = (state.navSeq || 0) + 1;
     $title.textContent = VIEWS[view].title;
     fitTitle();
     var intro = document.getElementById('view-intro');
     if (intro) { intro.textContent = VIEWS[view].intro; intro.hidden = !VIEWS[view].intro; }
-    if (!keep) global.scrollTo({ top: 0 });
+    if (!keep && !back) global.scrollTo({ top: 0 });
+    else if (back) { global.scrollTo({ top: 0 }); restoreScroll(y); }
     else restoreScroll(y);
     document.body.setAttribute('data-view', view);
     paintSeasonBar();
@@ -1340,6 +1398,9 @@
     }
     /* Los avisos abren la app en su pantalla: ./#estemes, ./#temporada… */
     global.addEventListener('hashchange', function () { var v = hashView(); if (v) go(v); });
+    global.addEventListener('popstate', onPopState);
+    var backBtn = document.getElementById('back-btn');
+    if (backBtn) backBtn.addEventListener('click', goBack);
     go(hashView() || 'inicio');
   }
 

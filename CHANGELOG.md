@@ -15,6 +15,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - `test/qa-seguridad.js` + `test/serve-headers.py` (sirve en local con las cabeceras de Vercel).
 
 ### Added
+- **Volver atrás sin pasar por la pista**: el «atrás» del móvil (botón o gesto) vuelve a la pantalla anterior, a la
+  misma altura y, en «El rival», con la pareja que mirabas. Si hay una ventana o el menú abiertos, primero los cierra.
+  Botón **«‹» (Volver)** arriba a la izquierda en todas las pantallas menos la pista (en iPhone, con la app instalada,
+  no hay «atrás» del sistema). Sin pantalla anterior (abriste un aviso), lleva a la pista. Pruebas: `test/qa-volver.js`.
 - **Este mes → «Nuestros horarios»** (`js/horarios.js`): cada jugador marca en su móvil cuándo puede jugar la ronda
   y la app cruza los de la pareja. Calendario mensual: en verde los días que podéis los dos, con los 4 bloques
   de 1 h 15 (18:00 · 19:15 · 20:30 · 21:45) encendidos y el rango («19:15–21:45»); fin de semana, día entero («Libre»).

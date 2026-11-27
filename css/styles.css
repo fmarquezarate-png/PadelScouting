@@ -1266,3 +1266,13 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
 .av-scope{margin-top:14px}
 .av-period{margin:4px 0 14px}
 .av-period .chip{min-height:44px;font-size:.82rem}
+
+/* ---------- botón «Volver» (todas las pantallas menos la pista) ---------- */
+.tb-left{display:flex;align-items:center;gap:2px;min-width:0}
+.tb-back{width:40px;height:44px;margin-left:-8px;border:0;border-radius:10px;background:transparent;color:var(--bone);
+  display:grid;place-items:center;flex:none}
+.tb-back svg{width:24px;height:24px;fill:currentColor}
+.tb-back:hover{background:var(--panel2)}
+.tb-back:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.tb-back[hidden]{display:none}
+@media(max-width:380px){ .tb-back{width:34px;margin-left:-6px} }
