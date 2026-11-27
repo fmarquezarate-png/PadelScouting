@@ -26,6 +26,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
   - **Compartir con los rivales**: imagen del calendario común (se dibuja en el móvil) al menú de compartir
     (WhatsApp); en el ordenador se descarga.
   - Las rondas de julio y diciembre cubren también agosto y enero.
+  - Arriba del bloque, **«Este mes» / «Siguiente»**: el calendario del periodo que viene, para tenerlo listo el día 1
+    (cuando salen los rivales). Tras julio va septiembre; tras diciembre, febrero. Si la ronda ya terminó, se abre
+    directamente el siguiente.
+  - La imagen sale en **tema claro u oscuro**, el mismo que tenga la persona en la app.
   - Sin red no se enseña un calendario vacío: avisa y deja reintentar; no se edita hasta tener los datos.
   - Base: `db/migrations/2026-11-27_horarios_disponibles.sql` (tablas cerradas; solo se accede por funciones que
     comprueban que eres de la pareja). Pruebas: `test/qa-horarios.js`.

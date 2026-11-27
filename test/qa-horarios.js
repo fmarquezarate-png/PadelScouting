@@ -178,6 +178,63 @@ async function mockApp(page, o) {
     await p.close();
   }
 
+  /* ---------- la imagen sigue el tema de la app ---------- */
+  {
+    const { p } = await open({ av: [ME({ '2026-09-17': 15 }), MATE(null, false)] });
+    const bg = await p.evaluate(() => {
+      const H = window.PadelHorarios, out = {};
+      ['light', 'dark'].forEach(t => {
+        document.documentElement.setAttribute('data-theme', t);
+        const cv = H.drawImage(H.combine(H.state.data));
+        const px = cv.getContext('2d').getImageData(20, 40, 1, 1).data;
+        out[t] = [px[0], px[1], px[2]].join(',');
+      });
+      return out;
+    });
+    check('Tema claro → imagen clara', bg.light === '243,241,234', bg.light);
+    check('Tema oscuro → imagen oscura', bg.dark === '14,17,9', bg.dark);
+    await p.close();
+  }
+
+  /* ---------- periodo siguiente (para tenerlo listo el día 1) ---------- */
+  {
+    const r = await (async () => {
+      const { p } = await open({ av: [ME(null), MATE(null)] });
+      const v = await p.evaluate(() => {
+        const H = window.PadelHorarios;
+        return [H.nextPeriod('2026-09-01'), H.nextPeriod('2026-07-01'), H.nextPeriod('2026-12-01')];
+      });
+      await p.close(); return v;
+    })();
+    check('Siguiente de septiembre = octubre', r[0] === '2026-10-01', r[0]);
+    check('Siguiente de julio (julio-agosto) = septiembre', r[1] === '2026-09-01', r[1]);
+    check('Siguiente de diciembre (diciembre-enero) = febrero', r[2] === '2027-02-01', r[2]);
+
+    const { p, S } = await open({ av: [ME({ '2026-10-06': 15 }), MATE({ '2026-10-06': 2 })] });
+    check('Arriba: elegir «Este mes» o el siguiente', await p.getAttribute('[data-av-period="actual"]', 'aria-pressed') === 'true' &&
+      (await p.textContent('[data-av-period="siguiente"]')).includes('Octubre'));
+    await p.click('[data-av-period="siguiente"]'); await p.waitForTimeout(800);
+    const last = S.calls.filter(c => c[0] === 'get').pop();
+    check('El siguiente pide los horarios de octubre', last && last[1].p_month === '2026-10-01', JSON.stringify(last));
+    check('Enseña el calendario de octubre con lo común', (await cell(p, '6').textContent()).includes('19:15–20:30') &&
+      (await box(p)).includes('antes del día 1'));
+    await p.click('[data-av="edit"]');
+    check('El editor es del mes siguiente', (await p.textContent('#av-t')).includes('Octubre'));
+    await p.click('[data-ed-day="2026-10-07"]'); await p.click('[data-ed="next"]'); await p.click('[data-ed="save"]'); await p.waitForTimeout(900);
+    const sv = S.saves[S.saves.length - 1] || {};
+    check('Se guarda en octubre', sv.month === '2026-10-01' && sv.days['2026-10-07'] === 15 && sv.days['2026-10-06'] === 15, JSON.stringify(sv));
+    await p.click('[data-av-period="actual"]'); await p.waitForTimeout(800);
+    check('Volver a «Este mes» pide septiembre', S.calls.filter(c => c[0] === 'get').pop()[1].p_month === '2026-09-01');
+    await p.close();
+  }
+  {
+    /* La ronda de septiembre ya terminó (1 de octubre, aún sin grupo nuevo): se abre el siguiente. */
+    const { p, S } = await open({ av: [ME(null), MATE(null)], now: '2026-10-01T09:00:00Z' });
+    check('Si la ronda ya terminó, abre directamente el siguiente', await p.getAttribute('[data-av-period="siguiente"]', 'aria-pressed') === 'true' &&
+      S.calls.filter(c => c[0] === 'get').pop()[1].p_month === '2026-10-01');
+    await p.close();
+  }
+
   /* ---------- ronda de diciembre: diciembre y enero ---------- */
   {
     const { p } = await open({ round: ROUND('2026-12-01'), av: [ME({ '2027-01-12': 15 }), MATE(null, false)], now: '2026-12-02T12:00:00Z' });

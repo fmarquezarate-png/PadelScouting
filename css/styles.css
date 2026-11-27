@@ -1264,3 +1264,5 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
 .av-pick{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
 .av-pick .chip{min-height:48px}
 .av-scope{margin-top:14px}
+.av-period{margin:4px 0 14px}
+.av-period .chip{min-height:44px;font-size:.82rem}

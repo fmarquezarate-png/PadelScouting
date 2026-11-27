@@ -53,6 +53,14 @@
     for (var d = 1; d <= n; d++) out.push(isoOf(y, m, d));
     return out;
   }
+  /* Primer mes del periodo siguiente: tras julio (julio-agosto) va septiembre;
+     tras diciembre (diciembre-enero), febrero; si no, el mes de después. */
+  function nextPeriod(monthIso) {
+    var w = windowMonths(monthIso), last = w[w.length - 1];
+    var y = last[0], m = last[1] + 1;
+    if (m > 11) { m = 0; y++; }
+    return isoOf(y, m, 1);
+  }
   function windowDays(monthIso) {
     return windowMonths(monthIso).reduce(function (a, ym) { return a.concat(daysOfMonth(ym[0], ym[1])); }, []);
   }
@@ -101,7 +109,14 @@
   }
 
   /* ---------- estado ---------- */
-  var state = { key: null, data: null, loading: false, error: null, at: 0, seq: 0, team: null, month: null, label: '', ctx: null };
+  /* base = mes de la ronda en curso; period = 'actual' o 'siguiente' (el calendario del mes que viene,
+     para tenerlo listo el día 1, cuando salen los rivales); month = el que se ve. */
+  var state = { key: null, data: null, loading: false, error: null, at: 0, seq: 0, team: null, month: null, base: null,
+    period: 'actual', label: '', ctx: null };
+
+  function setMonth() {
+    state.month = state.period === 'siguiente' ? nextPeriod(state.base) : state.base;
+  }
 
   function keyOf(teamId, month) { return teamId + '|' + month; }
 
@@ -140,7 +155,14 @@
   function sectionHtml(round, model) {
     if (!round || !round.myTeamId || !round.monthStart) return '';
     state.team = round.myTeamId;
-    state.month = monthOf(round.monthStart);
+    var base = monthOf(round.monthStart);
+    if (state.base !== base) {
+      state.base = base;
+      /* Si en la ronda ya no queda ningún día por jugar, se abre directamente el siguiente. */
+      var t = todayIso();
+      state.period = windowDays(base).some(function (d) { return d >= t; }) ? 'actual' : 'siguiente';
+    }
+    setMonth();
     var t = model && model.teams && model.teams[round.myTeamId];
     state.label = t ? t.label : '';
     state.ctx = { round: round, kind: (model && model.season && model.season.kind) || 'masculina' };
@@ -161,13 +183,27 @@
     bindSection(box);
   }
 
-  function windowTitle() {
-    var ms = windowMonths(state.month).map(function (ym) { return MESES[ym[1]]; });
+  function windowTitle(month) {
+    var ms = windowMonths(month || state.month).map(function (ym) { return MESES[ym[1]]; });
     return ms.join(' y ');
+  }
+  /* «Septiembre» (la ronda en curso) o el mes que abre el periodo siguiente. */
+  function roundLabel() {
+    if (state.period === 'actual' && state.ctx && state.ctx.round.label) return state.ctx.round.label;
+    return MESES[parts(state.month)[1]];
+  }
+
+  function periodHtml() {
+    var nx = nextPeriod(state.base);
+    return '<div class="chips tight av-period" role="group" aria-label="Qué periodo ves">' +
+      '<button type="button" class="chip" data-av-period="actual" aria-pressed="' + (state.period === 'actual') + '">' +
+        'Este mes · ' + esc(MESES[parts(state.base)[1]]) + '</button>' +
+      '<button type="button" class="chip" data-av-period="siguiente" aria-pressed="' + (state.period === 'siguiente') + '">' +
+        'Siguiente · ' + esc(MESES[parts(nx)[1]]) + '</button></div>';
   }
 
   function innerHtml() {
-    var h = ['<h3 class="em-h3">Nuestros horarios</h3>'];
+    var h = ['<h3 class="em-h3">Nuestros horarios</h3>', periodHtml()];
     if (state.error && !state.data) {
       h.push('<div class="notice bad">No se pudieron cargar los horarios: ' + esc(state.error) + '</div>' +
         '<div class="btn-row"><button class="btn ghost" data-av="retry">Reintentar</button></div>');
@@ -176,7 +212,8 @@
     if (!state.data) { h.push('<p class="note">Cargando los horarios…</p>'); return h.join(''); }
     var c = combine(state.data), mateName = c.mate ? esc(firstName(c.mate.name)) : 'tu pareja';
     h.push('<p class="lede">Cada uno marca en su móvil cuándo puede jugar en ' + esc(windowTitle()) +
-      '. En <b>verde</b>, cuando podéis los dos: es lo que se manda a los rivales.</p>');
+      '. En <b>verde</b>, cuando podéis los dos: es lo que se manda a los rivales.' +
+      (state.period === 'siguiente' ? ' Déjalo listo antes del día 1, cuando salen los rivales.' : '') + '</p>');
     if (c.mode === 'sin-marcar') {
       h.push('<div class="notice warn">Aún no has marcado tus horarios.' +
         (c.mate && c.mate.status === 'marcado' ? ' ' + mateName + ' ya ha marcado los suyos.' : '') + '</div>');
@@ -236,6 +273,14 @@
   }
 
   function bindSection(box) {
+    box.querySelectorAll('[data-av-period]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var p = b.getAttribute('data-av-period');
+        if (p === state.period) return;
+        state.period = p; setMonth(); state.data = null; state.error = null;
+        load(true);
+      });
+    });
     box.querySelectorAll('[data-av]').forEach(function (b) {
       b.addEventListener('click', function () {
         var a = b.getAttribute('data-av');
@@ -439,10 +484,24 @@
   /* ============================================================
      IMAGEN PARA COMPARTIR (se dibuja en el móvil, sin servidor)
      ============================================================ */
-  var C = { ink: '#0E1109', panel: '#161B12', panel2: '#1E2418', line: '#2C3423', bone: '#EDEBE3',
+  /* Colores de la imagen: los del tema que tiene la persona en la app (claro u oscuro). */
+  var DARK = { ink: '#0E1109', panel: '#161B12', panel2: '#1E2418', line: '#2C3423', bone: '#EDEBE3',
     mute: '#9AA48C', sage: '#8FA678', sageDk: '#687F4E', orange: '#ED6C05' };
 
+  function palette() {
+    var out = {}, cs = null;
+    try { cs = global.getComputedStyle(document.documentElement); } catch (e) {}
+    var vars = { ink: '--ink', panel: '--panel', panel2: '--panel2', line: '--line', bone: '--bone',
+      mute: '--mute', sage: '--sage', sageDk: '--sage-dk', orange: '--orange' };
+    Object.keys(vars).forEach(function (k) {
+      var v = cs ? String(cs.getPropertyValue(vars[k]) || '').trim() : '';
+      out[k] = v || DARK[k];
+    });
+    return out;
+  }
+
   function drawImage(c) {
+    var C = palette();
     var W = 1080, PAD = 56, GAP = 10, cw = (W - 2 * PAD - 6 * GAP) / 7, ch = 118;
     var months = windowMonths(state.month);
     var weeks = months.map(function (ym) {
@@ -459,7 +518,7 @@
 
     g.textBaseline = 'alphabetic';
     g.fillStyle = C.orange; g.font = F('600', 26, '"IBM Plex Mono", ui-monospace, monospace');
-    g.fillText('HORARIOS PARA JUGAR · RONDA DE ' + String((state.ctx && state.ctx.round.label) || windowTitle()).toUpperCase(), PAD, 82);
+    g.fillText('HORARIOS PARA JUGAR · RONDA DE ' + String(roundLabel()).toUpperCase(), PAD, 82);
     g.fillStyle = C.bone; g.font = F('900', 54);
     fitText(g, state.label || 'Nuestra pareja', PAD, 150, W - 2 * PAD);
     g.fillStyle = C.mute; g.font = F('400', 28);
@@ -492,8 +551,9 @@
         } else {
           var bw = (cw - 24 - 9) / 4;
           for (var b = 0; b < 4; b++) {
-            g.fillStyle = sh & (1 << b) ? C.ink : 'rgba(14,17,9,.18)';
+            g.fillStyle = C.ink; g.globalAlpha = sh & (1 << b) ? 1 : 0.22;
             g.fillRect(x + 12 + b * (bw + 3), yy + 54, bw, 14);
+            g.globalAlpha = 1;
           }
           /* El rango entero, con la letra más pequeña si no cabe (19:15–21:45). */
           var txt = rangeText(d, sh), fs = 20;
@@ -562,6 +622,6 @@
   global.PadelHorarios = {
     BLOCKS: BLOCKS, state: state, sectionHtml: sectionHtml, bind: bind, load: load,
     monthOf: monthOf, windowMonths: windowMonths, windowDays: windowDays, isWeekend: isWeekend,
-    runs: runs, rangeText: rangeText, combine: combine, bits: bits, drawImage: drawImage, share: share
+    runs: runs, rangeText: rangeText, nextPeriod: nextPeriod, palette: palette, combine: combine, bits: bits, drawImage: drawImage, share: share
   };
 })(window);
