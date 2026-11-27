@@ -1,6 +1,6 @@
 /* ============================================================
    2026-11-27 · Horarios disponibles de la pareja («Este mes»)
-   (pendiente de revisar y aplicar)
+   (aplicada con el conector de Supabase el 27/11/2026)
    · Los horarios son de la PERSONA (jugador), por mes. Una sola marca vale para
      todas sus parejas (mixto y no mixto), salvo que decida un horario distinto
      para una pareja concreta (team_id).

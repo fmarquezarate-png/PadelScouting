@@ -310,6 +310,9 @@
     }
     h.push('</section>');
 
+    /* Nuestros horarios: cuándo puede jugar la pareja (js/horarios.js). */
+    if (global.PadelHorarios) h.push(global.PadelHorarios.sectionHtml(r, m));
+
     if (members.length >= 2) h.push(groupTableHtml(m, me, members, known));
 
     h.push('<section class="blk"><div class="em-cards">');
@@ -510,6 +513,7 @@
         global.PadelApp.prefillRegistro(f, f.sets);
       });
     });
+    if (global.PadelHorarios) global.PadelHorarios.bind(view);
     bind();
   }
 

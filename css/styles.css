@@ -1225,3 +1225,42 @@ body[data-view="temporada"] .view-intro,body[data-view="liga"] .view-intro,body[
 .club-add .btn{flex:0 1 auto}
 .dr-link{text-decoration:none}
 .dr-link .dr-ext{margin-left:auto;font-style:normal;color:var(--mute)}
+
+/* ============================================================
+   NUESTROS HORARIOS (Este mes · js/horarios.js)
+   Verde = podéis los dos. Los 4 rectángulos son los bloques
+   de 18:00, 19:15, 20:30 y 21:45.
+   ============================================================ */
+.av-month{font:800 .8rem/1 var(--disp);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px}
+.av-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:6px 0 4px}
+.av-wd{font:600 10px/1 var(--mono);color:var(--mute);text-align:center;padding:4px 0}
+.av-day{position:relative;min-height:56px;background:var(--panel);border:1px solid var(--line);border-radius:7px;
+  padding:5px 4px 4px;display:flex;flex-direction:column;gap:4px;color:var(--mute);text-align:left;overflow:hidden}
+.av-day b{font:700 .8rem/1 var(--disp);color:inherit}
+.av-day small{font:600 9px/1.15 var(--mono);color:inherit;overflow-wrap:anywhere;margin-top:auto}
+.av-day.past{opacity:.4}
+.av-day.both{background:var(--sage);border-color:var(--sage);color:var(--ink)}
+.av-day.one{border-color:var(--sage-dk);border-style:dashed}
+.av-bars{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.av-bars i{display:block;height:6px;border-radius:2px;background:var(--line)}
+.av-day.both .av-bars i{background:rgba(14,17,9,.18)}
+.av-bars i.on{background:var(--sage)}
+.av-day.both .av-bars i.on{background:var(--ink)}
+.av-bars i.half{background:var(--sage-dk);opacity:.55}
+.av-legend .av-k{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:3px}
+.av-k.both{background:var(--sage)} .av-k.one{border:1px dashed var(--sage-dk)}
+/* editor */
+.av-modal .av-mode{margin:14px 0 4px}
+.av-cal.edit .av-day{cursor:pointer;min-height:50px;font:inherit}
+.av-cal.edit .av-day:disabled{cursor:default}
+.av-cal.edit .av-day.sel{background:var(--sage-dk);border-color:var(--sage-dk);color:var(--ink)}
+.av-cal.edit .av-day.sel .av-bars i{background:rgba(14,17,9,.22)}
+.av-cal.edit .av-day.sel .av-bars i.on{background:var(--ink)}
+.av-cal.edit .av-day.empty{border-style:dashed;border-color:var(--sage-dk)}
+.av-cal.edit .av-day.busy{background:rgba(180,73,31,.14);border-color:rgba(180,73,31,.5);color:#E58C6A;
+  background-image:linear-gradient(135deg,transparent 46%,rgba(180,73,31,.55) 47%,rgba(180,73,31,.55) 53%,transparent 54%)}
+.av-cal.edit .av-day.focus{outline:3px solid var(--orange);outline-offset:1px}
+.av-cal.edit .av-day:focus-visible{outline:3px solid var(--orange);outline-offset:1px}
+.av-pick{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.av-pick .chip{min-height:48px}
+.av-scope{margin-top:14px}

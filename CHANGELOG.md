@@ -15,6 +15,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/).
 - `test/qa-seguridad.js` + `test/serve-headers.py` (sirve en local con las cabeceras de Vercel).
 
 ### Added
+- **Este mes → «Nuestros horarios»** (`js/horarios.js`): cada jugador marca en su móvil cuándo puede jugar la ronda
+  y la app cruza los de la pareja. Calendario mensual: en verde los días que podéis los dos, con los 4 bloques
+  de 1 h 15 (18:00 · 19:15 · 20:30 · 21:45) encendidos y el rango («19:15–21:45»); fin de semana, día entero («Libre»).
+  - Editor en dos pasos: **días** (modo «Días que puedo» o «Días que NO puedo», que parte de todo el mes libre) y
+    **horas** de cada día entre semana, con «Mismo horario a todos los días entre semana».
+  - Los horarios son de la persona y valen para todas sus parejas (mixto y no mixto); «Distinto para esta pareja»
+    guarda unos propios solo para esa.
+  - Pareja que no usa la app: el calendario son tus horarios y lo dice. Pareja que aún no ha marcado: lo avisa.
+  - **Compartir con los rivales**: imagen del calendario común (se dibuja en el móvil) al menú de compartir
+    (WhatsApp); en el ordenador se descarga.
+  - Las rondas de julio y diciembre cubren también agosto y enero.
+  - Sin red no se enseña un calendario vacío: avisa y deja reintentar; no se edita hasta tener los datos.
+  - Base: `db/migrations/2026-11-27_horarios_disponibles.sql` (tablas cerradas; solo se accede por funciones que
+    comprueban que eres de la pareja). Pruebas: `test/qa-horarios.js`.
 - **Escalera: métrica «Grupo»** junto a «Puesto en la liga»: en qué grupo estabais en cada partido (el 1 arriba,
   en escalones; el eje solo marca grupos enteros).
 
